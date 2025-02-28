@@ -10,7 +10,7 @@ import {
   Activity,
   Users,
   Shield,
-  ShoppingBag
+  FileText
 } from "lucide-react";
 
 export type NavItem = {
@@ -42,7 +42,7 @@ export const generalNavItems: NavItem[] = [
 export const userNavItems: NavItem[] = [
   {
     title: "Dashboard",
-    href: "/user/dashboard",
+    href: "/user",
     icon: LayoutDashboard
   },
   {
@@ -51,14 +51,14 @@ export const userNavItems: NavItem[] = [
     icon: UserCircle
   },
   {
-    title: "Settings",
-    href: "/user/settings",
-    icon: Settings
-  },
-  {
     title: "Notifications",
     href: "/user/notifications",
     icon: Bell
+  },
+  {
+    title: "Documents",
+    href: "/user/documents",
+    icon: FileText
   },
   {
     title: "Activity",
@@ -66,22 +66,17 @@ export const userNavItems: NavItem[] = [
     icon: Activity
   },
   {
-    title: "Customers",
-    href: "/user/customers",
-    icon: Activity
+    title: "Settings",
+    href: "/user/settings",
+    icon: Settings
   }
 ];
 
 // Admin-specific navigation items
 export const adminNavItems: NavItem[] = [
   {
-    title: "Admin",
-    href: "/admin",
-    icon: LayoutDashboard
-  },
-  {
     title: "Dashboard",
-    href: "/admin/dashboard",
+    href: "/admin",
     icon: LayoutDashboard
   },
   {
@@ -90,9 +85,9 @@ export const adminNavItems: NavItem[] = [
     icon: Users
   },
   {
-    title: "Settings",
-    href: "/admin/settings",
-    icon: Settings
+    title: "Analytics",
+    href: "/admin/analytics",
+    icon: Activity
   },
   {
     title: "Security",
@@ -100,13 +95,8 @@ export const adminNavItems: NavItem[] = [
     icon: Shield
   },
   {
-    title: "Customers",
-    href: "/admin/customers",
-    icon: ShoppingBag
-  },
-  {
-    title: "Profile",
-    href: "/admin/profile",
-    icon: Activity
+    title: "Settings",
+    href: "/admin/settings",
+    icon: Settings
   }
 ];

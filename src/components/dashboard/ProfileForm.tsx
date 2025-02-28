@@ -19,16 +19,29 @@ const profileFormSchema = z.object({
     .max(30, {
       message: "Username must not be longer than 30 characters."
     }),
-  email: z.string().min(1, { message: "This field is required." }).email("This is not a valid email."),
-  bio: z.string().max(160).min(4)
+  email: z
+    .string({
+      required_error: "Please select an email to display."
+    })
+    .email(),
+  bio: z.string().max(160).min(4),
+  urls: z
+    .array(
+      z.object({
+        value: z.string().url({ message: "Please enter a valid URL." })
+      })
+    )
+    .optional()
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
+// This can come from your database or API.
 const defaultValues: Partial<ProfileFormValues> = {
   username: "johndoe",
-  email: "john.doe@example.com",
-  bio: "I'm a software developer based in New York City. I specialize in building web applications using React and Next.js."
+  email: "johndoe@example.com",
+  bio: "I'm a software developer...",
+  urls: [{ value: "https://github.com/johndoe" }, { value: "https://twitter.com/johndoe" }]
 };
 
 export function ProfileForm() {
@@ -75,9 +88,9 @@ export function ProfileForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="john.doe@example.com" {...field} />
+                <Input placeholder="johndoe@example.com" {...field} />
               </FormControl>
-              <FormDescription>We'll never share your email with anyone else.</FormDescription>
+              <FormDescription>You can manage verified email addresses in your email settings.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -92,7 +105,7 @@ export function ProfileForm() {
                 <Textarea placeholder="Tell us a little bit about yourself" className="resize-none" {...field} />
               </FormControl>
               <FormDescription>
-                You can <span>@mention</span> other users and organizations.
+                You can <span>@mention</span> other users and organizations to link to them.
               </FormDescription>
               <FormMessage />
             </FormItem>

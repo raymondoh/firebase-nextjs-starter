@@ -27,11 +27,12 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/admin/layout.tsx",
+    "src/app/(dashboard)/admin/layout.tsx",
     "src/app/layout.tsxX",
     "src/app/ClientLayout.tsxX",
     "src/app/(root)/layout.tsxX",
-    "src/app/user/layout.tsxX"
+    "src/app/(dashboard)/user/layout.tsxX",
+    "src/components/DashboardSidebar.tsxX"
   ],
   "exclude": ["node_modules"]
 }
