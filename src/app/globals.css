@@ -1,6 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .glow-text {
+    text-shadow: 0 0 20px rgba(192, 132, 252, 0.5), 0 0 30px rgba(192, 132, 252, 0.3);
+  }
+}
 
 @layer base {
   :root {
@@ -98,58 +106,7 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* Custom styles for the Sheet component */
-.sheet-content-left {
-  --sheet-slide-in-from: translate(-100%, 0);
-  --sheet-slide-out-to: translate(-100%, 0);
-}
-
-.sheet-content-right {
-  --sheet-slide-in-from: translate(100%, 0);
-  --sheet-slide-out-to: translate(100%, 0);
-}
-
-@media (max-width: 768px) {
-  .sheet-content-right {
-    --sheet-slide-in-from: translate(100%, -100%);
-    --sheet-slide-out-to: translate(100%, -100%);
-  }
-}
-
-[data-state="open"] > .sheet-content-right {
-  animation: slide-in-from-top-right 0.3s ease-out;
-}
-
-[data-state="closed"] > .sheet-content-right {
-  animation: slide-out-to-top-right 0.3s ease-in;
-}
-
-@keyframes slide-in-from-top-right {
-  from {
-    transform: translate(100%, -100%);
-  }
-  to {
-    transform: translate(0, 0);
-  }
-}
-
-@keyframes slide-out-to-top-right {
-  from {
-    transform: translate(0, 0);
-  }
-  to {
-    transform: translate(100%, -100%);
-  }
-}
-
-
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
+/* Custom styles for the sidebar */
+/* .group-data-[collapsible="icon"] .sidebar-icon {
+  @apply flex items-center justify-center;
+} */

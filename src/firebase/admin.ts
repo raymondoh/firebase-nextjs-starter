@@ -2,6 +2,7 @@
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
 function initializeAdminApp(): App {
   const apps = getApps();
@@ -19,7 +20,8 @@ function initializeAdminApp(): App {
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       privateKey: privateKey.replace(/\\n/g, "\n")
-    })
+    }),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET
   });
 }
 
@@ -27,6 +29,7 @@ const firebaseAdmin = initializeAdminApp();
 
 export const adminAuth = getAuth(firebaseAdmin);
 export const adminDb = getFirestore(firebaseAdmin);
+export const adminStorage = getStorage(firebaseAdmin);
 
 // Add this type
 type SetCustomClaimsResult = {

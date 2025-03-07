@@ -1,3 +1,4 @@
+// actions/userActions.ts
 "use server";
 
 import { auth, signIn } from "@/auth";
@@ -27,6 +28,8 @@ export async function updateProfile(formData: FormData) {
   const photoURL = formData.get("picture") as string;
 
   try {
+    console.log("Updating profile with:", { name, photoURL });
+
     // Prepare the update object for Firebase Auth
     const authUpdate: { displayName?: string; photoURL?: string } = {};
     if (name) authUpdate.displayName = name;
@@ -35,37 +38,42 @@ export async function updateProfile(formData: FormData) {
     // Only update Firebase Auth if there are changes
     if (Object.keys(authUpdate).length > 0) {
       await adminAuth.updateUser(session.user.id, authUpdate);
+      console.log("Firebase Auth updated");
     }
 
     // Prepare the update object for Firestore
     const firestoreUpdate: { name?: string; picture?: string; updatedAt: Timestamp } = {
       updatedAt: Timestamp.now()
     };
+
+    // IMPORTANT: Make sure we're using the same field names in Firestore as we expect in the session
     if (name) firestoreUpdate.name = name;
     if (photoURL) firestoreUpdate.picture = photoURL;
 
     // Update Firestore
     await adminDb.collection("users").doc(session.user.id).update(firestoreUpdate);
-
-    // After successful update, force a session update
-    await signIn("credentials", {
-      redirect: false,
-      email: session.user.email,
-      password: "dummy" // We're not actually signing in, just refreshing the session
-    });
+    console.log("Firestore updated");
 
     // Fetch the updated user profile
     const updatedUser = await adminAuth.getUser(session.user.id);
     const userDoc = await adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
 
+    console.log("Updated user data:", {
+      id: updatedUser.uid,
+      name: updatedUser.displayName || userData?.name,
+      email: updatedUser.email,
+      picture: updatedUser.photoURL || userData?.picture,
+      ...userData
+    });
+
     return {
       success: true,
       user: convertTimestamps({
         id: updatedUser.uid,
-        name: updatedUser.displayName,
+        name: updatedUser.displayName || userData?.name,
         email: updatedUser.email,
-        picture: updatedUser.photoURL,
+        picture: updatedUser.photoURL || userData?.picture,
         ...userData
       })
     };
@@ -84,18 +92,31 @@ export async function getProfile() {
 
   try {
     const user = await adminAuth.getUser(session.user.id);
+    console.log("Firebase Auth user:", {
+      uid: user.uid,
+      displayName: user.displayName,
+      email: user.email,
+      photoURL: user.photoURL
+    });
+
     const userDoc = await adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
+    console.log("Firestore user data:", userData);
+
+    const combinedUser = {
+      id: user.uid,
+      name: user.displayName,
+      email: user.email,
+      image: user.photoURL || userData?.picture, // Try both sources
+      picture: userData?.picture || user.photoURL, // Include both fields
+      ...userData
+    };
+
+    console.log("Combined user data:", combinedUser);
 
     return {
       success: true,
-      user: convertTimestamps({
-        id: user.uid,
-        name: user.displayName,
-        email: user.email,
-        picture: user.photoURL,
-        ...userData // Include any additional fields from Firestore
-      })
+      user: convertTimestamps(combinedUser)
     };
   } catch (error) {
     console.error("Error fetching profile:", error);

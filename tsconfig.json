@@ -27,12 +27,16 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/(dashboard)/admin/layout.tsx",
+    "src/app/(app-dashboard)/adminX/layout.tsxX",
     "src/app/layout.tsxX",
     "src/app/ClientLayout.tsxX",
     "src/app/(root)/layout.tsxX",
-    "src/app/(dashboard)/user/layout.tsxX",
-    "src/components/DashboardSidebar.tsxX"
+    "src/app/(app-dashboard)/user/layout.tsx",
+    "src/components/DashboardSidebar.tsxX",
+    "src/app/(app-dashboard)/layout.tsxX",
+    "src/components/dashboard/dashboard-sidebar.tsxX",
+    "src/components/SessionChecker.tsxX",
+    "src/app/(app-dashboard)/admin/layout.tsx"
   ],
   "exclude": ["node_modules"]
 }

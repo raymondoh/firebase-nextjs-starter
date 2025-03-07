@@ -1,22 +1,16 @@
 export { Header } from "./header/Header";
+export { Footer } from "./footer/Footer";
 export { Navbar } from "./header/Navbar";
 export { ModeToggle } from "./header/ModeToggle";
 export { LoginForm } from "./auth/LoginForm";
 export { RegisterForm } from "./auth/RegisterForm";
 export { ForgotPasswordForm } from "./auth/ForgotPasswordForm";
-export { AdminDashboardClient } from "./admin/AdminDashboardClient";
-export { DashboardSidebar } from "./dashboard/DashboardSidebar";
-export { Overview } from "./dashboard/Overview";
-export { RecentActivity } from "./dashboard/RecentActivity";
-export { ProfileForm } from "./dashboard/ProfileForm";
-//
+
+//sidebar
+export { AppSidebar } from "./dashboard/AppSidebar";
 export { DashboardHeader } from "./dashboard/DashboardHeader";
-export { DashboardShell } from "./DashboardShell";
-export { OverviewStats } from "./OverviewStats";
-export { RecentSales } from "./RecentSales";
-export { OverviewChart } from "./OverviewChart";
-export { CustomersTable } from "./CustomersTable";
-export { DataTablePagination } from "./DataTablePagination";
-export { DataTableToolbar } from "./DataTableToolbar";
-export { DataTableFacetedFilter } from "./DataTableFacetedFilter";
-export { NotificationsForm } from "./NotificationsForm";
+export { DashboardShell } from "./dashboard/DashboardShell";
+export { UserProfileForm } from "./dashboard/UserProfileForm";
+export { AccountSettingsForm } from "./dashboard/AccountSettingsForm";
+export { SecuritySettingsForm } from "./dashboard/SecuritySettingsForm";
+export { PreferenceSettingsForm } from "./dashboard/PreferenceSettingsForm";

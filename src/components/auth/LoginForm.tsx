@@ -1,237 +1,55 @@
-// "use client";
-
-// import { useState, useEffect } from "react";
-// import { useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { useRouter } from "next/navigation";
-// import Link from "next/link";
-// import { z } from "zod";
-// import { LoaderCircle, GiftIcon } from "lucide-react";
-// import { signIn, useSession } from "next-auth/react";
-// import { Button } from "@/components/ui/button";
-// import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-// import { Input } from "@/components/ui/input";
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-// import { toast } from "sonner";
-// import { loginUser } from "@/actions/authActions";
-// //import { getSession } from "next-auth/react";
-
-// const loginSchema = z.object({
-//   email: z.string().email({ message: "Please enter a valid email address" }),
-//   password: z.string().min(6, { message: "Password must be at least 6 characters long" })
-// });
-
-// type LoginFormValues = z.infer<typeof loginSchema>;
-
-// export const LoginForm = ({ className, ...props }: React.ComponentPropsWithoutRef<"div">) => {
-//   const router = useRouter();
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-//   const { data: session, status, update } = useSession();
-
-//   const form = useForm<LoginFormValues>({
-//     resolver: zodResolver(loginSchema),
-//     defaultValues: {
-//       email: "",
-//       password: ""
-//     }
-//   });
-
-//   async function onSubmit(data: LoginFormValues) {
-//     setIsSubmitting(true);
-
-//     try {
-//       const formData = new FormData();
-//       formData.append("email", data.email);
-//       formData.append("password", data.password);
-
-//       const result = await loginUser(formData);
-
-//       if (!result.success) {
-//         toast("Login Failed.");
-//       } else {
-//         await update();
-//         console.log("Session after login:", session);
-
-//         toast("Redirecting to home page...");
-//         router.push("/");
-//       }
-//     } catch (error) {
-//       console.error("Login error:", error);
-
-//       toast("An unexpected error occurred. Please try again later.");
-//     } finally {
-//       setIsSubmitting(false);
-//     }
-//   }
-
-//   const handleGoogleSignIn = async () => {
-//     try {
-//       const result = await signIn("google", { callbackUrl: "/" });
-//       if (result?.error) {
-//         toast("Failed to sign in with Google. Please try again");
-//       }
-//     } catch (error) {
-//       console.error("Google sign-in error:", error);
-
-//       toast("An unexpected error occurred during GitHub sign-in. Please try again later..");
-//     }
-//   };
-//   useEffect(() => {
-//     console.log("Current session:", session);
-//     console.log("Session status:", status);
-//   }, [session, status]);
-
-//   useEffect(() => {
-//     if (session) {
-//       router.push("/");
-//     }
-//   }, [session, router]);
-
-//   if (status === "loading") {
-//     return <div>Loading...</div>;
-//   }
-
-//   return (
-//     <Card className={className} {...props}>
-//       <CardHeader>
-//         <CardTitle>Login</CardTitle>
-//         <CardDescription>Enter your email and password to login</CardDescription>
-//       </CardHeader>
-//       <CardContent>
-//         <Form {...form}>
-//           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-//             <FormField
-//               control={form.control}
-//               name="email"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel>Email</FormLabel>
-//                   <FormControl>
-//                     <Input placeholder="Enter your email" {...field} />
-//                   </FormControl>
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={form.control}
-//               name="password"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel>Password</FormLabel>
-//                   <FormControl>
-//                     <Input type="password" placeholder="Enter your password" {...field} />
-//                   </FormControl>
-//                   <FormMessage />
-//                   <FormDescription>
-//                     <Link href="/forgot-password" className="text-sm text-muted-foreground hover:underline">
-//                       Forgot password?
-//                     </Link>
-//                   </FormDescription>
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-//             <Button type="submit" className="w-full" disabled={isSubmitting}>
-//               {isSubmitting ? (
-//                 <>
-//                   <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-//                   Logging in...
-//                 </>
-//               ) : (
-//                 "Login"
-//               )}
-//             </Button>
-//           </form>
-//         </Form>
-//         <div className="mt-6">
-//           <div className="relative">
-//             <div className="absolute inset-0 flex items-center">
-//               <span className="w-full border-t" />
-//             </div>
-//             <div className="relative flex justify-center text-xs uppercase">
-//               <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-//             </div>
-//           </div>
-//           <Button variant="outline" type="button" className="w-full mt-4" onClick={handleGoogleSignIn}>
-//             {/* <GiftIcon className="mr-2 h-4 w-4" /> */}
-//             Google Sign In
-//           </Button>
-//         </div>
-//       </CardContent>
-//       <CardFooter className="flex flex-col items-center gap-4">
-//         <div className="text-sm text-muted-foreground ">
-//           Don&apos;t have an account?{" "}
-//           <Link href="/register" className="text-primary hover:underline">
-//             Sign up
-//           </Link>
-//         </div>
-//       </CardFooter>
-//     </Card>
-//   );
-// };
 "use client";
 
-import type React from "react";
-
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { z } from "zod";
-import { LoaderCircle } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
+import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useActionState } from "react";
+import { loginUser } from "@/actions";
+import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters long" })
-});
+// Define the LoginState type to match your actual type
+type UserRole = "admin" | "user";
+type LoginState = {
+  success: boolean;
+  message?: string;
+  error?: string;
+  userId?: string;
+  role?: UserRole;
+} | null;
 
-type LoginFormValues = z.infer<typeof loginSchema>;
-
-export const LoginForm = ({ className, ...props }: React.ComponentPropsWithoutRef<"div">) => {
+export function LoginForm() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: session, status, update } = useSession();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null);
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: ""
-    }
-  });
+  // Handle form submission result
+  useEffect(() => {
+    if (state) {
+      console.log("Login state:", state); // Debug log
 
-  async function onSubmit(data: LoginFormValues) {
-    setIsSubmitting(true);
+      if (state.success) {
+        toast.success(state.message || "Login successful");
 
-    try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email: data.email,
-        password: data.password
-      });
-
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        await update();
-        toast.success("Login successful");
-        router.push("/");
+        // Redirect to home page after successful login
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 500);
+      } else if (state.error) {
+        toast.error(state.error);
+      } else if (state.message && !state.success) {
+        toast.error(state.message);
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("An unexpected error occurred. Please try again later.");
-    } finally {
-      setIsSubmitting(false);
     }
-  }
+  }, [state, router]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -245,90 +63,116 @@ export const LoginForm = ({ className, ...props }: React.ComponentPropsWithoutRe
     }
   };
 
-  useEffect(() => {
-    if (session) {
-      router.push("/");
-    }
-  }, [session, router]);
-
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
+  // Get the error message from either error or message property
+  const errorMessage = state && !state.success ? state.error || state.message : null;
 
   return (
-    <Card className={className} {...props}>
+    <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your email and password to login</CardDescription>
+        <CardTitle>Log In</CardTitle>
+        <CardDescription>Enter your credentials to access your account</CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
+
+        <form action={action} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              type="email"
+              placeholder="name@example.com"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
             />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Enter your password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    <Link href="/forgot-password" className="text-sm text-muted-foreground hover:underline">
-                      Forgot password?
-                    </Link>
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  Logging in...
-                </>
-              ) : (
-                "Login"
-              )}
-            </Button>
-          </form>
-        </Form>
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Button variant="link" className="p-0 h-auto" asChild>
+                <Link href="/forgot-password">Forgot password?</Link>
+              </Button>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
-          <Button variant="outline" type="button" className="w-full mt-4" onClick={handleGoogleSignIn}>
-            Google Sign In
+
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
+        </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+          </div>
         </div>
+
+        <Button variant="outline" type="button" className="w-full" onClick={handleGoogleSignIn}>
+          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              fill="#4285F4"
+            />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              fill="#34A853"
+            />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              fill="#FBBC05"
+            />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              fill="#EA4335"
+            />
+          </svg>
+          Sign in with Google
+        </Button>
       </CardContent>
       <CardFooter className="flex flex-col items-center gap-4">
-        <div className="text-sm text-muted-foreground ">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            Sign up
-          </Link>
+        <div className="text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <Button variant="link" className="p-0 h-auto" asChild>
+            <Link href="/register">Sign up</Link>
+          </Button>
         </div>
       </CardFooter>
     </Card>
   );
-};
+}

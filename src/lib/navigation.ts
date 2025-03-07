@@ -16,7 +16,8 @@ import {
 export type NavItem = {
   title: string;
   href: string;
-  icon: React.ComponentType;
+  //icon: React.ComponentType;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
 // General navigation items visible to all users
@@ -35,6 +36,11 @@ export const generalNavItems: NavItem[] = [
     title: "Contact",
     href: "/contact",
     icon: Mail
+  },
+  {
+    title: "Debug",
+    href: "/debug-session",
+    icon: Settings
   }
 ];
 
@@ -55,16 +61,16 @@ export const userNavItems: NavItem[] = [
     href: "/user/notifications",
     icon: Bell
   },
-  {
-    title: "Documents",
-    href: "/user/documents",
-    icon: FileText
-  },
-  {
-    title: "Activity",
-    href: "/user/activity",
-    icon: Activity
-  },
+  // {
+  //   title: "Documents",
+  //   href: "/user/documents",
+  //   icon: FileText
+  // },
+  // {
+  //   title: "Activity",
+  //   href: "/user/activity",
+  //   icon: Activity
+  // },
   {
     title: "Settings",
     href: "/user/settings",
@@ -84,16 +90,21 @@ export const adminNavItems: NavItem[] = [
     href: "/admin/users",
     icon: Users
   },
-  {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: Activity
-  },
+  // {
+  //   title: "Analytics",
+  //   href: "/admin/analytics",
+  //   icon: Activity
+  // },
   {
     title: "Security",
     href: "/admin/security",
     icon: Shield
   },
+  // {
+  //   title: "Profile",
+  //   href: "/admin/profile",
+  //   icon: UserCircle
+  // },
   {
     title: "Settings",
     href: "/admin/settings",

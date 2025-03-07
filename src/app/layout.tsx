@@ -5,7 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { UserProvider } from "@/contexts/UserContext";
 import { Toaster } from "@/components/ui/sonner";
-import { Header } from "@/components";
+import { Header, Footer } from "@/components";
 import { ToasterProvider } from "@/providers/ToasterProvider";
 import "./globals.css";
 const geistSans = Geist({
@@ -33,10 +33,12 @@ export default function RootLayout({
         <SessionProvider>
           <UserProvider>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-              <ToasterProvider />
-              <Header />
-              <main>{children}</main>
-              <Toaster position="top-right" />
+              <div className="flex flex-col min-h-screen">
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+              <Toaster />
             </ThemeProvider>
           </UserProvider>
         </SessionProvider>

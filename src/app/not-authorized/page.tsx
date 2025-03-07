@@ -1,17 +1,25 @@
 import Link from "next/link";
-import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ShieldAlert } from "lucide-react";
 
 export default function NotAuthorizedPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-      <div className="text-center">
-        <AlertCircle className="mx-auto h-16 w-16 text-destructive" />
-        <h1 className="mt-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Unauthorized Access</h1>
-        <p className="mt-4 text-base text-muted-foreground">Sorry, you don't have permission to access this page.</p>
-        <div className="mt-10">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="flex flex-col items-center max-w-md text-center space-y-4">
+        <div className="bg-red-100 p-3 rounded-full">
+          <ShieldAlert className="h-12 w-12 text-red-600" />
+        </div>
+        <h1 className="text-2xl font-bold">Access Denied</h1>
+        <p className="text-muted-foreground">
+          You don't have permission to access this page. Please contact an administrator if you believe this is an
+          error.
+        </p>
+        <div className="flex gap-4 mt-4">
+          <Button asChild variant="outline">
+            <Link href="/">Return Home</Link>
+          </Button>
           <Button asChild>
-            <Link href="/">Go back home</Link>
+            <Link href="/login">Sign In with Different Account</Link>
           </Button>
         </div>
       </div>

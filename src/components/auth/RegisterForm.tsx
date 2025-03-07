@@ -1,262 +1,89 @@
-// "use client";
-
-// import { useState } from "react";
-// import { useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { useRouter } from "next/navigation";
-// import Link from "next/link";
-// import { z } from "zod";
-// import { LoaderCircle } from "lucide-react";
-// import { useSession } from "next-auth/react";
-// import { Button } from "@/components/ui/button";
-// import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-// import { Input } from "@/components/ui/input";
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-// import { registerUser, loginUser } from "@/actions/authActions";
-// import { toast } from "sonner";
-
-// const registerFormSchema = z
-//   .object({
-//     email: z.string().email({ message: "Please enter a valid email address" }),
-//     password: z.string().min(6, { message: "Password must be at least 6 characters long" }),
-//     confirmPassword: z.string()
-//   })
-//   .refine(data => data.password === data.confirmPassword, {
-//     message: "Passwords do not match",
-//     path: ["confirmPassword"]
-//   });
-
-// type RegisterFormValues = z.infer<typeof registerFormSchema>;
-
-// export function RegisterForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-//   const router = useRouter();
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-//   const { update } = useSession();
-
-//   const form = useForm<RegisterFormValues>({
-//     resolver: zodResolver(registerFormSchema),
-//     defaultValues: {
-//       email: "",
-//       password: "",
-//       confirmPassword: ""
-//     }
-//   });
-
-//   async function onSubmit(data: RegisterFormValues) {
-//     setIsSubmitting(true);
-
-//     try {
-//       const formData = new FormData();
-//       formData.append("email", data.email);
-//       formData.append("password", data.password);
-//       formData.append("confirmPassword", data.confirmPassword); // Add this line
-
-//       const registerResult = await registerUser(formData);
-
-//       if (registerResult.success) {
-//         // If registration is successful, attempt to log in
-//         const loginFormData = new FormData();
-//         loginFormData.append("email", data.email);
-//         loginFormData.append("password", data.password);
-
-//         const loginResult = await loginUser(loginFormData);
-
-//         if (loginResult.success) {
-//           await update();
-
-//           toast("Registration Successful");
-//           router.push("/");
-//         } else {
-//           toast("Login Failed");
-//         }
-//       } else {
-//         toast(registerResult.error || "Registration Failed");
-//       }
-//     } catch (error) {
-//       console.error("Registration error:", error);
-
-//       toast("An unexpected error occurred. Please try again later.");
-//     } finally {
-//       setIsSubmitting(false);
-//     }
-//   }
-//   return (
-//     <Card className={className} {...props}>
-//       <CardHeader>
-//         <CardTitle>Register</CardTitle>
-//         <CardDescription>Create a new account</CardDescription>
-//       </CardHeader>
-//       <CardContent>
-//         <Form {...form}>
-//           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-//             <FormField
-//               control={form.control}
-//               name="email"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel>Email</FormLabel>
-//                   <FormControl>
-//                     <Input placeholder="Enter your email" {...field} />
-//                   </FormControl>
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={form.control}
-//               name="password"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel>Password</FormLabel>
-//                   <FormControl>
-//                     <Input type="password" placeholder="Enter your password" {...field} />
-//                   </FormControl>
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={form.control}
-//               name="confirmPassword"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel>Confirm Password</FormLabel>
-//                   <FormControl>
-//                     <Input
-//                       placeholder="Confirm your password"
-//                       type="password"
-//                       autoCapitalize="none"
-//                       autoComplete="new-password"
-//                       autoCorrect="off"
-//                       disabled={isSubmitting}
-//                       {...field}
-//                     />
-//                   </FormControl>
-//                   <FormDescription>Re-enter your password to confirm.</FormDescription>
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-//             <Button type="submit" className="w-full" disabled={isSubmitting}>
-//               {isSubmitting ? (
-//                 <>
-//                   <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-//                   Registering...
-//                 </>
-//               ) : (
-//                 "Register"
-//               )}
-//             </Button>
-//           </form>
-//         </Form>
-//       </CardContent>
-//       <CardFooter className="flex flex-col items-center gap-4">
-//         <div className="text-sm text-muted-foreground">
-//           Already have an account?{" "}
-//           <Link href="/login" className="text-primary hover:underline">
-//             Sign in
-//           </Link>
-//         </div>
-//       </CardFooter>
-//     </Card>
-//   );
-// }
 "use client";
 
 import type React from "react";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
+import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { z } from "zod";
-import { LoaderCircle, Eye, EyeOff } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { LoaderCircle, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { registerUser } from "@/actions/authActions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { registerUser } from "@/actions";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 
-const registerFormSchema = z
-  .object({
-    email: z
-      .string()
-      .email({ message: "Please enter a valid email address" })
-      .max(255, { message: "Email must not exceed 255 characters" }),
-    password: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters long" })
-      .max(72, { message: "Password must not exceed 72 characters" })
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, {
-        message:
-          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-      }),
-    confirmPassword: z.string()
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"]
-  });
-
-type RegisterFormValues = z.infer<typeof registerFormSchema>;
-
 export function RegisterForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { update } = useSession();
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerFormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: ""
-    }
-  });
+  // Store form values in state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  async function onSubmit(data: RegisterFormValues) {
-    setIsSubmitting(true);
+  // Set up useActionState for server-side validation and registration
+  const [state, action, isPending] = useActionState(registerUser, null);
 
-    try {
-      const formData = new FormData();
-      formData.append("email", data.email);
-      formData.append("password", data.password);
-      formData.append("confirmPassword", data.confirmPassword);
+  // Handle successful registration
+  useEffect(() => {
+    if (state?.success) {
+      toast.success("Registration successful!");
 
-      const registerResult = await registerUser(formData);
+      // Attempt to sign in after successful registration
+      const handleSignIn = async () => {
+        try {
+          if (!email || !password) {
+            console.error("Email or password is missing for automatic sign-in");
+            // Add a delay before redirecting
+            setTimeout(() => {
+              toast.info("Please log in with your new credentials");
+              window.location.href = "/login"; // Use direct window location change
+            }, 500);
+            return;
+          }
 
-      if (registerResult.success) {
-        toast.success("Registration Successful");
+          console.log("Attempting automatic sign-in with:", { email });
 
-        // Attempt to sign in
-        const signInResult = await signIn("credentials", {
-          redirect: false,
-          email: data.email,
-          password: data.password
-        });
+          const signInResult = await signIn("credentials", {
+            redirect: false,
+            email,
+            password
+          });
 
-        if (signInResult?.ok) {
-          await update();
-          router.push("/");
-        } else {
-          toast.error("Login Failed: Please try logging in manually");
+          if (signInResult?.ok) {
+            toast.success("You are now logged in!");
+            // Add a delay before redirecting
+            setTimeout(() => {
+              window.location.href = "/"; // Use direct window location change
+            }, 500);
+          } else {
+            console.error("Automatic sign-in failed:", signInResult?.error);
+            toast.error("Automatic sign-in failed. Please try logging in manually.");
+            // Add a delay before redirecting
+            setTimeout(() => {
+              window.location.href = "/login"; // Use direct window location change
+            }, 500);
+          }
+        } catch (error) {
+          console.error("Sign-in error:", error);
+          toast.error("Automatic sign-in failed. Please try logging in manually.");
+          // Add a delay before redirecting
+          setTimeout(() => {
+            window.location.href = "/login"; // Use direct window location change
+          }, 500);
         }
-      } else {
-        toast.error(registerResult.error || "Registration Failed");
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("An unexpected error occurred. Please try again later.");
-    } finally {
-      setIsSubmitting(false);
+      };
+
+      handleSignIn();
+    } else if (state?.error) {
+      toast.error(state.error);
     }
-  }
+  }, [state, router, email, password]);
 
   return (
     <Card className={className} {...props}>
@@ -265,95 +92,96 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
         <CardDescription>Create a new account</CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
+        {state?.error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
+        )}
+
+        <form id="register-form" action={action} className="space-y-8">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              type="email"
+              placeholder="Enter your email"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
             />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input type={showPassword ? "text" : "password"} placeholder="Enter your password" {...field} />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Password must be 8-72 characters long and contain at least one uppercase letter, one lowercase
-                    letter, one number, and one special character.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Confirm your password"
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormDescription>Re-enter your password to confirm.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  Registering...
-                </>
-              ) : (
-                "Register"
-              )}
-            </Button>
-          </form>
-        </Form>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Password must be 8-72 characters long and contain at least one uppercase letter, one lowercase letter, one
+              number, and one special character.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm your password"
+                required
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">Re-enter your password to confirm.</p>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? (
+              <>
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                Registering...
+              </>
+            ) : (
+              "Register"
+            )}
+          </Button>
+        </form>
       </CardContent>
       <CardFooter className="flex flex-col items-center gap-4">
         <div className="text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Sign in
-          </Link>
+          <Button variant="link" className="p-0 h-auto" asChild>
+            <Link href="/login">Sign in</Link>
+          </Button>
         </div>
       </CardFooter>
     </Card>
