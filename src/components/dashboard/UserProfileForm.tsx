@@ -1,173 +1,189 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-
 import type React from "react";
-import { useState, useTransition, useEffect } from "react";
+import { useState, useEffect, useRef, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useActionState } from "react";
 import { User, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { updateProfile } from "@/actions/userActions";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const profileFormSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: "Name must be at least 2 characters."
-    })
-    .max(30, {
-      message: "Name must not be longer than 30 characters."
-    })
-});
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { updateUserProfile } from "@/actions";
+import type { ProfileUpdateState } from "@/types/user";
 
 interface ProfileFormProps {
   id?: string;
-  onSubmitStart?: () => void;
-  onSubmitComplete?: (success: boolean) => void;
+  onCancel?: () => void;
+  redirectAfterSuccess?: string;
 }
 
-export function UserProfileForm({ id, onSubmitStart, onSubmitComplete }: ProfileFormProps) {
+export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/" }: ProfileFormProps) {
   const { data: session, status, update: updateSessionFn } = useSession();
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [photoURL, setPhotoURL] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [formReady, setFormReady] = useState(false);
-  const [isUpdated, setIsUpdated] = useState(false);
 
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      name: ""
-    }
-  });
+  // Form state
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [formReady, setFormReady] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Use a ref to track if we've already processed a successful update
+  const updateProcessedRef = useRef(false);
+
+  // Use action state for form submission
+  const [state, formAction, isPending] = useActionState<ProfileUpdateState, FormData>(updateUserProfile, null);
 
   // Update form values and photoURL when session loads
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      console.log("Session loaded:", session);
-
-      // Update the form with the user's name
-      form.reset({
-        name: session.user.name || ""
-      });
-
-      // Set the photo URL
-      setPhotoURL(session.user.image || null);
-
-      // Mark the form as ready
-      setFormReady(true);
-
-      // Reset the updated flag when session changes
-      if (isUpdated) {
-        setIsUpdated(false);
+      // Only update the form values if they're empty or if we haven't loaded them yet
+      if (!formReady) {
+        console.log("Loading session data into form:", session.user);
+        setName(session.user.name || "");
+        setBio(session.user.bio || "");
+        setPhotoURL(session.user.image || null);
+        setFormReady(true);
       }
     }
-  }, [session, status, form, isUpdated]);
+  }, [session, status, formReady]);
 
-  async function onSubmit(data: ProfileFormValues) {
-    // Notify parent component that submission is starting
-    onSubmitStart?.();
+  // Handle form submission result
+  useEffect(() => {
+    if (state && !updateProcessedRef.current) {
+      if (state.success) {
+        // Mark that we've processed this update to prevent loops
+        updateProcessedRef.current = true;
 
-    startTransition(async () => {
-      try {
-        // Create FormData object for the server action
-        const formData = new FormData();
-        formData.append("name", data.name);
+        setIsSuccess(true);
+        toast.success("Profile updated successfully");
 
-        // Only append picture if it's different from the session
-        if (photoURL && photoURL !== session?.user?.image) {
-          formData.append("picture", photoURL);
-        }
+        // Only update the session once
+        updateSessionFn()
+          .then(() => {
+            console.log("Session updated successfully");
 
-        // Call the server action
-        const result = await updateProfile(formData);
-
-        if (result.success) {
-          toast("Profile updated successfully");
-          console.log("Profile updated, refreshing session...");
-
-          // Force a session refresh
-          await updateSessionFn();
-
-          // Mark as updated to trigger the useEffect
-          setIsUpdated(true);
-
-          // Update the form with the new values
-          form.reset({
-            name: data.name
+            // Only redirect if specified
+            if (redirectAfterSuccess) {
+              setTimeout(() => {
+                router.push(redirectAfterSuccess);
+              }, 1500);
+            }
+          })
+          .catch(error => {
+            console.error("Error updating session:", error);
           });
-
-          // Force a router refresh to update any components that depend on the session
-          router.refresh();
-
-          // Notify parent component that submission completed successfully
-          onSubmitComplete?.(true);
-        } else {
-          // Instead of throwing an error, handle it gracefully
-          console.error("Error updating profile:", result.error);
-          toast.error(result.error || "Failed to update profile");
-
-          // Notify parent component that submission failed
-          onSubmitComplete?.(false);
-        }
-      } catch (error) {
-        console.error("Error updating profile:", error);
-        toast.error("Your profile could not be updated. Please try again.");
-
-        // Notify parent component that submission failed
-        onSubmitComplete?.(false);
+      } else if (state.error) {
+        toast.error(state.error);
       }
-    });
-  }
+    }
+  }, [state, router, updateSessionFn, redirectAfterSuccess]);
 
-  // Function to handle file upload
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Function to handle file selection
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Preview the image
+    const reader = new FileReader();
+    reader.onload = e => {
+      setPhotoURL(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Store the file for upload during form submission
+    setPhotoFile(file);
+  };
+
+  // Function to handle cancel
+  const handleCancel = () => {
+    if (isPending || isUploading) return;
+
+    if (!window.confirm("Are you sure you want to leave? Any unsaved changes will be lost.")) {
+      return;
+    }
+
+    if (onCancel) {
+      onCancel();
+    } else {
+      router.back();
+    }
+  };
+
+  // Function to upload the file and get the URL
+  const uploadFile = async (file: File): Promise<string> => {
     setIsUploading(true);
-
     try {
-      // Create a FormData object for the file upload
-      const formData = new FormData();
-      formData.append("file", file);
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
 
-      console.log("Uploading file:", file.name, file.type, file.size);
-
-      // Upload the file to your server
-      const response = await fetch("/api/upload", {
+      const uploadResponse = await fetch("/api/upload", {
         method: "POST",
-        body: formData
+        body: uploadFormData
       });
 
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.error || "Failed to upload image");
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || "Failed to upload image");
       }
 
-      console.log("Upload successful, URL:", responseData.url);
-      setPhotoURL(responseData.url);
-
-      toast("Profile picture uploaded successfully");
+      const uploadResult = await uploadResponse.json();
+      console.log("Image uploaded successfully:", uploadResult.url);
+      return uploadResult.url;
     } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error(`Upload failed: ${error.message}`);
+      console.error("Error uploading file:", error);
+      throw error;
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Reset the update processed flag
+    updateProcessedRef.current = false;
+
+    try {
+      // Create the form data
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("bio", bio);
+
+      // If there's a new photo file, upload it first
+      if (photoFile) {
+        setIsUploading(true);
+        try {
+          const imageUrl = await uploadFile(photoFile);
+          formData.append("imageUrl", imageUrl);
+        } catch (error) {
+          console.error("Error uploading file:", error);
+          toast.error(error.message || "Failed to upload image");
+          return;
+        } finally {
+          setIsUploading(false);
+        }
+      }
+
+      // Now submit the form with the action inside startTransition
+      startTransition(() => {
+        formAction(formData);
+      });
+    } catch (error) {
+      console.error("Error during form submission:", error);
+      toast.error(error.message || "Failed to update profile");
     }
   };
 
@@ -200,90 +216,117 @@ export function UserProfileForm({ id, onSubmitStart, onSubmitComplete }: Profile
   }
 
   return (
-    <Form {...form}>
-      <form id={id} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="space-y-6">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            <Avatar className="h-24 w-24 relative">
-              {photoURL ? (
-                <div className="absolute inset-0 rounded-full overflow-hidden">
-                  <Image
-                    src={photoURL || "/placeholder.svg"}
-                    alt={session?.user?.name || "User"}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              ) : (
-                <AvatarFallback className="text-lg">
-                  <User className="h-12 w-12" />
-                </AvatarFallback>
-              )}
-            </Avatar>
+    <div>
+      <form id={id} onSubmit={handleSubmit} className="grid w-full gap-6" style={{ border: "none" }}>
+        {state?.error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
+        )}
 
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-medium">Profile Picture</h3>
-              <p className="text-sm text-muted-foreground">Click the button below to upload a new profile picture.</p>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="profile-image"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
+        {/* Profile Picture Section */}
+        <div className="flex flex-col gap-6 md:flex-row md:items-center" style={{ border: "none" }}>
+          <Avatar className="h-24 w-24 relative">
+            {photoURL ? (
+              <div className="absolute inset-0 rounded-full overflow-hidden">
+                <Image
+                  src={photoURL || "/placeholder.svg"}
+                  alt={session?.user?.name || "User"}
+                  fill
+                  sizes="(max-width: 768px) 96px, 96px"
+                  className="object-cover"
+                  priority
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById("profile-image")?.click()}
-                  disabled={isUploading}>
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Uploading
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload
-                    </>
-                  )}
-                </Button>
               </div>
-            </div>
-          </div>
-
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Your name" {...field} />
-                </FormControl>
-                <FormDescription>This is your public display name.</FormDescription>
-                <FormMessage />
-              </FormItem>
+            ) : (
+              <AvatarFallback className="text-lg">
+                <User className="h-12 w-12" />
+              </AvatarFallback>
             )}
-          />
+          </Avatar>
 
-          <div className="space-y-2">
-            <FormLabel>Email</FormLabel>
-            <Input value={session?.user?.email || ""} disabled className="bg-muted" />
-            <FormDescription>
-              Your email address is managed by your authentication provider and cannot be changed here.
-            </FormDescription>
+          <div className="flex flex-col gap-2" style={{ border: "none" }}>
+            <h3 className="text-lg font-medium">Profile Picture</h3>
+            <p className="text-sm text-muted-foreground">Click the button below to upload a new profile picture.</p>
+            <div className="flex items-center gap-2" style={{ border: "none" }}>
+              <Input
+                id="profile-image"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={isPending || isUploading}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("profile-image")?.click()}
+                disabled={isPending || isUploading}>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Add a submit button directly in the form for testing */}
-        {/* <Button type="submit" disabled={isPending || isUploading}>
-          {isPending ? "Saving..." : "Save changes"}
-        </Button> */}
+        {/* Name Field */}
+        <div className="space-y-2" style={{ border: "none" }}>
+          <Label htmlFor="name">Username</Label>
+          <Input
+            id="name"
+            name="name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Your display name"
+            required
+          />
+          <p className="text-sm text-muted-foreground">This is your public display name.</p>
+        </div>
+
+        {/* Email Field (Read-only) */}
+        <div className="space-y-2" style={{ border: "none" }}>
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" value={session?.user?.email || ""} disabled className="bg-muted" />
+          <p className="text-sm text-muted-foreground">
+            Your email address is managed by your authentication provider and cannot be changed here.
+          </p>
+        </div>
+
+        {/* Bio Field */}
+        <div className="space-y-2" style={{ border: "none" }}>
+          <Label htmlFor="bio">Bio</Label>
+          <Textarea
+            id="bio"
+            name="bio"
+            value={bio}
+            onChange={e => setBio(e.target.value)}
+            placeholder="Tell us a little bit about yourself"
+            className="resize-none min-h-[100px]"
+          />
+          <p className="text-sm text-muted-foreground">
+            Share a brief description about yourself. You can @mention other users and organizations.
+          </p>
+        </div>
+
+        <div className="mt-6 flex items-center justify-start gap-4">
+          <Button type="submit" disabled={isPending || isUploading}>
+            {isPending || isUploading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isUploading ? "Uploading..." : "Saving..."}
+              </>
+            ) : (
+              "Save changes"
+            )}
+          </Button>
+          <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending || isUploading}>
+            Cancel
+          </Button>
+        </div>
       </form>
-    </Form>
+
+      {isSuccess && <p className="mt-4 text-sm text-green-600">Your profile has been updated successfully.</p>}
+    </div>
   );
 }

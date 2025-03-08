@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import type { RegisterState } from "@/types/auth";
 
 import { useState, useEffect } from "react";
 import { useActionState } from "react";
@@ -27,7 +28,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
   const [confirmPassword, setConfirmPassword] = useState("");
 
   // Set up useActionState for server-side validation and registration
-  const [state, action, isPending] = useActionState(registerUser, null);
+  const [state, action, isPending] = useActionState<RegisterState, FormData>(registerUser, null);
 
   // Handle successful registration
   useEffect(() => {

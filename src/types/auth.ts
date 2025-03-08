@@ -1,18 +1,45 @@
-// src/types/auth.ts
-import { UserRole } from "./user";
+import type { UserRole } from "./user";
 
-export type RegisterResult = {
+// Common response type for auth actions
+export type AuthActionResponse = {
   success: boolean;
-  message?: string;
   error?: string;
-  userId?: string;
-  email?: string;
-  role?: UserRole;
+  message?: string;
 };
 
-export type LoginResult = {
-  success: boolean;
-  message: string;
-  userId?: string;
-  role?: UserRole;
+// LOGIN
+export type LoginState =
+  | (AuthActionResponse & {
+      userId?: string;
+      role?: UserRole;
+    })
+  | null;
+
+// REGISTRATION
+export type RegisterState =
+  | (AuthActionResponse & {
+      userId?: string;
+      email?: string;
+      role?: UserRole;
+    })
+  | null;
+
+// FORGOT PASSWORD (Request Reset)
+export type ForgotPasswordState = AuthActionResponse | null;
+
+// RESET PASSWORD (After clicking email link)
+export type ResetPasswordState = AuthActionResponse | null;
+
+// UPDATE PASSWORD (For logged-in users)
+export type UpdatePasswordState = AuthActionResponse | null;
+
+// User profile type
+export type UserProfile = {
+  id: string;
+  email: string;
+  name?: string;
+  image?: string;
+  role: UserRole;
+  createdAt: string;
+  updatedAt: string;
 };

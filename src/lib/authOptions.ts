@@ -71,7 +71,8 @@ export const authOptions: NextAuthConfig = {
             email: userRecord.email!,
             name: userRecord.displayName || userRecord.email?.split("@")[0],
             role: userData.role || "user",
-            image: userData.picture || userRecord.photoURL || null
+            image: userData.picture || userRecord.photoURL || null,
+            bio: userData.bio || "" // Include bio in the returned user object
           };
         } catch (error: any) {
           console.error("Error in authorize function:", error);
@@ -97,8 +98,8 @@ export const authOptions: NextAuthConfig = {
         token.email = user.email;
         token.name = user.name;
         token.role = user.role;
-        // Add the image to the token
         token.picture = user.image;
+        token.bio = user.bio; // Add bio to the token
       } else if (token.uid) {
         // Always fetch fresh user data from Firestore when refreshing the token
         try {
@@ -112,6 +113,7 @@ export const authOptions: NextAuthConfig = {
             token.name = userData.name || token.name;
             token.role = userData.role || token.role;
             token.picture = userData.picture || token.picture;
+            token.bio = userData.bio || ""; // Add bio to the token when refreshing
             console.log("Updated token with fresh data:", token);
           }
         } catch (error) {
@@ -127,8 +129,8 @@ export const authOptions: NextAuthConfig = {
         session.user.email = token.email as string;
         session.user.name = token.name as string;
         session.user.role = token.role as string;
-        // Add the image to the session
         session.user.image = token.picture as string | undefined;
+        session.user.bio = token.bio as string | undefined; // Add bio to the session
         // Add explicit debugging for the role
         console.log(`Setting user role in session to: ${token.role}`);
       }

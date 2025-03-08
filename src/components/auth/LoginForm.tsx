@@ -14,15 +14,8 @@ import { loginUser } from "@/actions";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 
-// Define the LoginState type to match your actual type
-type UserRole = "admin" | "user";
-type LoginState = {
-  success: boolean;
-  message?: string;
-  error?: string;
-  userId?: string;
-  role?: UserRole;
-} | null;
+// Update import
+import type { LoginState } from "@/types/auth";
 
 export function LoginForm() {
   const router = useRouter();
@@ -69,7 +62,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Log In</CardTitle>
+        <CardTitle>Sign In</CardTitle>
         <CardDescription>Enter your credentials to access your account</CardDescription>
       </CardHeader>
       <CardContent>

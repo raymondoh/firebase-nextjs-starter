@@ -1,3 +1,4 @@
+// app/api/upload/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { adminStorage } from "@/firebase/admin";

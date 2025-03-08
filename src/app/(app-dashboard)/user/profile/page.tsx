@@ -1,62 +1,26 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FormDashboard } from "@/components/templates";
-import { UserProfileForm } from "@/components";
-import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
+import { DashboardShell, DashboardHeader, UserProfileForm } from "@/components";
+//import "@/app/profile.css"; // Import the CSS
 
 export default function UserProfilePage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleCancel = () => {
-    // Check if form is dirty (has changes)
-    const isDirty = document.getElementById("profile-form")?.querySelector("input:not([value=''])");
-
-    if (isDirty && !window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
-      return;
-    }
-
-    router.push("/user");
-  };
-
-  const handleSubmitStart = () => {
-    setIsSubmitting(true);
-  };
-
-  const handleSubmitComplete = (success: boolean) => {
-    setIsSubmitting(false);
-    setIsSuccess(success);
-    if (success) {
-      setError(null);
-      // Optionally navigate away or perform other actions on success
-      // Maybe show a toast notification
-      toast.success("Profile updated successfully.");
-      // Or set a timeout to reset the success state
-      setTimeout(() => setIsSuccess(false), 3000);
-    } else {
-      setError(errorMessage || "An error occurred while saving your profile.");
-    }
-  };
 
   return (
-    <FormDashboard
-      title="Profile"
-      description="Manage your account settings and profile information."
-      formTitle="Personal Information"
-      formDescription="Update your personal details and profile picture."
-      formId="profile-form"
-      submitButtonText="Save changes"
-      cancelButtonText="Cancel"
-      onCancel={handleCancel}
-      isCancelDisabled={isSubmitting}
-      isSuccess={isSuccess}
-      isSubmitting={isSubmitting}
-      error={error}>
-      <UserProfileForm id="profile-form" onSubmitStart={handleSubmitStart} onSubmitComplete={handleSubmitComplete} />
-    </FormDashboard>
+    <DashboardShell>
+      <DashboardHeader heading="Profile" text="Manage your account settings and profile information" />
+      <Separator />
+
+      <div className="max-w-4xl ml-0">
+        <div className="profile-form-container">
+          <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
+          <p className="text-muted-foreground mb-6">Update your personal details and profile picture.</p>
+
+          <UserProfileForm id="profile-form" onCancel={() => router.push("/user")} />
+        </div>
+      </div>
+    </DashboardShell>
   );
 }

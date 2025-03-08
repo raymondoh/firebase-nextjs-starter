@@ -1,99 +1,111 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { z } from "zod";
-import { LoaderCircle } from "lucide-react";
+import { Loader2, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useActionState } from "react";
+import { requestPasswordReset } from "@/actions";
 import { toast } from "sonner";
-import { requestPasswordReset } from "@/actions/authActions";
+import type { ForgotPasswordState } from "@/types/auth"; // Updated type name
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" })
-});
+export function ForgotPasswordForm() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [state, action, isPending] = useActionState<ForgotPasswordState, FormData>(requestPasswordReset, null); // Updated type
+  const [showSuccess, setShowSuccess] = useState(false);
 
-type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
-
-export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<ForgotPasswordFormValues>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: ""
-    }
-  });
-
-  async function onSubmit(data: ForgotPasswordFormValues) {
-    setIsSubmitting(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("email", data.email);
-
-      const result = await requestPasswordReset(formData);
-
-      if (result.success) {
-        toast.success("Password reset email sent. Please check your inbox for further instructions.");
-        form.reset(); // Clear the form
-      } else {
-        toast.error(result.error || "Failed to send password reset email. Please try again.");
+  // Handle form submission result
+  useEffect(() => {
+    if (state) {
+      if (state.success) {
+        setShowSuccess(true);
+        toast.success("Password reset link sent to your email");
+      } else if (state.error) {
+        toast.error(state.error);
       }
-    } catch (error) {
-      console.error("Password reset error:", error);
-      toast.error("An unexpected error occurred. Please try again later.");
-    } finally {
-      setIsSubmitting(false);
     }
+  }, [state]);
+
+  if (showSuccess) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Check Your Email</CardTitle>
+          <CardDescription>We've sent a password reset link to {email}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription>
+              If an account exists with this email, you'll receive a password reset link shortly.
+            </AlertDescription>
+          </Alert>
+          <p className="text-sm text-muted-foreground mb-4">
+            Please check your email inbox and spam folder. The link will expire in 1 hour.
+          </p>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <Button variant="outline" className="w-full" onClick={() => router.push("/login")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Login
+          </Button>
+        </CardFooter>
+      </Card>
+    );
   }
 
   return (
-    <Card className={className} {...props}>
+    <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Forgot Password</CardTitle>
-        <CardDescription>Enter your email to reset your password</CardDescription>
+        <CardTitle>Reset Password</CardTitle>
+        <CardDescription>Enter your email address and we'll send you a link to reset your password</CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
+        {state?.error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
+        )}
+
+        <form action={action} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              type="email"
+              placeholder="name@example.com"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
             />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                "Send Reset Link"
-              )}
-            </Button>
-          </form>
-        </Form>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending Reset Link...
+              </>
+            ) : (
+              "Send Reset Link"
+            )}
+          </Button>
+        </form>
       </CardContent>
-      <CardFooter className="flex justify-center">
+      <CardFooter className="flex flex-col items-center gap-4">
         <div className="text-sm text-muted-foreground">
           Remember your password?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Log in
-          </Link>
+          <Button variant="link" className="p-0 h-auto" asChild>
+            <Link href="/login">Sign in</Link>
+          </Button>
         </div>
       </CardFooter>
     </Card>

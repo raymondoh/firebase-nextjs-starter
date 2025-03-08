@@ -5,7 +5,7 @@ import { CheckCircle, ArrowRight } from "lucide-react";
 
 export default function Page() {
   return (
-    <div className="bg-background text-foreground">
+    <div className="bg-background text-foregroundcontainer mx-auto px-4">
       {/* Hero Section */}
       <section className="py-20 border-b">
         <div className="container mx-auto px-4">

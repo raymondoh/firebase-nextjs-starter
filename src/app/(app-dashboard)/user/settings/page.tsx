@@ -1,91 +1,74 @@
+// "use client";
+
+// import { useRouter } from "next/navigation";
+// import { Separator } from "@/components/ui/separator";
+// import { DashboardShell, DashboardHeader } from "@/components";
+// import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
+
+// export default function SettingsPage() {
+//   const router = useRouter();
+
+//   return (
+//     <DashboardShell>
+//       <DashboardHeader heading="Settings" text="Manage your account settings and security preferences" />
+//       <Separator />
+
+//       <div className="max-w-4xl ml-0">
+//         <div className="profile-form-container">
+//           <h2 className="text-xl font-semibold mb-4">Security Settings</h2>
+//           <p className="text-muted-foreground mb-6">Update your password and security preferences.</p>
+
+//           <ChangePasswordForm />
+//         </div>
+//       </div>
+//     </DashboardShell>
+//   );
+// }
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BasicDashboard } from "@/components/templates";
-import { AccountSettingsForm } from "@/components";
-import { SecuritySettingsForm } from "@/components";
-import { PreferenceSettingsForm } from "@/components";
+import { Separator } from "@/components/ui/separator";
+import { DashboardShell, DashboardHeader } from "@/components";
+import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
+import { NotificationForm } from "@/components/dashboard/NotificationForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState("account");
-
-  const handleCancel = () => {
-    router.push("/user");
-  };
-
-  const handleSubmitStart = () => {
-    setIsSubmitting(true);
-  };
-
-  const handleSubmitComplete = (success: boolean) => {
-    setIsSubmitting(false);
-    if (success) {
-      // Optionally show a success message
-    }
-  };
 
   return (
-    <BasicDashboard title="Settings" description="Manage your account settings and preferences.">
-      <Tabs defaultValue="account" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
-        </TabsList>
+    <DashboardShell>
+      <DashboardHeader heading="Settings" text="Manage your account settings and security preferences" />
+      <Separator className="mb-8" />
 
-        <TabsContent value="account">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your account profile information.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AccountSettingsForm
-                id="account-settings-form"
-                onSubmitStart={handleSubmitStart}
-                onSubmitComplete={handleSubmitComplete}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+      <div className="max-w-4xl ml-0">
+        <Tabs defaultValue="security" className="w-full">
+          <TabsList className="mb-8">
+            <TabsTrigger value="security" className="px-5">
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="px-5">
+              Notifications
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>Update your password to keep your account secure.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SecuritySettingsForm
-                id="security-settings-form"
-                onSubmitStart={handleSubmitStart}
-                onSubmitComplete={handleSubmitComplete}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="security" className="space-y-6">
+            <div className="profile-form-container">
+              <h2 className="text-xl font-semibold mb-4">Security Settings</h2>
+              <p className="text-muted-foreground mb-6">Update your password and security preferences.</p>
+              <ChangePasswordForm />
+            </div>
+          </TabsContent>
 
-        <TabsContent value="preferences">
-          <Card>
-            <CardHeader>
-              <CardTitle>Application Preferences</CardTitle>
-              <CardDescription>Set your preferred theme, language, and other settings.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PreferenceSettingsForm
-                id="preference-settings-form"
-                onSubmitStart={handleSubmitStart}
-                onSubmitComplete={handleSubmitComplete}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </BasicDashboard>
+          <TabsContent value="notifications" className="space-y-6">
+            <div className="profile-form-container">
+              <h2 className="text-xl font-semibold mb-4">Notification Preferences</h2>
+              <p className="text-muted-foreground mb-6">Control which emails you receive from us.</p>
+              <NotificationForm />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardShell>
   );
 }

@@ -61,6 +61,11 @@ export const userNavItems: NavItem[] = [
     href: "/user/notifications",
     icon: Bell
   },
+  {
+    title: "Data & Privacy",
+    href: "/user/data-privacy",
+    icon: Shield
+  },
   // {
   //   title: "Documents",
   //   href: "/user/documents",
