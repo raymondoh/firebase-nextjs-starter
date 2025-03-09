@@ -1,27 +1,67 @@
 "use client";
 
-import { useState } from "react";
-import { Download, FileJson, FileText, Clock } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Download, FileJson, FileText, Clock, CheckCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
+import { useActionState } from "react";
+import { exportUserData } from "@/actions";
 
 export function DataExport() {
-  const [isExporting, setIsExporting] = useState(false);
   const [lastExport, setLastExport] = useState<string | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [state, formAction, isPending] = useActionState(exportUserData, null);
+
+  // Handle export result
+  useEffect(() => {
+    if (state) {
+      if (state.success && state.downloadUrl) {
+        setLastExport(new Date().toISOString());
+        setDownloadUrl(state.downloadUrl);
+        toast.success(state.message || "Data export successful", {
+          description: "Click the download button to save your data",
+          duration: 5000
+        });
+      } else if (state.error) {
+        toast.error(state.error);
+      }
+    }
+  }, [state]);
 
   const handleExport = (format: string) => {
-    setIsExporting(true);
+    const formData = new FormData();
+    formData.append("format", format);
+    // Wrap in startTransition to fix the action context error
+    React.startTransition(() => {
+      formAction(formData);
+    });
+  };
 
-    // Simulate export process
-    setTimeout(() => {
-      setIsExporting(false);
-      setLastExport(new Date().toISOString());
-      toast.success(`Your data has been exported in ${format.toUpperCase()} format`, {
-        description: "You'll receive an email with the download link shortly."
-      });
-    }, 2000);
+  // Function to trigger download
+  const downloadFile = () => {
+    if (!downloadUrl) return;
+
+    // Create a temporary link element
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+
+    // Extract filename from the URL or create a default one
+    const urlParts = downloadUrl.split("/");
+    const suggestedFilename = urlParts[urlParts.length - 1].split("?")[0]; // Get filename without query params
+    const fileExtension = suggestedFilename.includes(".json") ? "json" : "csv";
+
+    // Set a meaningful filename
+    link.setAttribute("download", `user-data-export-${new Date().toISOString().split("T")[0]}.${fileExtension}`);
+
+    // Append to body, click, and remove
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success("Download started");
   };
 
   return (
@@ -31,6 +71,29 @@ export function DataExport() {
         <CardDescription>Download a copy of your personal data in various formats</CardDescription>
       </CardHeader>
       <CardContent>
+        {state?.success && downloadUrl && (
+          <Alert className="mb-6 bg-green-50 text-green-800 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <div className="flex flex-col space-y-2 w-full">
+              <AlertDescription>Your data is ready for download!</AlertDescription>
+              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                <Button onClick={downloadFile} size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download File
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-green-600 text-green-700"
+                  onClick={() => window.open(downloadUrl, "_blank")}>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Open in Browser
+                </Button>
+              </div>
+            </div>
+          </Alert>
+        )}
+
         <Tabs defaultValue="json" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="json" className="px-4">
@@ -53,8 +116,8 @@ export function DataExport() {
                 </p>
               </div>
             </div>
-            <Button onClick={() => handleExport("json")} disabled={isExporting} className="gap-2">
-              {isExporting ? (
+            <Button onClick={() => handleExport("json")} disabled={isPending} className="gap-2">
+              {isPending ? (
                 <>
                   <Clock className="h-4 w-4 animate-spin" />
                   Exporting...
@@ -80,8 +143,8 @@ export function DataExport() {
                 </p>
               </div>
             </div>
-            <Button onClick={() => handleExport("csv")} disabled={isExporting} className="gap-2">
-              {isExporting ? (
+            <Button onClick={() => handleExport("csv")} disabled={isPending} className="gap-2">
+              {isPending ? (
                 <>
                   <Clock className="h-4 w-4 animate-spin" />
                   Exporting...

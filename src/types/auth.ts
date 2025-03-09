@@ -1,11 +1,19 @@
 import type { UserRole } from "./user";
 
 // Common response type for auth actions
-export type AuthActionResponse = {
+// export type AuthActionResponse = {
+//   success: boolean;
+//   error?: string;
+//   message?: string;
+// };
+export interface AuthActionResponse {
   success: boolean;
-  error?: string;
-  message?: string;
-};
+  message: string;
+}
+export enum UserRole {
+  ADMIN = "admin",
+  USER = "user"
+}
 
 // LOGIN
 export type LoginState =
@@ -16,6 +24,7 @@ export type LoginState =
   | null;
 
 // REGISTRATION
+// Update the RegisterState type to match your previous definition
 export type RegisterState =
   | (AuthActionResponse & {
       userId?: string;

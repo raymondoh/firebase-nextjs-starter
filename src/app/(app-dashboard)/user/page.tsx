@@ -1,67 +1,60 @@
-// import { DashboardHeader } from "@/components";
-// import { DashboardShell } from "@/components";
+"use client";
 
-// export default function UserDashboardPage() {
-//   return (
-//     <DashboardShell>
-//       <DashboardHeader heading="Dashboard" text="Welcome to your personal dashboard." />
-
-//       <div className="grid gap-6">
-//         <div className="rounded-lg border p-6">
-//           <h2 className="text-2xl font-bold mb-4">User Dashboard Overview</h2>
-//           <p>
-//             Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolor libero sed, exercitationem dicta nemo
-//             suscipit earum neque provident a adipisci nam tempora! Reprehenderit, placeat provident officiis quam sed
-//             qui at sunt est officia optio exercitationem animi autem tenetur vero! Labore vel ratione eaque eligendi
-//             illum corrupti
-//           </p>
-//         </div>
-//       </div>
-//     </DashboardShell>
-//   );
-// }
-import { CardGridDashboard } from "@/components/templates";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { DashboardShell, DashboardHeader } from "@/components";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ActivityLog } from "@/components/dashboard/ActivityLog";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   return (
-    <CardGridDashboard
-      title="Dashboard"
-      description="Welcome to your dashboard overview."
-      headerAction={
-        <Button size="sm">
-          <Plus className="mr-2 h-4 w-4" /> Create New
-        </Button>
-      }
-      columns={3}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Users</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold">1,234</p>
-        </CardContent>
-      </Card>
+    <DashboardShell>
+      <DashboardHeader heading="Dashboard" text="Welcome back! Here's an overview of your account." />
+      <Separator className="mb-8" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Revenue</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold">$12,345</p>
-        </CardContent>
-      </Card>
+      <div className="grid gap-8 md:grid-cols-2">
+        {/* Account Summary Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Account Summary</CardTitle>
+            <CardDescription>Your account status and information</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Account Type</p>
+                  <p>Free Plan</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Member Since</p>
+                  <p>August 2023</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Last Login</p>
+                  <p>Today, 2:30 PM</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Security Status</p>
+                  <p className="text-green-600">Secure</p>
+                </div>
+              </div>
+              <div className="pt-4">
+                <Button asChild variant="outline" size="sm" className="gap-1">
+                  <Link href="/user/profile">
+                    Manage Profile <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Active Projects</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold">42</p>
-        </CardContent>
-      </Card>
-    </CardGridDashboard>
+        {/* Recent Activity Card */}
+        <ActivityLog limit={3} showFilters={false} showHeader={true} />
+      </div>
+    </DashboardShell>
   );
 }

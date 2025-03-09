@@ -31,6 +31,9 @@ export const adminAuth = getAuth(firebaseAdmin);
 export const adminDb = getFirestore(firebaseAdmin);
 export const adminStorage = getStorage(firebaseAdmin);
 
+// Configure Firebase Auth settings
+adminAuth.setCustomUserClaims = adminAuth.setCustomUserClaims || (() => Promise.resolve());
+
 // Add this type
 type SetCustomClaimsResult = {
   success: boolean;

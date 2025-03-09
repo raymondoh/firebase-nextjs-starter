@@ -10,7 +10,11 @@ import {
   Activity,
   Users,
   Shield,
-  FileText
+  BarChart,
+  FileText,
+  Database,
+  Key,
+  AlertTriangle
 } from "lucide-react";
 
 export type NavItem = {
@@ -57,29 +61,20 @@ export const userNavItems: NavItem[] = [
     icon: UserCircle
   },
   {
-    title: "Notifications",
-    href: "/user/notifications",
-    icon: Bell
+    title: "Settings",
+    href: "/user/settings",
+    icon: Settings
   },
+  {
+    title: "Activity",
+    href: "/user/activity",
+    icon: Activity
+  },
+
   {
     title: "Data & Privacy",
     href: "/user/data-privacy",
     icon: Shield
-  },
-  // {
-  //   title: "Documents",
-  //   href: "/user/documents",
-  //   icon: FileText
-  // },
-  // {
-  //   title: "Activity",
-  //   href: "/user/activity",
-  //   icon: Activity
-  // },
-  {
-    title: "Settings",
-    href: "/user/settings",
-    icon: Settings
   }
 ];
 
@@ -95,21 +90,46 @@ export const adminNavItems: NavItem[] = [
     href: "/admin/users",
     icon: Users
   },
-  // {
-  //   title: "Analytics",
-  //   href: "/admin/analytics",
-  //   icon: Activity
-  // },
+  {
+    title: "Analytics",
+    href: "/admin/analytics",
+    icon: BarChart
+  },
   {
     title: "Security",
     href: "/admin/security",
     icon: Shield
   },
-  // {
-  //   title: "Profile",
-  //   href: "/admin/profile",
-  //   icon: UserCircle
-  // },
+  {
+    title: "Audit Logs",
+    href: "/admin/audit-logs",
+    icon: FileText
+  },
+  {
+    title: "System Alerts",
+    href: "/admin/alerts",
+    icon: AlertTriangle
+  },
+  {
+    title: "Content Management",
+    href: "/admin/content",
+    icon: Database
+  },
+  {
+    title: "API Management",
+    href: "/admin/api",
+    icon: Key
+  },
+  {
+    title: "Notifications",
+    href: "/admin/notifications",
+    icon: Bell
+  },
+  {
+    title: "Admin Profile",
+    href: "/admin/profile",
+    icon: UserCircle
+  },
   {
     title: "Settings",
     href: "/admin/settings",
