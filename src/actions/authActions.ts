@@ -47,6 +47,8 @@ export async function syncPasswordAfterReset(email: string, password: string): P
 
 // LOGIN
 export async function loginUser(prevState: LoginState, formData: FormData): Promise<LoginState> {
+  console.log("loginUser action called with formData:", formData ? "exists" : "null");
+
   // Validate form data
   const result = loginSchema.safeParse({
     email: formData.get("email"),
@@ -54,6 +56,7 @@ export async function loginUser(prevState: LoginState, formData: FormData): Prom
   });
 
   if (!result.success) {
+    console.log("Login validation failed:", result.error);
     return {
       success: false,
       message: "Invalid email or password format"
@@ -61,6 +64,7 @@ export async function loginUser(prevState: LoginState, formData: FormData): Prom
   }
 
   const { email, password } = result.data;
+  console.log("Login attempt for email:", email);
 
   try {
     console.log("Attempting to sign in with credentials:", { email });
@@ -141,6 +145,7 @@ export async function loginUser(prevState: LoginState, formData: FormData): Prom
     console.log("After signIn, session token cookie:", sessionToken ? "exists" : "missing");
 
     if (!sessionToken) {
+      console.log("Login successful, session token exists");
       return {
         success: false,
         message: "Authentication failed - no session created"

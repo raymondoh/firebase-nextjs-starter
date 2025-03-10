@@ -23,6 +23,11 @@
 // } from "@/components/ui/dropdown-menu";
 // import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+// // Track if we've already checked the session
+// let hasCheckedSession = false;
+// let lastPathname = "";
+// let lastSessionCheck = 0;
+
 // const useMediaQuery = (query: string) => {
 //   const [matches, setMatches] = useState(false);
 //   const [isLoading, setIsLoading] = useState(true);
@@ -126,8 +131,8 @@
 //   const { data: session, status, update } = useSession();
 //   const router = useRouter();
 //   const [isSigningOut, setIsSigningOut] = useState(false);
-//   const hasCheckedSession = useRef(false);
 //   const pathname = usePathname();
+//   const sessionCheckRef = useRef(false);
 
 //   // Check for account deletion cookie
 //   useEffect(() => {
@@ -151,26 +156,31 @@
 
 //   // Only check session once when component mounts or when pathname changes
 //   useEffect(() => {
-//     // Skip if we've already checked the session and we're not changing pages
-//     if (hasCheckedSession.current) return;
+//     // Skip if we've already checked the session for this pathname
+//     if (pathname === lastPathname && hasCheckedSession) {
+//       return;
+//     }
 
-//     const checkSession = async () => {
-//       try {
-//         // This will trigger a session refresh
-//         await update();
-//         hasCheckedSession.current = true;
-//       } catch (error) {
+//     // Throttle session checks to prevent too many in a short time
+//     const now = Date.now();
+//     if (now - lastSessionCheck < 1000) {
+//       // 1 second throttle
+//       return;
+//     }
+
+//     // Only update if we haven't already checked for this component instance
+//     if (!sessionCheckRef.current) {
+//       sessionCheckRef.current = true;
+//       lastPathname = pathname;
+//       lastSessionCheck = now;
+//       hasCheckedSession = true;
+
+//       // This will trigger a session refresh
+//       update().catch(error => {
 //         console.error("Error refreshing session:", error);
-//       }
-//     };
-
-//     checkSession();
+//       });
+//     }
 //   }, [update, pathname]);
-
-//   // Reset the check flag when pathname changes
-//   useEffect(() => {
-//     hasCheckedSession.current = false;
-//   }, [pathname]);
 
 //   // Listen for storage events to detect session changes across tabs
 //   useEffect(() => {
@@ -334,7 +344,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 // Track if we've already checked the session
 let hasCheckedSession = false;
 let lastPathname = "";
-let lastSessionCheck = 0;
+const lastSessionCheck = 0;
 
 const useMediaQuery = (query: string) => {
   const [matches, setMatches] = useState(false);
@@ -440,7 +450,18 @@ const UserMenu = () => {
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const pathname = usePathname();
+
+  // Use a ref to track if we've already checked the session for this component instance
   const sessionCheckRef = useRef(false);
+
+  // Add a ref to track the last time we checked the session
+  const lastSessionCheckTimeRef = useRef(0);
+
+  // Add a ref to track if we're currently updating the session
+  const isUpdatingSessionRef = useRef(false);
+
+  // Add this to the UserMenu component
+  const componentId = useRef(`user-menu-${Math.random().toString(36).substring(7)}`).current;
 
   // Check for account deletion cookie
   useEffect(() => {
@@ -464,15 +485,31 @@ const UserMenu = () => {
 
   // Only check session once when component mounts or when pathname changes
   useEffect(() => {
-    // Skip if we've already checked the session for this pathname
-    if (pathname === lastPathname && hasCheckedSession) {
+    console.log(`[${componentId}] UserMenu session check effect triggered`, {
+      pathname,
+      hasCheckedSession,
+      lastPathname,
+      sessionCheckRef: sessionCheckRef.current,
+      isUpdatingSession: isUpdatingSessionRef.current,
+      timeSinceLastCheck: Date.now() - lastSessionCheckTimeRef.current
+    });
+
+    // Skip if we're already updating the session
+    if (isUpdatingSessionRef.current) {
+      console.log(`[${componentId}] Skipping session check - already updating session`);
       return;
     }
 
-    // Throttle session checks to prevent too many in a short time
+    // Skip if we've already checked the session for this pathname
+    if (pathname === lastPathname && hasCheckedSession) {
+      console.log(`[${componentId}] Skipping session check - already checked for this pathname`);
+      return;
+    }
+
+    // Throttle session checks to prevent too many in a short time (2 seconds)
     const now = Date.now();
-    if (now - lastSessionCheck < 1000) {
-      // 1 second throttle
+    if (now - lastSessionCheckTimeRef.current < 2000) {
+      console.log(`[${componentId}] Throttling session check - too frequent`);
       return;
     }
 
@@ -480,20 +517,30 @@ const UserMenu = () => {
     if (!sessionCheckRef.current) {
       sessionCheckRef.current = true;
       lastPathname = pathname;
-      lastSessionCheck = now;
+      lastSessionCheckTimeRef.current = now;
       hasCheckedSession = true;
+      isUpdatingSessionRef.current = true;
 
+      console.log(`[${componentId}] Performing session check/update`);
       // This will trigger a session refresh
-      update().catch(error => {
-        console.error("Error refreshing session:", error);
-      });
+      update()
+        .then(() => {
+          console.log(`[${componentId}] Session update completed`);
+          isUpdatingSessionRef.current = false;
+        })
+        .catch(error => {
+          console.error(`[${componentId}] Error refreshing session:`, error);
+          isUpdatingSessionRef.current = false;
+        });
     }
-  }, [update, pathname]);
+  }, [update, pathname, componentId]);
 
   // Listen for storage events to detect session changes across tabs
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
+      console.log(`[${componentId}] Storage event detected:`, event.key);
       if (event.key?.includes("session") || event.key?.includes("token")) {
+        console.log(`[${componentId}] Session-related storage change, updating session`);
         // Force update the session
         update();
       }
@@ -501,7 +548,7 @@ const UserMenu = () => {
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-  }, [update]);
+  }, [update, componentId]);
 
   const handleSignOut = async () => {
     if (isSigningOut) return; // Prevent double-clicks

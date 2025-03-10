@@ -3,7 +3,7 @@
 import type React from "react";
 import type { LoginState } from "@/types/auth";
 
-import { useState, useEffect, startTransition } from "react";
+import { useState, useEffect, startTransition, useRef } from "react";
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { loginUser } from "@/actions/authActions";
+import { loginUser } from "@/actions";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
@@ -21,6 +21,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const router = useRouter();
   const { update } = useSession();
   const [showPassword, setShowPassword] = useState(false);
+  const hasToastShown = useRef(false);
+  const isRedirecting = useRef(false);
 
   // Store form values in state
   const [email, setEmail] = useState("");
@@ -29,35 +31,69 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   // Set up useActionState for server-side validation and login
   const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null);
 
+  // Add a unique ID to help track component instances
+  const componentId = useRef(`login-form-${Math.random().toString(36).substring(7)}`).current;
+
+  // Add this near the top of the component, after the state declarations
+  useEffect(() => {
+    console.log(`[${componentId}] LoginForm component mounted`);
+    return () => {
+      console.log(`[${componentId}] LoginForm component unmounted`);
+    };
+  }, [componentId]);
+
   // Handle form submission
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log(`[${componentId}] Login form submitted`);
 
     // Create FormData and append values
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
 
+    // Reset the toast flag
+    hasToastShown.current = false;
+    isRedirecting.current = false;
+    console.log(
+      `[${componentId}] Reset flags: hasToastShown=${hasToastShown.current}, isRedirecting=${isRedirecting.current}`
+    );
+
     // Wrap action call in startTransition
     startTransition(() => {
+      console.log(`[${componentId}] Starting login action transition`);
       action(formData);
     });
   };
 
-  // Handle successful login
+  // Enhance the existing useEffect for state changes
   useEffect(() => {
-    if (state?.success) {
-      toast.success("Login successful!");
+    console.log(`[${componentId}] Login state effect triggered`, {
+      state,
+      hasToastShown: hasToastShown.current,
+      isRedirecting: isRedirecting.current,
+      isPending
+    });
+
+    if (state?.success && !hasToastShown.current && !isRedirecting.current) {
+      console.log(`[${componentId}] Login successful, showing toast`);
+      hasToastShown.current = true;
+      isRedirecting.current = true;
+
+      toast.success("Login successful!", { id: "login-success" });
 
       // Update the session client-side
-      update();
-
-      // Redirect to dashboard after successful login
-      setTimeout(() => {
-        router.push("/");
-      }, 500);
-    } else if (state?.message && !state.success) {
-      toast.error(state.message);
+      update().then(() => {
+        console.log(`[${componentId}] Session updated, redirecting`);
+        // Redirect to dashboard after successful login
+        setTimeout(() => {
+          router.push("/");
+        }, 500);
+      });
+    } else if (state?.message && !state.success && !hasToastShown.current) {
+      console.log(`[${componentId}] Login failed, showing error toast`);
+      hasToastShown.current = true;
+      toast.error(state.message, { id: "login-error" });
     }
   }, [state, router, update]);
 
@@ -117,11 +153,16 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" disabled={isPending || isRedirecting.current}>
             {isPending ? (
               <>
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                 Logging in...
+              </>
+            ) : isRedirecting.current ? (
+              <>
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                Redirecting...
               </>
             ) : (
               "Login"

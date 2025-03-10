@@ -3,7 +3,7 @@
 // import type React from "react";
 // import type { RegisterState } from "@/types/auth";
 
-// import { useState, useEffect } from "react";
+// import { useState, useEffect, startTransition } from "react";
 // import { useActionState } from "react";
 // import { useRouter } from "next/navigation";
 // import Link from "next/link";
@@ -13,7 +13,7 @@
 // import { Label } from "@/components/ui/label";
 // import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 // import { Alert, AlertDescription } from "@/components/ui/alert";
-// import { registerUser } from "@/actions/authActions"; // Fix the import path
+// import { registerUser } from "@/actions/authActions";
 // import { signIn } from "next-auth/react";
 // import { toast } from "sonner";
 
@@ -23,10 +23,11 @@
 //   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 //   // Store form values in state
-//   const [name, setName] = useState(""); // Add name state
 //   const [email, setEmail] = useState("");
 //   const [password, setPassword] = useState("");
 //   const [confirmPassword, setConfirmPassword] = useState("");
+//   const [name, setName] = useState("");
+//   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
 //   // Set up useActionState for server-side validation and registration
 //   const [state, action, isPending] = useActionState<RegisterState, FormData>(registerUser, null);
@@ -43,12 +44,14 @@
 
 //     // Create FormData and append values
 //     const formData = new FormData();
-//     formData.append("name", name);
+//     formData.append("name", name || email.split("@")[0]); // Use email username as fallback
 //     formData.append("email", email);
 //     formData.append("password", password);
 
-//     // Call the action
-//     action(formData);
+//     // Wrap action call in startTransition
+//     startTransition(() => {
+//       action(formData);
+//     });
 //   };
 
 //   // Handle successful registration
@@ -58,47 +61,41 @@
 
 //       // Attempt to sign in after successful registration
 //       const handleSignIn = async () => {
-//         try {
-//           if (!email || !password) {
-//             console.error("Email or password is missing for automatic sign-in");
-//             // Add a delay before redirecting
-//             setTimeout(() => {
-//               toast.info("Please log in with your new credentials");
-//               window.location.href = "/login"; // Use direct window location change
-//             }, 500);
-//             return;
-//           }
+//         if (isLoggingIn) return; // Prevent duplicate login attempts
 
-//           console.log("Attempting automatic sign-in with:", { email });
+//         setIsLoggingIn(true);
+//         try {
+//           toast.info("Logging you in...");
 
 //           const signInResult = await signIn("credentials", {
 //             redirect: false,
 //             email,
-//             password,
-//             isRegistration: "true" // Add the isRegistration flag
+//             password
 //           });
 
 //           if (signInResult?.ok) {
 //             toast.success("You are now logged in!");
 //             // Add a delay before redirecting
 //             setTimeout(() => {
-//               window.location.href = "/"; // Use direct window location change
+//               router.push("/");
 //             }, 500);
 //           } else {
 //             console.error("Automatic sign-in failed:", signInResult?.error);
 //             toast.error("Automatic sign-in failed. Please try logging in manually.");
 //             // Add a delay before redirecting
 //             setTimeout(() => {
-//               window.location.href = "/login"; // Use direct window location change
-//             }, 500);
+//               router.push("/login");
+//             }, 1500);
 //           }
 //         } catch (error) {
 //           console.error("Sign-in error:", error);
 //           toast.error("Automatic sign-in failed. Please try logging in manually.");
 //           // Add a delay before redirecting
 //           setTimeout(() => {
-//             window.location.href = "/login"; // Use direct window location change
-//           }, 500);
+//             router.push("/login");
+//           }, 1500);
+//         } finally {
+//           setIsLoggingIn(false);
 //         }
 //       };
 
@@ -106,7 +103,7 @@
 //     } else if (state?.error) {
 //       toast.error(state.error);
 //     }
-//   }, [state, router, email, password]);
+//   }, [state, router, email, password, isLoggingIn]);
 
 //   return (
 //     <Card className={className} {...props}>
@@ -123,15 +120,14 @@
 //         )}
 
 //         <form id="register-form" onSubmit={handleSubmit} className="space-y-8">
-//           {/* Add name field */}
+//           {/* Name field is optional but kept for future use */}
 //           <div className="space-y-2">
-//             <Label htmlFor="name">Name</Label>
+//             <Label htmlFor="name">Name (Optional)</Label>
 //             <Input
 //               id="name"
 //               name="name"
 //               type="text"
 //               placeholder="Enter your name"
-//               required
 //               value={name}
 //               onChange={e => setName(e.target.value)}
 //             />
@@ -201,11 +197,16 @@
 //             <p className="text-sm text-muted-foreground">Re-enter your password to confirm.</p>
 //           </div>
 
-//           <Button type="submit" className="w-full" disabled={isPending}>
+//           <Button type="submit" className="w-full" disabled={isPending || isLoggingIn}>
 //             {isPending ? (
 //               <>
 //                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
 //                 Registering...
+//               </>
+//             ) : isLoggingIn ? (
+//               <>
+//                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+//                 Logging in...
 //               </>
 //             ) : (
 //               "Register"
@@ -229,7 +230,7 @@
 import type React from "react";
 import type { RegisterState } from "@/types/auth";
 
-import { useState, useEffect, startTransition } from "react";
+import { useState, useEffect, startTransition, useRef } from "react";
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -255,18 +256,54 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
   const [name, setName] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Add a ref to track if registration toast has been shown
+  const registrationToastShown = useRef(false);
+  // Add a ref to track if error toast has been shown
+  const errorToastShown = useRef(false);
+  // Add a ref to track if sign-in has been attempted
+  const signInAttempted = useRef(false);
+
   // Set up useActionState for server-side validation and registration
   const [state, action, isPending] = useActionState<RegisterState, FormData>(registerUser, null);
+
+  // Add a unique ID to help track component instances
+  const componentId = useRef(`register-form-${Math.random().toString(36).substring(7)}`).current;
+
+  // Add this near the top of the component, after the state declarations
+  useEffect(() => {
+    console.log(`[${componentId}] RegisterForm component mounted`);
+    return () => {
+      console.log(`[${componentId}] RegisterForm component unmounted`);
+    };
+  }, [componentId]);
+
+  // Reset toast flags when component unmounts
+  useEffect(() => {
+    return () => {
+      registrationToastShown.current = false;
+      errorToastShown.current = false;
+      signInAttempted.current = false;
+    };
+  }, []);
 
   // Handle form submission
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log(`[${componentId}] Register form submitted`);
 
     // Client-side validation
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
+
+    // Reset toast flags
+    registrationToastShown.current = false;
+    errorToastShown.current = false;
+    signInAttempted.current = false;
+    console.log(
+      `[${componentId}] Reset flags: registrationToastShown=${registrationToastShown.current}, errorToastShown=${errorToastShown.current}, signInAttempted=${signInAttempted.current}`
+    );
 
     // Create FormData and append values
     const formData = new FormData();
@@ -276,22 +313,38 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
 
     // Wrap action call in startTransition
     startTransition(() => {
+      console.log(`[${componentId}] Starting registration action transition`);
       action(formData);
     });
   };
 
-  // Handle successful registration
+  // Enhance the existing useEffect for state changes
   useEffect(() => {
-    if (state?.success) {
-      toast.success("Registration successful!");
+    console.log(`[${componentId}] Register state effect triggered:`, {
+      state,
+      isLoggingIn,
+      registrationToastShown: registrationToastShown.current,
+      errorToastShown: errorToastShown.current,
+      signInAttempted: signInAttempted.current
+    });
+
+    if (state?.success && !registrationToastShown.current) {
+      console.log(`[${componentId}] Registration successful!`);
+      registrationToastShown.current = true;
+      toast.success("Registration successful!", { id: "registration-success" });
 
       // Attempt to sign in after successful registration
       const handleSignIn = async () => {
-        if (isLoggingIn) return; // Prevent duplicate login attempts
+        if (isLoggingIn || signInAttempted.current) {
+          console.log(`[${componentId}] Already logging in or sign-in attempted, skipping duplicate login attempt`);
+          return;
+        }
 
+        signInAttempted.current = true;
         setIsLoggingIn(true);
         try {
-          toast.info("Logging you in...");
+          console.log(`[${componentId}] Attempting automatic sign-in after registration`);
+          toast.info("Logging you in...", { id: "login-attempt" });
 
           const signInResult = await signIn("credentials", {
             redirect: false,
@@ -299,25 +352,30 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
             password
           });
 
+          console.log(`[${componentId}] Sign-in result:`, signInResult);
           if (signInResult?.ok) {
-            toast.success("You are now logged in!");
+            console.log(`[${componentId}] Automatic sign-in successful`);
+            toast.success("You are now logged in!", { id: "login-success" });
             // Add a delay before redirecting
             setTimeout(() => {
+              console.log(`[${componentId}] Redirecting to home page`);
               router.push("/");
             }, 500);
           } else {
-            console.error("Automatic sign-in failed:", signInResult?.error);
-            toast.error("Automatic sign-in failed. Please try logging in manually.");
+            console.error(`[${componentId}] Automatic sign-in failed:`, signInResult?.error);
+            toast.error("Automatic sign-in failed. Please try logging in manually.", { id: "login-error" });
             // Add a delay before redirecting
             setTimeout(() => {
+              console.log(`[${componentId}] Redirecting to login page`);
               router.push("/login");
             }, 1500);
           }
         } catch (error) {
-          console.error("Sign-in error:", error);
-          toast.error("Automatic sign-in failed. Please try logging in manually.");
+          console.error(`[${componentId}] Sign-in error:`, error);
+          toast.error("Automatic sign-in failed. Please try logging in manually.", { id: "login-error" });
           // Add a delay before redirecting
           setTimeout(() => {
+            console.log(`[${componentId}] Redirecting to login page after error`);
             router.push("/login");
           }, 1500);
         } finally {
@@ -326,10 +384,12 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
       };
 
       handleSignIn();
-    } else if (state?.error) {
-      toast.error(state.error);
+    } else if (state?.error && !errorToastShown.current) {
+      console.log(`[${componentId}] Registration error:`, state.error);
+      errorToastShown.current = true;
+      toast.error(state.error, { id: "registration-error" });
     }
-  }, [state, router, email, password, isLoggingIn]);
+  }, [state, router, email, password, isLoggingIn, componentId]);
 
   return (
     <Card className={className} {...props}>
