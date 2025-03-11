@@ -1,17 +1,15 @@
 "use server";
+
 import bcryptjs from "bcryptjs";
-import { cookies } from "next/headers";
-import { auth, signIn } from "@/auth";
+import { auth } from "@/auth";
 import { adminAuth, adminDb } from "@/firebase/admin";
-import { loginSchema, forgotPasswordSchema, resetPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
-import type {
-  LoginState,
-  RegisterState,
-  ForgotPasswordState,
-  ResetPasswordState,
-  UpdatePasswordState
-} from "@/types/auth";
+import { forgotPasswordSchema, resetPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
+import type { ForgotPasswordState, ResetPasswordState, UpdatePasswordState } from "@/types/auth";
 import { logActivity } from "@/firebase/activity";
+
+// Functions: requestPasswordReset, resetPassword, updatePassword
+// These functions are used to handle password-related actions such as requesting a password reset,
+// resetting the password after clicking the email link, and updating the password for logged-in users.
 
 // Helper function to sync password between Firebase Auth and Firestore
 export async function syncPasswordAfterReset(email: string, password: string): Promise<boolean> {
@@ -42,203 +40,6 @@ export async function syncPasswordAfterReset(email: string, password: string): P
   } catch (error) {
     console.error("Error syncing password after reset:", error);
     return false;
-  }
-}
-
-// LOGIN
-export async function loginUser(prevState: LoginState, formData: FormData): Promise<LoginState> {
-  console.log("loginUser action called with formData:", formData ? "exists" : "null");
-
-  // Validate form data
-  const result = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password")
-  });
-
-  if (!result.success) {
-    console.log("Login validation failed:", result.error);
-    return {
-      success: false,
-      message: "Invalid email or password format"
-    };
-  }
-
-  const { email, password } = result.data;
-  console.log("Login attempt for email:", email);
-
-  try {
-    console.log("Attempting to sign in with credentials:", { email });
-
-    // First, let's verify the password directly before attempting to sign in
-    try {
-      // Get user from Firebase Auth
-      const userRecord = await adminAuth.getUserByEmail(email);
-
-      // Get user data from Firestore
-      const userDoc = await adminDb.collection("users").doc(userRecord.uid).get();
-      const userData = userDoc.data();
-
-      if (!userData || !userData.passwordHash) {
-        return {
-          success: false,
-          message: "Invalid email or password"
-        };
-      }
-
-      // Verify the password using bcrypt
-      const isPasswordValid = await bcryptjs.compare(password, userData.passwordHash);
-
-      if (!isPasswordValid) {
-        console.log("Password verification failed for user:", userRecord.uid);
-        return {
-          success: false,
-          message: "Invalid email or password"
-        };
-      }
-
-      console.log("Password verified successfully, proceeding with sign in");
-    } catch (verifyError: any) {
-      console.error("Error verifying password:", verifyError);
-
-      // Handle user not found error
-      if (verifyError.code === "auth/user-not-found") {
-        return {
-          success: false,
-          message: "Invalid email or password"
-        };
-      }
-
-      return {
-        success: false,
-        message: "An error occurred during authentication"
-      };
-    }
-
-    // If we get here, the password is valid, so attempt to sign in
-    try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-        isRegistration: "false"
-      });
-
-      if (result?.error) {
-        console.error("SignIn returned error:", result.error);
-        return {
-          success: false,
-          message: "Authentication failed"
-        };
-      }
-    } catch (signInError: any) {
-      console.error("Error during signIn:", signInError);
-      return {
-        success: false,
-        message: "Authentication failed"
-      };
-    }
-
-    // Check if the auth cookie was set
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get("next-auth.session-token");
-
-    console.log("After signIn, session token cookie:", sessionToken ? "exists" : "missing");
-
-    if (!sessionToken) {
-      console.log("Login successful, session token exists");
-      return {
-        success: false,
-        message: "Authentication failed - no session created"
-      };
-    }
-
-    // If we get here, the sign-in was successful
-    return {
-      success: true,
-      message: "Login successful"
-    };
-  } catch (error: any) {
-    console.error("Login error:", error);
-
-    // Return a user-friendly error message
-    return {
-      success: false,
-      message: error.message || "An unexpected error occurred"
-    };
-  }
-}
-
-// REGISTRATION
-export async function registerUser(prevState: RegisterState, formData: FormData): Promise<RegisterState> {
-  // Validate form data
-  const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-
-  if (!email || !password) {
-    return {
-      success: false,
-      message: "Email and password are required"
-    };
-  }
-
-  try {
-    // Hash the password
-    const salt = await bcryptjs.genSalt(10);
-    const passwordHash = await bcryptjs.hash(password, salt);
-
-    // Create the user in Firebase Auth
-    let userRecord;
-    try {
-      userRecord = await adminAuth.createUser({
-        email,
-        password,
-        displayName: name || email.split("@")[0] // Use email username as fallback
-      });
-    } catch (error: any) {
-      if (error.code === "auth/email-already-exists") {
-        return {
-          success: false,
-          message: "Email already in use. Please try logging in instead."
-        };
-      }
-      throw error;
-    }
-
-    // Create user document in Firestore with the hashed password
-    await adminDb
-      .collection("users")
-      .doc(userRecord.uid)
-      .set({
-        name: name || email.split("@")[0], // Use email username as fallback
-        email,
-        role: "user",
-        passwordHash, // Store the hashed password
-        createdAt: new Date()
-      });
-
-    // Log activity
-    await logActivity({
-      userId: userRecord.uid,
-      type: "login",
-      description: "Account created",
-      status: "success"
-    });
-
-    // Return the user ID, email, and role along with success message
-    return {
-      success: true,
-      message: "Registration successful!",
-      userId: userRecord.uid,
-      email: email,
-      role: "user"
-    };
-  } catch (error) {
-    console.error("Registration error:", error);
-    return {
-      success: false,
-      message: "An error occurred during registration. Please try again."
-    };
   }
 }
 
@@ -452,37 +253,5 @@ export async function updatePassword(prevState: UpdatePasswordState, formData: F
     }
 
     return { success: false, error: "Failed to update password. Please try again." };
-  }
-}
-
-// LOGOUT
-export async function logoutUser(): Promise<{ success: boolean; message?: string }> {
-  try {
-    // Get the current session
-    const session = await auth();
-
-    if (session?.user?.id) {
-      // Log the logout activity
-      await logActivity({
-        userId: session.user.id,
-        type: "login", // You might want to create a "logout" type
-        description: "User logged out",
-        status: "success"
-      });
-    }
-
-    // Perform any additional server-side cleanup here if needed
-
-    // Return success
-    return {
-      success: true,
-      message: "Logged out successfully"
-    };
-  } catch (error) {
-    console.error("Logout error:", error);
-    return {
-      success: false,
-      message: "An error occurred during logout"
-    };
   }
 }

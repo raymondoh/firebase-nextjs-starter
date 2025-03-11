@@ -1,9 +1,22 @@
+// /actions/auth/debug.ts
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin";
 import bcryptjs from "bcryptjs";
+import { auth } from "@/auth";
 
 export async function debugPasswordVerification(email: string, password: string) {
+  const session = await auth();
+
+  // Only allow admins to use debugging functions
+  if (!session?.user?.role || session.user.role !== "admin") {
+    return { success: false, message: "Unauthorized" };
+  }
+  // Only allow in development
+  if (process.env.NODE_ENV === "production") {
+    console.error("Debug functions should not be called in production");
+    return { success: false, message: "Not available in production" };
+  }
   try {
     // Get user from Firebase Auth
     const userRecord = await adminAuth.getUserByEmail(email);

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useActionState } from "react";
-import { requestPasswordReset } from "@/actions";
+import { requestPasswordReset } from "@/actions/auth";
 import { toast } from "sonner";
 import type { ForgotPasswordState } from "@/types/auth"; // Updated type name
 

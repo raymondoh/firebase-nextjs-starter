@@ -8,7 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { updatePassword } from "@/actions/authActions";
+import { updatePassword } from "@/actions/auth";
 
 interface SecuritySettingsFormProps {
   id: string;

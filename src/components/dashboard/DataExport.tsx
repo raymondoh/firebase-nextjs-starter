@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useActionState } from "react";
-import { exportUserData } from "@/actions";
+import { exportUserData } from "@/actions/data-privacy";
 
 export function DataExport() {
   const [lastExport, setLastExport] = useState<string | null>(null);

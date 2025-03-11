@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { updateUserProfile } from "@/actions";
+import { updateUserProfile } from "@/actions/user";
 import type { ProfileUpdateState } from "@/types/user";
 
 interface ProfileFormProps {

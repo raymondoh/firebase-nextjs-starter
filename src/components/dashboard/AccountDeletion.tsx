@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useActionState } from "react";
-import { requestAccountDeletion } from "@/actions/dataPrivacyActions";
+import { requestAccountDeletion } from "@/actions/data-privacy";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 

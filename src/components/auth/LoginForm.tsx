@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { loginUser } from "@/actions";
+import { loginUser } from "@/actions/auth";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 

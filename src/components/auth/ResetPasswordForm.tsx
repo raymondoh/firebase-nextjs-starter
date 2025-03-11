@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useActionState } from "react";
-import { resetPassword } from "@/actions"; // Updated function name
+import { resetPassword } from "@/actions/auth"; // Updated function name
 import { toast } from "sonner";
 import type { ResetPasswordState } from "@/types/auth";
 
