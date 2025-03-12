@@ -1,10 +1,23 @@
-import { AuthActionResponse } from "./common";
+// types/auth/password.ts
 
-// FORGOT PASSWORD (Request Reset)
-export type ForgotPasswordState = AuthActionResponse | null;
+// This could be in types/auth/index.ts or types/auth/password.ts
+export interface ForgotPasswordState {
+  success: boolean;
+  message?: string;
+  error?: string; // Add this line
+  // other properties...
+}
 
-// RESET PASSWORD (After clicking email link)
-export type ResetPasswordState = AuthActionResponse | null;
+export interface ResetPasswordState {
+  success: boolean;
+  message?: string;
+  error?: string; // Add this line
+  // other properties...
+}
 
-// UPDATE PASSWORD (For logged-in users)
-export type UpdatePasswordState = AuthActionResponse | null;
+export interface UpdatePasswordState {
+  success: boolean;
+  message?: string;
+  error?: string; // Add this line
+  // other properties...
+}

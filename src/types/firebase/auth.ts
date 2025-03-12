@@ -1,5 +1,3 @@
-import { User } from "../user/common";
-
 export type DecodedIdToken = {
   uid: string;
   email?: string;
@@ -16,6 +14,22 @@ export type VerifyAndCreateUserResult = {
 export type GetUserFromTokenResult = {
   success: boolean;
   user?: DecodedIdToken;
+  error?: string;
+};
+
+export type SendResetPasswordEmailResult = {
+  success: boolean;
+  error?: string;
+};
+
+export type VerifyPasswordResetCodeResult = {
+  success: boolean;
+  email?: string;
+  error?: string;
+};
+
+export type ConfirmPasswordResetResult = {
+  success: boolean;
   error?: string;
 };
 

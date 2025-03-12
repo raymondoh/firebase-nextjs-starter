@@ -1,11 +1,19 @@
+// /auth/password.ts
 "use server";
 
 import bcryptjs from "bcryptjs";
 import { auth } from "@/auth";
+import { auth as clientAuth } from "@/firebase/client";
+//import { sendPasswordResetEmail } from "firebase/auth";
+import {
+  sendPasswordResetEmail,
+  verifyPasswordResetCode as verifyResetCode,
+  confirmPasswordReset as confirmReset
+} from "firebase/auth";
 import { adminAuth, adminDb } from "@/firebase/admin";
+import { logActivity } from "@/firebase/utils/activity";
 import { forgotPasswordSchema, resetPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
-import type { ForgotPasswordState, ResetPasswordState, UpdatePasswordState } from "@/types/auth";
-import { logActivity } from "@/firebase/activity";
+import type { ForgotPasswordState, ResetPasswordState, UpdatePasswordState } from "@/types/auth/password";
 
 // Functions: requestPasswordReset, resetPassword, updatePassword
 // These functions are used to handle password-related actions such as requesting a password reset,
@@ -75,16 +83,15 @@ export async function requestPasswordReset(
   }
 
   try {
-    console.log("Attempting to generate password reset link for:", email);
-    const actionCodeSettings = {
+    console.log("Attempting to send password reset email for:", email);
+
+    // Use Firebase client SDK to send the password reset email
+    await sendPasswordResetEmail(clientAuth, email, {
       url: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
       handleCodeInApp: true
-    };
-    console.log("Action code settings:", actionCodeSettings);
+    });
 
-    const resetLink = await adminAuth.generatePasswordResetLink(email, actionCodeSettings);
-    console.log("Password reset link generated successfully");
-
+    console.log("Password reset email sent successfully");
     return { success: true };
   } catch (error: any) {
     console.error("Password reset error:", error);
@@ -130,12 +137,12 @@ export async function resetPassword(prevState: ResetPasswordState, formData: For
   }
 
   try {
-    // Verify the action code
-    const info = await adminAuth.verifyPasswordResetCode(oobCode);
-    console.log("Reset code verified for email:", info.email);
+    // Verify the action code using client SDK
+    const email = await verifyResetCode(clientAuth, oobCode);
+    console.log("Reset code verified for email:", email);
 
-    // Update the password in Firebase Auth
-    await adminAuth.confirmPasswordReset(oobCode, newPassword);
+    // Update the password using client SDK
+    await confirmReset(clientAuth, oobCode, newPassword);
     console.log("Password updated in Firebase Auth");
 
     // Hash the new password for Firestore
@@ -143,7 +150,7 @@ export async function resetPassword(prevState: ResetPasswordState, formData: For
     const hashedPassword = await bcryptjs.hash(newPassword, salt);
 
     // Update the password hash in Firestore
-    const userRecord = await adminAuth.getUserByEmail(info.email);
+    const userRecord = await adminAuth.getUserByEmail(email);
     await adminDb.collection("users").doc(userRecord.uid).update({
       passwordHash: hashedPassword,
       updatedAt: new Date()

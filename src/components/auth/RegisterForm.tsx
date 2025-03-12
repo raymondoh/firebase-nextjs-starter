@@ -13,14 +13,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { registerUser } from "@/actions/auth";
-import { signIn } from "next-auth/react";
+import { registerUser, loginUser } from "@/actions/auth"; // Import loginUser
+import { useSession } from "next-auth/react"; // Add signIn import
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { toast } from "sonner";
+import { auth } from "@/firebase/client";
+import { signInWithCustomToken } from "firebase/auth";
+import { signInWithFirebase } from "@/actions/auth/firebase-auth";
 
 export function RegisterForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
+  const { update } = useSession(); // Add this to get the session update function
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false); // Add state for Google sign-in
 
   // Store form values in state
   const [email, setEmail] = useState("");
@@ -35,9 +41,13 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
   const errorToastShown = useRef(false);
   // Add a ref to track if sign-in has been attempted
   const signInAttempted = useRef(false);
+  // Add a ref to track if redirecting
+  const isRedirecting = useRef(false);
 
   // Set up useActionState for server-side validation and registration
   const [state, action, isPending] = useActionState<RegisterState, FormData>(registerUser, null);
+  // Set up useActionState for login
+  const [loginState, loginAction, isLoginPending] = useActionState(loginUser, null);
 
   // Add a unique ID to help track component instances
   const componentId = useRef(`register-form-${Math.random().toString(36).substring(7)}`).current;
@@ -56,10 +66,11 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
       registrationToastShown.current = false;
       errorToastShown.current = false;
       signInAttempted.current = false;
+      isRedirecting.current = false;
     };
   }, []);
 
-  // Handle form submission
+  // Add more detailed logging to the form submission handler
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     console.log(`[${componentId}] Register form submitted`);
@@ -70,10 +81,18 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
       return;
     }
 
+    console.log(`[${componentId}] Form values before submission:`, {
+      name,
+      email,
+      password,
+      confirmPassword
+    });
+
     // Reset toast flags
     registrationToastShown.current = false;
     errorToastShown.current = false;
     signInAttempted.current = false;
+    isRedirecting.current = false;
     console.log(
       `[${componentId}] Reset flags: registrationToastShown=${registrationToastShown.current}, errorToastShown=${errorToastShown.current}, signInAttempted=${signInAttempted.current}`
     );
@@ -83,6 +102,14 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
     formData.append("name", name || email.split("@")[0]); // Use email username as fallback
     formData.append("email", email);
     formData.append("password", password);
+    formData.append("confirmPassword", confirmPassword || ""); // Ensure it's never null
+
+    console.log(`[${componentId}] FormData created with:`, {
+      name: name || email.split("@")[0],
+      email,
+      passwordLength: password ? password.length : 0,
+      confirmPasswordLength: confirmPassword ? confirmPassword.length : 0
+    });
 
     // Wrap action call in startTransition
     startTransition(() => {
@@ -102,9 +129,16 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
     });
 
     if (state?.success && !registrationToastShown.current) {
-      console.log(`[${componentId}] Registration successful!`);
+      console.log(`[${componentId}] Registration successful!`, state);
       registrationToastShown.current = true;
       toast.success("Registration successful!", { id: "registration-success" });
+
+      // Check if we have a userId from the registration response
+      if (state.userId) {
+        console.log(`[${componentId}] User ID from registration:`, state.userId);
+      } else {
+        console.warn(`[${componentId}] No user ID returned from registration`);
+      }
 
       // Attempt to sign in after successful registration
       const handleSignIn = async () => {
@@ -116,43 +150,47 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
         signInAttempted.current = true;
         setIsLoggingIn(true);
         try {
-          console.log(`[${componentId}] Attempting automatic sign-in after registration`);
+          console.log(`[${componentId}] Waiting for Firebase to propagate the new account...`);
+          toast.info("Preparing your account...", { id: "account-preparation" });
+
+          // Increase the delay to allow Firebase to propagate the new account
+          const delayTime = 5000; // 5 seconds
+          console.log(`[${componentId}] Waiting ${delayTime / 1000} seconds before login attempt`);
+          await new Promise(resolve => setTimeout(resolve, delayTime));
+
+          console.log(`[${componentId}] Attempting automatic sign-in after registration using server action`);
           toast.info("Logging you in...", { id: "login-attempt" });
 
-          const signInResult = await signIn("credentials", {
-            redirect: false,
-            email,
-            password
-          });
+          // Create login form data
+          const loginFormData = new FormData();
+          loginFormData.append("email", email);
+          loginFormData.append("password", password);
+          loginFormData.append("isRegistration", "true");
 
-          console.log(`[${componentId}] Sign-in result:`, signInResult);
-          if (signInResult?.ok) {
-            console.log(`[${componentId}] Automatic sign-in successful`);
-            toast.success("You are now logged in!", { id: "login-success" });
-            // Add a delay before redirecting
-            setTimeout(() => {
-              console.log(`[${componentId}] Redirecting to home page`);
-              router.push("/");
-            }, 500);
-          } else {
-            console.error(`[${componentId}] Automatic sign-in failed:`, signInResult?.error);
-            toast.error("Automatic sign-in failed. Please try logging in manually.", { id: "login-error" });
-            // Add a delay before redirecting
-            setTimeout(() => {
-              console.log(`[${componentId}] Redirecting to login page`);
-              router.push("/login");
-            }, 1500);
+          // Add the role from the registration response
+          if (state.role) {
+            console.log(`[${componentId}] Adding role to login form data:`, state.role);
+            loginFormData.append("role", state.role);
           }
+
+          // Add the user ID from the registration response
+          if (state.userId) {
+            console.log(`[${componentId}] Adding user ID to login form data:`, state.userId);
+            loginFormData.append("id", state.userId);
+          }
+
+          // Use the loginUser server action instead of client-side signIn
+          startTransition(() => {
+            console.log(`[${componentId}] Starting login action transition`);
+            loginAction(loginFormData);
+          });
         } catch (error) {
-          console.error(`[${componentId}] Sign-in error:`, error);
-          toast.error("Automatic sign-in failed. Please try logging in manually.", { id: "login-error" });
-          // Add a delay before redirecting
+          console.error(`[${componentId}] Error preparing for login:`, error);
+          setIsLoggingIn(false);
+          toast.error("Failed to prepare login. Please try logging in manually.", { id: "login-error" });
           setTimeout(() => {
-            console.log(`[${componentId}] Redirecting to login page after error`);
             router.push("/login");
           }, 1500);
-        } finally {
-          setIsLoggingIn(false);
         }
       };
 
@@ -162,7 +200,81 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
       errorToastShown.current = true;
       toast.error(state.error, { id: "registration-error" });
     }
-  }, [state, router, email, password, isLoggingIn, componentId]);
+  }, [state, router, email, password, isLoggingIn, componentId, loginAction]);
+
+  // Add effect for login state changes
+  useEffect(() => {
+    console.log(`[${componentId}] Login state effect triggered:`, {
+      loginState,
+      isRedirecting: isRedirecting.current
+    });
+
+    if (loginState?.success && !isRedirecting.current) {
+      console.log(`[${componentId}] Login successful!`);
+      isRedirecting.current = true;
+
+      // Check if we have a custom token
+      if (loginState.customToken) {
+        console.log(`[${componentId}] Custom token received, exchanging for ID token`);
+
+        // Exchange the custom token for an ID token
+        signInWithCustomToken(auth, loginState.customToken)
+          .then(async userCredential => {
+            console.log(`[${componentId}] Custom token exchanged successfully`);
+
+            // Get the ID token
+            const idToken = await userCredential.user.getIdToken();
+            console.log(`[${componentId}] ID token obtained, signing in with NextAuth`);
+
+            // Sign in with NextAuth using the ID token
+            const signInResult = await signInWithFirebase(idToken);
+
+            if (!signInResult.success) {
+              throw new Error("Failed to sign in with NextAuth");
+            }
+
+            console.log(`[${componentId}] NextAuth sign-in successful`);
+            toast.success("You are now logged in!", { id: "login-success" });
+
+            // Update the session
+            await update();
+
+            // Redirect to home page
+            router.push("/");
+          })
+          .catch(error => {
+            console.error(`[${componentId}] Error exchanging custom token:`, error);
+            toast.error("An error occurred during login. Please try logging in manually.");
+            setIsLoggingIn(false);
+            isRedirecting.current = false;
+            setTimeout(() => {
+              router.push("/login");
+            }, 1500);
+          });
+      } else {
+        // Legacy flow without custom token
+        console.log(`[${componentId}] No custom token received, using legacy flow`);
+        toast.success("You are now logged in!", { id: "login-success" });
+
+        // Update the session client-side
+        update().then(() => {
+          console.log(`[${componentId}] Session updated, redirecting`);
+          // Redirect to home page after successful login
+          setTimeout(() => {
+            router.push("/");
+          }, 500);
+        });
+      }
+    } else if (loginState?.message && !loginState.success && !errorToastShown.current) {
+      console.log(`[${componentId}] Login failed:`, loginState.message);
+      errorToastShown.current = true;
+      toast.error(`Login failed: ${loginState.message}. Please try logging in manually.`, { id: "login-error" });
+      setIsLoggingIn(false);
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+    }
+  }, [loginState, router, update, componentId]);
 
   return (
     <Card className={className} {...props}>
@@ -256,21 +368,42 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
             <p className="text-sm text-muted-foreground">Re-enter your password to confirm.</p>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isPending || isLoggingIn}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isPending || isLoggingIn || isLoginPending || isRedirecting.current || isGoogleSigningIn}>
             {isPending ? (
               <>
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                 Registering...
               </>
-            ) : isLoggingIn ? (
+            ) : isLoggingIn || isLoginPending ? (
               <>
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                 Logging in...
+              </>
+            ) : isRedirecting.current ? (
+              <>
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                Redirecting...
               </>
             ) : (
               "Register"
             )}
           </Button>
+
+          {/* Google Sign In Section */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+            <GoogleAuthButton mode="signup" className="mt-4" />
+          </div>
         </form>
       </CardContent>
       <CardFooter className="flex flex-col items-center gap-4">

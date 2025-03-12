@@ -1,12 +1,13 @@
 // types/auth/common.ts
-import { ActionResponse } from "../common";
+import { ActionResponse } from "../common/response";
 import { UserRole } from "../user/common";
 
 /**
  * Auth-specific action response
  */
 export interface AuthActionResponse extends ActionResponse {
-  // Auth-specific fields can be added here
+  // No need to redeclare properties that already exist in ActionResponse
+  // You can add auth-specific properties here if needed in the future
 }
 
 // User profile type

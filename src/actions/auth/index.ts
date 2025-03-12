@@ -4,3 +4,5 @@ export * from "./register";
 export * from "./password";
 export * from "./session";
 export * from "./debug";
+export * from "./firebase-auth";
+//export * from "./google";
