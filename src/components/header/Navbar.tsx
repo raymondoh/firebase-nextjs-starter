@@ -26,7 +26,7 @@
 // // Track if we've already checked the session
 // let hasCheckedSession = false;
 // let lastPathname = "";
-// let lastSessionCheck = 0;
+// const lastSessionCheck = 0;
 
 // const useMediaQuery = (query: string) => {
 //   const [matches, setMatches] = useState(false);
@@ -132,7 +132,18 @@
 //   const router = useRouter();
 //   const [isSigningOut, setIsSigningOut] = useState(false);
 //   const pathname = usePathname();
+
+//   // Use a ref to track if we've already checked the session for this component instance
 //   const sessionCheckRef = useRef(false);
+
+//   // Add a ref to track the last time we checked the session
+//   const lastSessionCheckTimeRef = useRef(0);
+
+//   // Add a ref to track if we're currently updating the session
+//   const isUpdatingSessionRef = useRef(false);
+
+//   // Add this to the UserMenu component
+//   const componentId = useRef(`user-menu-${Math.random().toString(36).substring(7)}`).current;
 
 //   // Check for account deletion cookie
 //   useEffect(() => {
@@ -156,15 +167,31 @@
 
 //   // Only check session once when component mounts or when pathname changes
 //   useEffect(() => {
-//     // Skip if we've already checked the session for this pathname
-//     if (pathname === lastPathname && hasCheckedSession) {
+//     console.log(`[${componentId}] UserMenu session check effect triggered`, {
+//       pathname,
+//       hasCheckedSession,
+//       lastPathname,
+//       sessionCheckRef: sessionCheckRef.current,
+//       isUpdatingSession: isUpdatingSessionRef.current,
+//       timeSinceLastCheck: Date.now() - lastSessionCheckTimeRef.current
+//     });
+
+//     // Skip if we're already updating the session
+//     if (isUpdatingSessionRef.current) {
+//       console.log(`[${componentId}] Skipping session check - already updating session`);
 //       return;
 //     }
 
-//     // Throttle session checks to prevent too many in a short time
+//     // Skip if we've already checked the session for this pathname
+//     if (pathname === lastPathname && hasCheckedSession) {
+//       console.log(`[${componentId}] Skipping session check - already checked for this pathname`);
+//       return;
+//     }
+
+//     // Throttle session checks to prevent too many in a short time (2 seconds)
 //     const now = Date.now();
-//     if (now - lastSessionCheck < 1000) {
-//       // 1 second throttle
+//     if (now - lastSessionCheckTimeRef.current < 2000) {
+//       console.log(`[${componentId}] Throttling session check - too frequent`);
 //       return;
 //     }
 
@@ -172,20 +199,30 @@
 //     if (!sessionCheckRef.current) {
 //       sessionCheckRef.current = true;
 //       lastPathname = pathname;
-//       lastSessionCheck = now;
+//       lastSessionCheckTimeRef.current = now;
 //       hasCheckedSession = true;
+//       isUpdatingSessionRef.current = true;
 
+//       console.log(`[${componentId}] Performing session check/update`);
 //       // This will trigger a session refresh
-//       update().catch(error => {
-//         console.error("Error refreshing session:", error);
-//       });
+//       update()
+//         .then(() => {
+//           console.log(`[${componentId}] Session update completed`);
+//           isUpdatingSessionRef.current = false;
+//         })
+//         .catch(error => {
+//           console.error(`[${componentId}] Error refreshing session:`, error);
+//           isUpdatingSessionRef.current = false;
+//         });
 //     }
-//   }, [update, pathname]);
+//   }, [update, pathname, componentId]);
 
 //   // Listen for storage events to detect session changes across tabs
 //   useEffect(() => {
 //     const handleStorageChange = (event: StorageEvent) => {
+//       console.log(`[${componentId}] Storage event detected:`, event.key);
 //       if (event.key?.includes("session") || event.key?.includes("token")) {
+//         console.log(`[${componentId}] Session-related storage change, updating session`);
 //         // Force update the session
 //         update();
 //       }
@@ -193,7 +230,7 @@
 
 //     window.addEventListener("storage", handleStorageChange);
 //     return () => window.removeEventListener("storage", handleStorageChange);
-//   }, [update]);
+//   }, [update, componentId]);
 
 //   const handleSignOut = async () => {
 //     if (isSigningOut) return; // Prevent double-clicks
@@ -399,8 +436,8 @@ export const Navbar = () => {
           <>
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu />
+                <Button variant="ghost" size="icon" className="h-12 w-12 p-2" aria-label="Open menu">
+                  <Menu className="h-full w-full" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left">
@@ -576,8 +613,8 @@ const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 p-0">
-          <Avatar>
+        <Button variant="ghost" size="icon" className="h-12 w-12 p-2 rounded-full">
+          <Avatar className="h-full w-full">
             {session?.user?.image ? (
               <div className="relative aspect-square h-full w-full">
                 <Image
@@ -589,14 +626,14 @@ const UserMenu = () => {
                 />
               </div>
             ) : (
-              <AvatarFallback className="bg-primary text-primary-foreground">{userInitials}</AvatarFallback>
+              <AvatarFallback className="bg-primary text-primary-foreground text-lg">{userInitials}</AvatarFallback>
             )}
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="flex items-center gap-2 p-4">
-          <Avatar className="h-8 w-8">
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="flex items-center gap-3 p-4">
+          <Avatar className="h-10 w-10">
             {session?.user?.image ? (
               <div className="relative aspect-square h-full w-full">
                 <Image
@@ -607,13 +644,13 @@ const UserMenu = () => {
                 />
               </div>
             ) : (
-              <AvatarFallback className="bg-primary text-primary-foreground">{userInitials}</AvatarFallback>
+              <AvatarFallback className="bg-primary text-primary-foreground text-lg">{userInitials}</AvatarFallback>
             )}
           </Avatar>
           <div className="flex flex-col">
-            <span className="font-medium">{session?.user?.name || session?.user?.email || "Guest"}</span>
+            <span className="font-medium text-base">{session?.user?.name || session?.user?.email || "Guest"}</span>
             {session?.user?.email && session?.user?.name && (
-              <span className="text-xs text-muted-foreground truncate max-w-[150px]">{session.user.email}</span>
+              <span className="text-xs text-muted-foreground truncate max-w-[180px]">{session.user.email}</span>
             )}
           </div>
         </DropdownMenuLabel>
@@ -627,33 +664,33 @@ const UserMenu = () => {
             <DropdownMenuGroup>
               {session.user.role === "admin" ? (
                 adminNavItems.map(item => (
-                  <DropdownMenuItem key={item.href} onClick={() => handleNavigation(item.href)}>
-                    <item.icon className="mr-2 h-4 w-4" />
-                    <span>{item.title}</span>
+                  <DropdownMenuItem key={item.href} onClick={() => handleNavigation(item.href)} className="py-3">
+                    <item.icon className="mr-3 h-5 w-5" />
+                    <span className="text-base">{item.title}</span>
                   </DropdownMenuItem>
                 ))
               ) : (
-                <DropdownMenuItem onClick={() => handleNavigation("/user")}>
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  <span>Dashboard</span>
+                <DropdownMenuItem onClick={() => handleNavigation("/user")} className="py-3">
+                  <LayoutDashboard className="mr-3 h-5 w-5" />
+                  <span className="text-base">Dashboard</span>
                 </DropdownMenuItem>
               )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} disabled={isSigningOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>{isSigningOut ? "Signing out..." : "Log out"}</span>
+            <DropdownMenuItem onClick={handleSignOut} disabled={isSigningOut} className="py-3">
+              <LogOut className="mr-3 h-5 w-5" />
+              <span className="text-base">{isSigningOut ? "Signing out..." : "Log out"}</span>
             </DropdownMenuItem>
           </>
         ) : (
           <>
-            <DropdownMenuItem onClick={() => handleNavigation("/login")}>
-              <LogIn className="mr-2 h-4 w-4" />
-              <span>Log in</span>
+            <DropdownMenuItem onClick={() => handleNavigation("/login")} className="py-3">
+              <LogIn className="mr-3 h-5 w-5" />
+              <span className="text-base">Log in</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleNavigation("/register")}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              <span>Register</span>
+            <DropdownMenuItem onClick={() => handleNavigation("/register")} className="py-3 font-medium">
+              <UserPlus className="mr-3 h-5 w-5" />
+              <span className="text-base">Register</span>
             </DropdownMenuItem>
           </>
         )}

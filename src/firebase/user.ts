@@ -2,35 +2,10 @@
 "use server";
 
 import { adminDb } from "./admin";
-//import type { User, UserRole } from "@/types/user";
-import type { UserRole } from "@/types/user";
+import { adminAuth } from "./admin"; // Add this import
+import { User, UserRole } from "@/types/user/common";
+import { UserDocumentData, GetUsersResult } from "@/types/firebase/firestore";
 import { Timestamp } from "firebase-admin/firestore";
-import {} from "@/types/firebase";
-
-// Add this type
-type UserDocumentData = Omit<User, "id"> & {
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-// Update User type to include picture
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  picture?: string;
-  createdAt: string;
-  updatedAt: string;
-  // Add other fields as necessary
-};
-
-type GetUsersResult = {
-  success: boolean;
-  users?: User[];
-  lastVisible?: string;
-  error?: string;
-};
 
 export async function getUsers(limit: number = 10, startAfter?: string): Promise<GetUsersResult> {
   try {

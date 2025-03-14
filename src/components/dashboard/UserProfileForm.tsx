@@ -43,7 +43,9 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/" }: Pr
   const updateProcessedRef = useRef(false);
 
   // Use action state for form submission
-  const [state, formAction, isPending] = useActionState<ProfileUpdateState, FormData>(updateUserProfile, null);
+  const [state, formAction, isPending] = useActionState<ProfileUpdateState, FormData>(updateUserProfile, {
+    success: false
+  });
 
   // Update form values and photoURL when session loads
   useEffect(() => {
@@ -170,7 +172,7 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/" }: Pr
           formData.append("imageUrl", imageUrl);
         } catch (error) {
           console.error("Error uploading file:", error);
-          toast.error(error.message || "Failed to upload image");
+          toast.error(error instanceof Error ? error.message : "Failed to upload image");
           return;
         } finally {
           setIsUploading(false);
@@ -183,7 +185,7 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/" }: Pr
       });
     } catch (error) {
       console.error("Error during form submission:", error);
-      toast.error(error.message || "Failed to update profile");
+      toast.error(error instanceof Error ? error.message : "Failed to update profile");
     }
   };
 

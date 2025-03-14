@@ -1,10 +1,18 @@
-import type { User } from "../user/common";
+// types/firebase/firestore.ts (update)
+import type { User, UserRole } from "../user/common";
+import type { Timestamp } from "firebase-admin/firestore";
 
+/**
+ * User document data as stored in Firestore
+ */
 export type UserDocumentData = Omit<User, "id"> & {
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
 };
 
+/**
+ * Result types for Firestore operations
+ */
 export type GetUsersResult = {
   success: boolean;
   users?: User[];

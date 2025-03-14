@@ -32,11 +32,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
     return (
       <SidebarInset>
-        <header className="flex h-16 items-center gap-2 border-b px-4 sticky top-0 bg-background z-10">
+        <header className="flex h-16 items-center gap-2 border-b px-4 sticky top-0 bg-background z-10 w-full">
           <SidebarTrigger className="-ml-1" />
           <h1 className="font-semibold">Admin Dashboard</h1>
         </header>
-        <div className="max-w-6xl mx-auto px-6 py-4 w-full">{children}</div>
+        <div className="max-w-7xl  px-6 py-4">{children}</div>
       </SidebarInset>
     );
   } catch (error) {

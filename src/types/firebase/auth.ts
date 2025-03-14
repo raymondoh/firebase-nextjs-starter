@@ -1,3 +1,8 @@
+// types/firebase/auth.ts (update)
+/**
+ * Firebase Authentication related types
+ */
+
 export type DecodedIdToken = {
   uid: string;
   email?: string;

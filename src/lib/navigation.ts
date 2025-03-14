@@ -1,3 +1,4 @@
+// lib/navigation.ts
 import type React from "react";
 import {
   Home,
@@ -17,11 +18,22 @@ import {
   AlertTriangle
 } from "lucide-react";
 
+// export type NavItem = {
+//   title: string;
+//   href: string;
+//   //icon: React.ComponentType;
+//   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+// };
 export type NavItem = {
   title: string;
   href: string;
-  //icon: React.ComponentType;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  // Add the subItems property
+  subItems?: Array<{
+    title: string;
+    href: string;
+    icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  }>;
 };
 
 // General navigation items visible to all users
@@ -88,6 +100,11 @@ export const adminNavItems: NavItem[] = [
   {
     title: "Manage Users",
     href: "/admin/users",
+    icon: Users
+  },
+  {
+    title: "Activity",
+    href: "/admin/activity",
     icon: Users
   },
   {

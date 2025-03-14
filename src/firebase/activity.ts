@@ -3,29 +3,7 @@
 import { adminDb } from "./admin";
 import { auth } from "@/auth";
 import { Timestamp } from "firebase-admin/firestore";
-
-type ActivityType =
-  | "login"
-  | "password_change"
-  | "email_change"
-  | "security_alert"
-  | "device_authorized"
-  | "data_export"
-  | "deletion_request";
-
-type ActivityStatus = "success" | "failed" | "warning" | "pending";
-
-interface ActivityLogData {
-  userId: string;
-  type: ActivityType;
-  description: string;
-  timestamp: Timestamp;
-  ipAddress?: string;
-  location?: string;
-  device?: string;
-  deviceType?: string;
-  status: ActivityStatus;
-}
+import { ActivityLogData } from "@/types/firebase/activity";
 
 // Log user activity
 export async function logActivity(data: Omit<ActivityLogData, "timestamp">) {

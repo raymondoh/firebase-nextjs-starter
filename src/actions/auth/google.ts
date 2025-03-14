@@ -1,8 +1,9 @@
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin";
+import { FieldValue } from "firebase-admin/firestore";
 import { logActivity } from "@/firebase/utils/activity";
-import type { AuthActionsResponse } from "@/types/auth";
+import type { AuthActionResponse } from "@/types/auth/common";
 
 /**
  * Handles Google authentication (both sign-in and sign-up)
@@ -13,7 +14,7 @@ export async function handleGoogleAuth(userInfo: {
   name?: string;
   picture?: string;
   sub: string; // Google's unique ID
-}): Promise<AuthActionsResponse> {
+}): Promise<AuthActionResponse> {
   console.log("handleGoogleAuth called with user info:", {
     email: userInfo.email,
     name: userInfo.name,
@@ -80,8 +81,8 @@ export async function handleGoogleAuth(userInfo: {
           lastLoginAt: new Date(),
           updatedAt: new Date(),
           // Only update these if they don't exist or are empty
-          name: adminDb.FieldValue.increment(0), // This is a trick to use in the transaction
-          photoURL: adminDb.FieldValue.increment(0),
+          name: FieldValue.increment(0),
+          photoURL: FieldValue.increment(0),
           provider: "google",
           googleId: userInfo.sub
         });

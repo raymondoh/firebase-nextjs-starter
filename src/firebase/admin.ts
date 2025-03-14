@@ -3,6 +3,7 @@ import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
+import { SetCustomClaimsResult } from "@/types/firebase/auth";
 
 function initializeAdminApp(): App {
   const apps = getApps();
@@ -33,12 +34,6 @@ export const adminStorage = getStorage(firebaseAdmin);
 
 // Configure Firebase Auth settings
 adminAuth.setCustomUserClaims = adminAuth.setCustomUserClaims || (() => Promise.resolve());
-
-// Add this type
-type SetCustomClaimsResult = {
-  success: boolean;
-  error?: any;
-};
 
 export async function setCustomClaims(uid: string, claims: Record<string, any>): Promise<SetCustomClaimsResult> {
   try {

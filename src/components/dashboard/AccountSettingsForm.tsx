@@ -27,18 +27,15 @@ export function AccountSettingsForm({ id, onSubmitStart, onSubmitComplete }: Acc
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      toast({
-        title: "Profile updated",
+      toast.success("Profile updated", {
         description: "Your profile has been updated successfully."
       });
 
       onSubmitComplete?.(true);
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive"
+      toast.error("Error", {
+        description: "Failed to update profile. Please try again."
       });
 
       onSubmitComplete?.(false);
@@ -53,15 +50,12 @@ export function AccountSettingsForm({ id, onSubmitStart, onSubmitComplete }: Acc
       // Simulate upload
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      toast({
-        title: "Avatar updated",
+      toast.success("Avatar updated", {
         description: "Your profile picture has been updated successfully."
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update avatar. Please try again.",
-        variant: "destructive"
+      toast.error("Error", {
+        description: "Failed to update avatar. Please try again."
       });
     } finally {
       setIsUploading(false);

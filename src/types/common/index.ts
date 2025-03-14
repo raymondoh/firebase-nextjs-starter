@@ -1,2 +1,2 @@
 // types/common/index.ts
-export * from "./response";
+export type { ActionResponse } from "./response";

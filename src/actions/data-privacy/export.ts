@@ -5,7 +5,8 @@ import { auth } from "@/auth";
 import { adminDb, adminStorage } from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { exportDataSchema } from "@/schemas/data-privacy";
-import type { ExportFormat, ExportDataState } from "@/types/data-privacy";
+//import type { ExportFormat, ExportDataState } from "@/types/data-privacy";
+import type { ExportFormat, ExportDataState } from "@/types/data-privacy/export";
 
 // To this:
 import { convertTimestamps, objectToCSV } from "@/actions/utils";

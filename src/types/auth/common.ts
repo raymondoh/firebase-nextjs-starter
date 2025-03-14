@@ -8,6 +8,10 @@ import { UserRole } from "../user/common";
 export interface AuthActionResponse extends ActionResponse {
   // No need to redeclare properties that already exist in ActionResponse
   // You can add auth-specific properties here if needed in the future
+  userId?: string;
+  email?: string;
+  role?: string | UserRole;
+  errors?: Record<string, string>;
 }
 
 // User profile type

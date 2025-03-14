@@ -1,18 +1,24 @@
-"use client";
-
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { ActivityLog } from "@/components/dashboard/ActivityLog";
+import { ActivityPageClient } from "@/components";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-export default function ActivityPage() {
+export default async function ActivityPage() {
+  // Get the session server-side
+  const session = await auth();
+
+  // Redirect if not authenticated
+  if (!session?.user) {
+    redirect("/login");
+  }
+
   return (
     <DashboardShell>
-      <DashboardHeader heading="Activity Log" text="Monitor recent activity and security events on your account" />
+      <DashboardHeader heading="Activity Log" text="View your recent account activity and security events." />
       <Separator className="mb-8" />
 
-      <div className="max-w-5xl ml-0">
-        <ActivityLog />
-      </div>
+      <ActivityPageClient />
     </DashboardShell>
   );
 }

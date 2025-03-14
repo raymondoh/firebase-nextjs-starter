@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { updatePassword } from "@/actions/auth";
+import type { UpdatePasswordState } from "@/types/auth/password";
 
 interface SecuritySettingsFormProps {
   id: string;
@@ -26,15 +27,16 @@ export function SecuritySettingsForm({ id, onSubmitStart, onSubmitComplete }: Se
     setIsSubmitting(true);
 
     try {
-      const result = await updatePassword(formData);
+      // Provide the initial state as the first argument
+      const initialState: UpdatePasswordState = { success: false };
+      const result = await updatePassword(initialState, formData);
 
       if (result.success) {
         setMessage({ type: "success", text: "Password updated successfully!" });
         // Clear form
         (document.getElementById(id) as HTMLFormElement).reset();
 
-        toast({
-          title: "Password updated",
+        toast.success("Password updated", {
           description: "Your password has been updated successfully."
         });
 
@@ -42,10 +44,8 @@ export function SecuritySettingsForm({ id, onSubmitStart, onSubmitComplete }: Se
       } else {
         setMessage({ type: "error", text: result.error || "Failed to update password" });
 
-        toast({
-          title: "Error",
-          description: result.error || "Failed to update password",
-          variant: "destructive"
+        toast.error("Error", {
+          description: result.error || "Failed to update password"
         });
 
         onSubmitComplete?.(false);
@@ -53,10 +53,8 @@ export function SecuritySettingsForm({ id, onSubmitStart, onSubmitComplete }: Se
     } catch (error) {
       setMessage({ type: "error", text: "An unexpected error occurred" });
 
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
+      toast.error("Error", {
+        description: "An unexpected error occurred"
       });
 
       console.error(error);

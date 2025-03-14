@@ -21,7 +21,10 @@ export function ChangePasswordForm() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [state, action, isPending] = useActionState<UpdatePasswordState, FormData>(updatePassword, null); // Updated type
+  // Initialize with a valid state object instead of null
+  const [state, action, isPending] = useActionState<UpdatePasswordState, FormData>(updatePassword, {
+    success: false
+  });
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Handle form submission result

@@ -1,14 +1,59 @@
 "use server";
 
 import { auth, signOut } from "@/auth";
-//import { adminAuth, adminDb, adminStorage } from "@/firebase/admin";
 import { adminAuth, adminDb, adminStorage } from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { cookies } from "next/headers";
 import { accountDeletionSchema } from "@/schemas/data-privacy";
-import type { DeleteAccountState } from "@/types/data-privacy";
+import type { DeleteAccountState } from "@/types/data-privacy/deletion";
+import type { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 // Functions: requestAccountDeletion, processAccountDeletion
+
+export async function processAccountDeletion(userId: string) {
+  try {
+    // Delete user data from Firestore
+    const userDocRef = adminDb.collection("users").doc(userId);
+    await userDocRef.delete();
+
+    // Delete user data from Firebase Authentication
+    await adminAuth.deleteUser(userId);
+
+    // Delete any associated files from Firebase Storage (example)
+    const storageRef = adminStorage.bucket().file(`users/${userId}/profile.jpg`); // Adjust path as needed
+    try {
+      await storageRef.delete();
+    } catch (storageError: any) {
+      if (storageError.code === 404) {
+        console.log("File not found, skipping deletion.");
+      } else {
+        console.error("Error deleting file from storage:", storageError);
+      }
+    }
+
+    // Update deletion request status
+    const deletionRequestRef = adminDb.collection("deletionRequests").doc(userId);
+    await deletionRequestRef.update({
+      status: "completed",
+      completedAt: Timestamp.now()
+    });
+
+    // Log this activity
+    await adminDb.collection("activityLogs").add({
+      userId: userId,
+      type: "deletion_completed",
+      description: "Account deletion completed",
+      timestamp: Timestamp.now(),
+      ipAddress: "N/A", // In a real app, you might want to capture this
+      status: "completed"
+    });
+
+    console.log(`Account deletion completed for user ${userId}`);
+  } catch (error) {
+    console.error("Error processing account deletion:", error);
+    throw new Error("Failed to process account deletion"); // Re-throw to handle in caller
+  }
+}
 
 // Request account deletion
 export async function requestAccountDeletion(
@@ -54,11 +99,11 @@ export async function requestAccountDeletion(
       await signOut({ redirect: false });
 
       // Clear cookies
-      cookies()
-        .getAll()
-        .forEach(cookie => {
-          cookies().delete(cookie.name);
-        });
+      const cookieStore = cookies();
+      const allCookies = cookieStore.getAll();
+      allCookies.forEach((cookie: RequestCookie) => {
+        cookieStore.set(cookie.name, "", { maxAge: 0 });
+      });
 
       return {
         success: true,
@@ -74,90 +119,5 @@ export async function requestAccountDeletion(
   } catch (error) {
     console.error("Error requesting account deletion:", error instanceof Error ? error.message : String(error));
     return { success: false, error: "Failed to request account deletion" };
-  }
-}
-
-// Process account deletion (can be called directly or by a background process)
-export async function processAccountDeletion(userId: string): Promise<boolean> {
-  try {
-    console.log(`Processing account deletion for user: ${userId}`);
-
-    // 1. Get user data for reference
-    const userDoc = await adminDb.collection("users").doc(userId).get();
-    if (!userDoc.exists) {
-      console.error(`User ${userId} not found in Firestore`);
-      return false;
-    }
-
-    const userData = userDoc.data();
-
-    // 2. Delete user's files from Storage
-    try {
-      const bucket = adminStorage.bucket();
-
-      // Delete profile pictures
-      const [userFiles] = await bucket.getFiles({ prefix: `users/${userId}/` });
-      await Promise.all(userFiles.map(file => file.delete()));
-
-      // Delete data exports
-      const [exportFiles] = await bucket.getFiles({ prefix: `data-exports/${userId}/` });
-      await Promise.all(exportFiles.map(file => file.delete()));
-
-      console.log(`Deleted ${userFiles.length + exportFiles.length} files for user ${userId}`);
-    } catch (storageError) {
-      console.error(`Error deleting files for user ${userId}:`, storageError);
-      // Continue with deletion even if file deletion fails
-    }
-
-    // 3. Delete user's activity logs
-    try {
-      const logsSnapshot = await adminDb.collection("activityLogs").where("userId", "==", userId).get();
-
-      const batch = adminDb.batch();
-      logsSnapshot.docs.forEach(doc => {
-        batch.delete(doc.ref);
-      });
-
-      await batch.commit();
-      console.log(`Deleted ${logsSnapshot.size} activity logs for user ${userId}`);
-    } catch (logsError) {
-      console.error(`Error deleting activity logs for user ${userId}:`, logsError);
-      // Continue with deletion even if logs deletion fails
-    }
-
-    // 4. Delete user's deletion request if it exists
-    try {
-      await adminDb.collection("deletionRequests").doc(userId).delete();
-    } catch (requestError) {
-      console.error(`Error deleting deletion request for user ${userId}:`, requestError);
-      // Continue with deletion even if request deletion fails
-    }
-
-    // 5. Delete user from Firestore
-    await adminDb.collection("users").doc(userId).delete();
-    console.log(`Deleted user ${userId} from Firestore`);
-
-    // 6. Delete user from Firebase Auth
-    await adminAuth.deleteUser(userId);
-    console.log(`Deleted user ${userId} from Firebase Auth`);
-
-    // 7. Update deletion request status if we're processing from a queue
-    try {
-      await adminDb.collection("deletionRequests").doc(userId).set(
-        {
-          status: "completed",
-          completedAt: Timestamp.now()
-        },
-        { merge: true }
-      );
-    } catch (updateError) {
-      console.error(`Error updating deletion request status for user ${userId}:`, updateError);
-      // This is not critical, so we can ignore it
-    }
-
-    return true;
-  } catch (error) {
-    console.error(`Error processing account deletion for user ${userId}:`, error);
-    return false;
   }
 }

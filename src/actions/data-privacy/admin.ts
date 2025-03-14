@@ -3,8 +3,8 @@
 import { auth } from "@/auth";
 //import { adminDb } from "@/firebase/admin";
 import { adminDb } from "@/firebase/admin";
-import type { ProcessDeletionsResult } from "@/types/data-privacy";
 import { processAccountDeletion } from "./deletion";
+import type { ProcessDeletionsResult } from "@/types/data-privacy/deletion";
 
 // Functions: processPendingDeletions
 // Description: Process all pending deletion requests

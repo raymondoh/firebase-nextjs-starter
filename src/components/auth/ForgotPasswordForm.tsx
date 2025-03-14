@@ -12,12 +12,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useActionState } from "react";
 import { requestPasswordReset } from "@/actions/auth";
 import { toast } from "sonner";
-import type { ForgotPasswordState } from "@/types/auth"; // Updated type name
+import type { ForgotPasswordState } from "@/types/auth/password"; // Updated type name
 
 export function ForgotPasswordForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [state, action, isPending] = useActionState<ForgotPasswordState, FormData>(requestPasswordReset, null); // Updated type
+
+  // Initialize with a valid state object instead of null
+  const [state, action, isPending] = useActionState<ForgotPasswordState, FormData>(requestPasswordReset, {
+    success: false
+  });
+
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Handle form submission result

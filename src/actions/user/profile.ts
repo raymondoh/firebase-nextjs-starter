@@ -5,7 +5,8 @@ import { auth } from "@/auth";
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { profileUpdateSchema } from "@/schemas/user";
-import type { ProfileUpdateState, User } from "@/types/user";
+import type { ProfileUpdateState } from "@/types/user/profile";
+import type { User } from "@/types/user/common";
 import { convertTimestamps } from "@/actions/utils";
 
 // Functions: getProfile, updateUserProfile

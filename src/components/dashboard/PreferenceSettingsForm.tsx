@@ -40,18 +40,15 @@ export function PreferenceSettingsForm({ id, onSubmitStart, onSubmitComplete }: 
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      toast({
-        title: "Preferences updated",
+      toast.success("Preferences updated", {
         description: "Your preferences have been updated successfully."
       });
 
       onSubmitComplete?.(true);
     } catch (error) {
       console.error("Error updating preferences:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update preferences. Please try again.",
-        variant: "destructive"
+      toast.error("Error", {
+        description: "Failed to update preferences. Please try again."
       });
 
       onSubmitComplete?.(false);

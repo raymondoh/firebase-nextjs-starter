@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useActionState } from "react";
 import { resetPassword } from "@/actions/auth"; // Updated function name
 import { toast } from "sonner";
-import type { ResetPasswordState } from "@/types/auth";
+import type { ResetPasswordState } from "@/types/auth/password";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -23,7 +23,12 @@ export function ResetPasswordForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [state, action, isPending] = useActionState<ResetPasswordState, FormData>(resetPassword, null);
+
+  // Initialize with a valid state object instead of null
+  const [state, action, isPending] = useActionState<ResetPasswordState, FormData>(resetPassword, {
+    success: false
+  });
+
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Check if oobCode is present

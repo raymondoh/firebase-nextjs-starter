@@ -4,7 +4,6 @@
 import bcryptjs from "bcryptjs";
 import { auth } from "@/auth";
 import { auth as clientAuth } from "@/firebase/client";
-//import { sendPasswordResetEmail } from "firebase/auth";
 import {
   sendPasswordResetEmail,
   verifyPasswordResetCode as verifyResetCode,

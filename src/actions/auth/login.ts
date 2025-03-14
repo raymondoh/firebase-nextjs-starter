@@ -1,19 +1,9 @@
 "use server";
-import { loginSchema } from "@/schemas/auth";
+import bcryptjs from "bcryptjs";
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { logActivity } from "@/firebase/utils/activity";
-import bcryptjs from "bcryptjs";
-
-// Define the LoginState type
-export interface LoginState {
-  success?: boolean;
-  message?: string;
-  error?: string;
-  userId?: string;
-  email?: string;
-  role?: string;
-  customToken?: string;
-}
+import { loginSchema } from "@/schemas/auth";
+import type { LoginState } from "@/types/auth/login";
 
 export async function loginUser(prevState: LoginState | null, formData: FormData): Promise<LoginState> {
   console.log("loginUser action called with formData:", formData ? "exists" : "null");
