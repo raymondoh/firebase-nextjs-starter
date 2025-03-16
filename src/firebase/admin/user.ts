@@ -1,8 +1,7 @@
-// firebase/utils/user.ts
+// src/firebase/admin/user.ts
 "use server";
 
-import { adminDb } from "../admin";
-import { adminAuth } from "../admin";
+import { adminDb, adminAuth } from "./index";
 import { Timestamp } from "firebase-admin/firestore";
 import type { User, UserRole } from "@/types/user";
 import type {
@@ -12,14 +11,14 @@ import type {
   UpdateUserProfileResult,
   GetUserProfileResult,
   SetUserRoleResult
-} from "@/types/firebase";
+} from "@/types/firebase/firestore";
 
 /**
  * Get users with pagination
  * @param limit - The maximum number of users to retrieve
  * @param startAfter - The ID of the last user in the previous page
  */
-export async function getUsers(limit: number = 10, startAfter?: string): Promise<GetUsersResult> {
+export async function getUsers(limit = 10, startAfter?: string): Promise<GetUsersResult> {
   try {
     let query = adminDb.collection("users").orderBy("createdAt", "desc").limit(limit);
 

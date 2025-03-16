@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { adminAuth, adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase";
 import { Timestamp } from "firebase-admin/firestore";
 import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
 import type { User, UserRole, UserSearchState, UserRoleUpdateState } from "@/types/user/common";

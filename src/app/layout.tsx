@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import { UserProvider } from "@/contexts/UserContext";
 import { Toaster } from "@/components/ui/sonner";
 import { Header, Footer } from "@/components";
-import { ToasterProvider } from "@/providers/ToasterProvider";
+//import { ToasterProvider } from "@/providers/ToasterProvider";
 import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",

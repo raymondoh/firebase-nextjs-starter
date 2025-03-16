@@ -77,7 +77,7 @@ export function UserManagementPreview({ limit: userLimit = 5 }: UserManagementPr
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Usersff</CardTitle>
+        <CardTitle>Recent Users</CardTitle>
         <CardDescription>Newly registered users on the platform</CardDescription>
       </CardHeader>
       <CardContent>

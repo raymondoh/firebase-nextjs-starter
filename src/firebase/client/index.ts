@@ -1,10 +1,8 @@
-// firebase/client/index.ts
 "use client";
 
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getAuth, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
+import { getFirestore, Timestamp } from "firebase/firestore";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -16,24 +14,55 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase client app if it doesn't exist
+// Initialize client app if it doesn't exist
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Export Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
 
-// Ensure environment variables are typed
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      NEXT_PUBLIC_FIREBASE_API_KEY: string;
-      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: string;
-      NEXT_PUBLIC_FIREBASE_PROJECT_ID: string;
-      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET?: string;
-      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID?: string;
-      NEXT_PUBLIC_FIREBASE_APP_ID: string;
-    }
+// Auth providers
+export const googleProvider = new GoogleAuthProvider();
+export const githubProvider = new GithubAuthProvider();
+
+// Client-side Firestore utilities
+export function dateToTimestamp(date: Date): Timestamp {
+  return Timestamp.fromDate(date);
+}
+
+export function timestampToDate(timestamp: Timestamp): Date {
+  return timestamp.toDate();
+}
+
+// Client-side auth functions
+export async function signInWithGoogle() {
+  const { signInWithPopup } = await import("firebase/auth");
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return { success: true, user: result.user };
+  } catch (error) {
+    console.error("Error signing in with Google:", error);
+    return { success: false, error };
+  }
+}
+
+export async function signInWithGithub() {
+  const { signInWithPopup } = await import("firebase/auth");
+  try {
+    const result = await signInWithPopup(auth, githubProvider);
+    return { success: true, user: result.user };
+  } catch (error) {
+    console.error("Error signing in with GitHub:", error);
+    return { success: false, error };
+  }
+}
+
+export async function signOut() {
+  const { signOut: firebaseSignOut } = await import("firebase/auth");
+  try {
+    await firebaseSignOut(auth);
+    return { success: true };
+  } catch (error) {
+    console.error("Error signing out:", error);
+    return { success: false, error };
   }
 }

@@ -2,6 +2,24 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  reactStrictMode: true,
+  webpack: config => {
+    // Add fallbacks for Node.js core modules
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      net: false,
+      tls: false,
+      fs: false,
+      http2: false,
+      http: false,
+      https: false,
+      zlib: false,
+      child_process: false
+    };
+    return config;
+  },
+  // Updated property name
+  serverExternalPackages: ["firebase-admin"],
   images: {
     domains: [
       "storage.googleapis.com",

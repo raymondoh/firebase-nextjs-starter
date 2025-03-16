@@ -2,8 +2,11 @@
 
 import type React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
+import { auth } from "@/firebase/client";
 import type { User } from "@/types/user";
-import { getCurrentUser } from "@/firebase/auth";
+import { getCurrentUser } from "@/firebase/actions";
+
+//console.log(auth);
 
 type UserContextType = {
   user: User | null;

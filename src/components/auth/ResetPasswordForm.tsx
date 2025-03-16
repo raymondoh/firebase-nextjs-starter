@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useActionState } from "react";
-import { resetPassword } from "@/actions/auth"; // Updated function name
 import { toast } from "sonner";
+import { auth } from "@/firebase/client";
+import { verifyPasswordResetCode, confirmPasswordReset } from "firebase/auth";
+import { syncPasswordWithFirestore } from "@/actions/auth/password";
 import type { ResetPasswordState } from "@/types/auth/password";
 
 export function ResetPasswordForm() {
@@ -23,12 +24,8 @@ export function ResetPasswordForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Initialize with a valid state object instead of null
-  const [state, action, isPending] = useActionState<ResetPasswordState, FormData>(resetPassword, {
-    success: false
-  });
-
+  const [isPending, setIsPending] = useState(false);
+  const [state, setState] = useState<ResetPasswordState>({ success: false });
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Check if oobCode is present
@@ -50,13 +47,53 @@ export function ResetPasswordForm() {
     }
   }, [state]);
 
-  // Create a wrapper function for the form action
-  const handleFormAction = async (formData: FormData) => {
-    // Add the oobCode to the form data
-    if (oobCode) {
-      formData.append("oobCode", oobCode);
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!oobCode) {
+      setState({ success: false, error: "Invalid reset code" });
+      return;
     }
-    return action(formData);
+
+    if (password !== confirmPassword) {
+      setState({ success: false, error: "Passwords do not match" });
+      return;
+    }
+
+    setIsPending(true);
+
+    try {
+      // Verify the code and get the email
+      const email = await verifyPasswordResetCode(auth, oobCode);
+
+      // Reset the password
+      await confirmPasswordReset(auth, oobCode, password);
+
+      // Sync with Firestore (server action)
+      const result = await syncPasswordWithFirestore(email, password);
+
+      if (result.success) {
+        setState({ success: true });
+      } else {
+        setState({ success: false, error: result.error || "Failed to sync password" });
+      }
+    } catch (error: any) {
+      console.error("Error resetting password:", error);
+      let errorMessage = "Failed to reset password. Please try again.";
+
+      if (error.code === "auth/expired-action-code") {
+        errorMessage = "The password reset link has expired. Please request a new one.";
+      } else if (error.code === "auth/invalid-action-code") {
+        errorMessage = "The password reset link is invalid. Please request a new one.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "The password is too weak. Please choose a stronger password.";
+      }
+
+      setState({ success: false, error: errorMessage });
+    } finally {
+      setIsPending(false);
+    }
   };
 
   if (showSuccess) {
@@ -120,7 +157,7 @@ export function ResetPasswordForm() {
           </Alert>
         )}
 
-        <form action={handleFormAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="password">New Password</Label>
             <div className="relative">

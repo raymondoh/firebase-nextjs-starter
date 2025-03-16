@@ -1,8 +1,8 @@
 "use server";
 
 import bcryptjs from "bcryptjs";
-import { adminAuth, adminDb } from "@/firebase/admin";
-import { logActivity } from "@/firebase/utils/activity";
+import { adminAuth, adminDb } from "@/firebase";
+import { logActivity } from "@/firebase";
 import { registerSchema } from "@/schemas/auth/register";
 import type { RegisterState } from "@/types/auth/register";
 

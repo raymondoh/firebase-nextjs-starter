@@ -1,8 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-//import { adminDb, adminStorage } from "@/firebase/admin";
-import { adminDb, adminStorage } from "@/firebase/admin";
+import { adminDb, adminStorage } from "@/firebase";
 import { Timestamp } from "firebase-admin/firestore";
 import { exportDataSchema } from "@/schemas/data-privacy";
 //import type { ExportFormat, ExportDataState } from "@/types/data-privacy";

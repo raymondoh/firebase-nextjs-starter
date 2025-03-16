@@ -1,7 +1,7 @@
 "use server";
 import bcryptjs from "bcryptjs";
-import { adminAuth, adminDb } from "@/firebase/admin";
-import { logActivity } from "@/firebase/utils/activity";
+import { adminAuth, adminDb } from "@/firebase";
+import { logActivity } from "@/firebase";
 import { loginSchema } from "@/schemas/auth";
 import type { LoginState } from "@/types/auth/login";
 

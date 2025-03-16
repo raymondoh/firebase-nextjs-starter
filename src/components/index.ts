@@ -2,9 +2,12 @@ export { Header } from "./header/Header";
 export { Footer } from "./footer/Footer";
 export { Navbar } from "./header/Navbar";
 export { ModeToggle } from "./header/ModeToggle";
+export { ChangePasswordForm } from "./auth/ChangePasswordForm";
+export { ForgotPasswordForm } from "./auth/ForgotPasswordForm";
+export { GoogleAuthButton } from "./auth/GoogleAuthButton";
 export { LoginForm } from "./auth/LoginForm";
 export { RegisterForm } from "./auth/RegisterForm";
-export { ForgotPasswordForm } from "./auth/ForgotPasswordForm";
+export { ResetPasswordForm } from "./auth/ResetPasswordForm";
 
 //sidebar
 // export { AppSidebar } from "./dashboard/AppSidebar";

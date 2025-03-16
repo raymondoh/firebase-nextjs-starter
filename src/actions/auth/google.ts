@@ -1,8 +1,8 @@
 "use server";
 
-import { adminAuth, adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase";
 import { FieldValue } from "firebase-admin/firestore";
-import { logActivity } from "@/firebase/utils/activity";
+import { logActivity } from "@/firebase";
 import type { AuthActionResponse } from "@/types/auth/common";
 
 /**

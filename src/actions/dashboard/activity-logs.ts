@@ -1,6 +1,6 @@
 "use server";
 
-import { getUserActivityLogs } from "@/firebase/utils/activity";
+import { getUserActivityLogs } from "@/firebase";
 import { auth } from "@/auth";
 
 interface PaginationParams {

@@ -1,60 +1,75 @@
+// src/firebase/index.ts
 // Main exports for the Firebase module
 
+// Import admin objects and server functions
+//import { adminAuth, adminDb, getCurrentUser, logActivity } from "@/firebase";
+
+// Import admin objects and server functions
+//import { adminAuth, adminDb, getCurrentUser, logActivity } from "@/firebase";
+
 // Admin exports
-import { adminAuth, adminDb, adminStorage } from "./admin";
-import {
-  setCustomClaims as adminSetCustomClaims
-  // Import other specific functions from admin/auth
-} from "./admin/auth";
-import {
-  dateToTimestamp as adminDateToTimestamp,
-  timestampToDate as adminTimestampToDate
-  // Import other specific functions from admin/firestore
+//export { adminAuth, adminDb, adminStorage } from "./admin";
+
+// Admin exports
+export { adminAuth, adminDb, adminStorage } from "./admin";
+
+export {
+  dateToTimestamp,
+  timestampToDate,
+  timestampToISOString,
+  createBatch,
+  getDocRef,
+  getCollectionRef
 } from "./admin/firestore";
-import // Import specific functions from admin/storage
-"./admin/storage";
+// Server actions exports
+export {
+  // Auth functions
+  setCustomClaims,
+  verifyAndCreateUser,
+  getUserFromToken,
+  getCurrentUser,
+  sendResetPasswordEmail,
+  getUserByEmail,
+  getUser,
+  updateUser,
+  createUser,
+  deleteUser,
+  verifyIdToken,
 
-// Client exports (for browser usage)
-import { auth, db } from "./client"; // Removed storage from import
-import {
-  googleProvider,
-  githubProvider,
-  getCurrentUser as clientGetCurrentUser
-  // Import other specific functions from client/auth
-} from "./client/auth";
-import {
-  dateToTimestamp as clientDateToTimestamp,
-  timestampToDate as clientTimestampToDate
-  // Import other specific functions from client/firestore
-} from "./client/firestore";
+  // User functions
+  getUsers,
+  createUserDocument,
+  getUserRole,
+  setUserRole,
+  updateUserProfile,
+  getUserProfile,
 
-// Utility exports
-import {
+  // Activity functions
   logActivity,
   getUserActivityLogs
-  // Import other specific functions from utils/activity
-} from "./utils/activity";
-import // Import specific functions from utils/user
-"./utils/user";
-import {
-  getCurrentUser as utilsGetCurrentUser
-  // Import other specific functions from utils/auth
-} from "./utils/auth";
+} from "./actions";
 
-// Export admin objects
-export { adminAuth, adminDb, adminStorage };
+// Client exports
+export { auth, db, googleProvider, githubProvider } from "./client";
+export {
+  signInWithGoogle,
+  signInWithGithub,
+  signOut,
+  resetPassword,
+  verifyResetCode,
+  completePasswordReset,
+  getCurrentUserIdToken
+} from "./client/auth";
 
-// Export admin functions with explicit names
-export { adminSetCustomClaims as setCustomClaims, adminDateToTimestamp, adminTimestampToDate };
+export * from "./client/firestore";
 
-// Export client objects
-export { auth, db }; // Removed storage from export
+// Firestore utilities
+export {
+  adminDateToTimestamp,
+  adminTimestampToDate,
+  clientDateToTimestamp,
+  clientTimestampToDate
+} from "./utils/firestore";
 
-// Export client functions with explicit names
-export { googleProvider, githubProvider, clientGetCurrentUser, clientDateToTimestamp, clientTimestampToDate };
-
-// Export utility functions
-export { logActivity, getUserActivityLogs, utilsGetCurrentUser };
-
-// You can also re-export with different names to avoid conflicts
-export { utilsGetCurrentUser as getAuthUser };
+// Helper functions to avoid naming conflicts
+export { getCurrentUser as getServerCurrentUser } from "./actions";

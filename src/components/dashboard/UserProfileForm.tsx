@@ -26,7 +26,7 @@ interface ProfileFormProps {
   redirectAfterSuccess?: string;
 }
 
-export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/" }: ProfileFormProps) {
+export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/user" }: ProfileFormProps) {
   const { data: session, status, update: updateSessionFn } = useSession();
   const router = useRouter();
 
@@ -119,7 +119,7 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/" }: Pr
     if (onCancel) {
       onCancel();
     } else {
-      router.back();
+      router.push("/user");
     }
   };
 

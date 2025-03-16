@@ -1,7 +1,7 @@
 // /actions/auth/debug.ts
 "use server";
 
-import { adminAuth, adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase";
 import bcryptjs from "bcryptjs";
 import { auth } from "@/auth";
 

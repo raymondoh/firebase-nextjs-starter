@@ -97,7 +97,7 @@ export function SystemAlertsClient() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>System Alertsaa</CardTitle>
+        <CardTitle>System Alerts</CardTitle>
         <CardDescription>Important notifications about your system</CardDescription>
       </CardHeader>
       <CardContent>

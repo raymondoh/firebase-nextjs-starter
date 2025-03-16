@@ -1,13 +1,13 @@
-// firebase/admin/index.ts
+// src/firebase/admin/index.ts
+// Note: No "use server" directive here
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
-/**
- * Initialize the Firebase Admin SDK
- * This function ensures we only initialize the app once
- */
+// Mark this module as server-only to prevent client imports
+import "server-only";
+
 function initializeAdminApp(): App {
   const apps = getApps();
   if (apps.length > 0) {
@@ -29,22 +29,18 @@ function initializeAdminApp(): App {
   });
 }
 
-// Initialize the Firebase Admin app
 const firebaseAdmin = initializeAdminApp();
 
-// Export the Firebase Admin services
 export const adminAuth = getAuth(firebaseAdmin);
 export const adminDb = getFirestore(firebaseAdmin);
 export const adminStorage = getStorage(firebaseAdmin);
-
-// Ensure environment variables are typed
+// This is good, keep it as is
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
       FIREBASE_PROJECT_ID: string;
       FIREBASE_CLIENT_EMAIL: string;
       FIREBASE_PRIVATE_KEY: string;
-      FIREBASE_STORAGE_BUCKET?: string;
     }
   }
 }

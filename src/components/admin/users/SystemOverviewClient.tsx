@@ -18,7 +18,7 @@ export function SystemOverviewClient({ systemStats }: SystemOverviewClientProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>System Overviewqq</CardTitle>
+        <CardTitle>System Overview</CardTitle>
         <CardDescription>Key metrics about your application</CardDescription>
       </CardHeader>
       <CardContent>

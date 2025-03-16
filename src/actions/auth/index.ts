@@ -5,4 +5,4 @@ export * from "./password";
 export * from "./session";
 export * from "./debug";
 export * from "./firebase-auth";
-//export * from "./google";
+export * from "./google"; // delete
