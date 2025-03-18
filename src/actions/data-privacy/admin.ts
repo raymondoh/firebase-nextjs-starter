@@ -1,7 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import { adminDb } from "@/firebase";
+//import { adminDb } from "@/firebase";
+import * as admin from "@/firebase/admin"; // Be very specific
 import { processAccountDeletion } from "./deletion";
 import type { ProcessDeletionsResult } from "@/types/data-privacy/deletion";
 
@@ -20,7 +21,10 @@ export async function processPendingDeletions(): Promise<ProcessDeletionsResult>
 
   try {
     // Get all pending deletion requests
-    const pendingRequestsSnapshot = await adminDb.collection("deletionRequests").where("status", "==", "pending").get();
+    const pendingRequestsSnapshot = await admin.adminDb
+      .collection("deletionRequests")
+      .where("status", "==", "pending")
+      .get();
 
     console.log(`Found ${pendingRequestsSnapshot.size} pending deletion requests`);
 

@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useActionState } from "react";
-import { updatePassword } from "@/actions/auth"; // Updated function name
+import { updatePassword } from "@/actions"; // Updated function name
 import { toast } from "sonner";
-import type { UpdatePasswordState } from "@/types/auth"; // Updated type name
+import type { UpdatePasswordState } from "@/types"; // Updated type name
 
 export function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState("");

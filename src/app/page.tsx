@@ -1,9 +1,13 @@
+"use client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { CheckCircle, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
+  // In your header component
+  const router = useRouter();
   return (
     <div className="bg-background text-foregroundcontainer mx-auto px-4">
       {/* Hero Section */}
@@ -30,6 +34,7 @@ export default function Page() {
           </div>
         </div>
       </section>
+      <button onClick={() => router.push("/login")}>Login</button>
 
       {/* Features Section */}
       <section className="py-20">

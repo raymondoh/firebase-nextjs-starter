@@ -1,14 +1,11 @@
 "use server";
 
 import bcryptjs from "bcryptjs";
-import { adminAuth, adminDb } from "@/firebase";
-import { logActivity } from "@/firebase";
-import { registerSchema } from "@/schemas/auth/register";
-import type { RegisterState } from "@/types/auth/register";
-
-// Functions: registerUser
-// The registerUser function is used to register a new user account.
-// It creates a new user in Firebase Auth and a user document in Firestore.
+//import { adminAuth, adminDb } from "@/firebase";
+import * as admin from "@/firebase/admin";
+import { logActivity } from "@/firebase/actions";
+import { registerSchema } from "@/schemas";
+import type { RegisterState } from "@/types";
 
 // REGISTRATION
 export async function registerUser(prevState: RegisterState, formData: FormData): Promise<RegisterState> {
@@ -43,7 +40,7 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
     return {
       success: false,
       message: errorMessage,
-      error: errorMessage // Use 'error' instead of 'errors.general'
+      error: errorMessage
     };
   }
 
@@ -56,10 +53,11 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
     // Create the user in Firebase Auth
     let userRecord;
     try {
-      userRecord = await adminAuth.createUser({
+      userRecord = await admin.adminAuth.createUser({
         email,
         password,
-        displayName: name || email.split("@")[0] // Use email username as fallback
+        displayName: name || email.split("@")[0], // Use email username as fallback
+        emailVerified: false // Set to false initially for verification
       });
       console.log("User created in Firebase Auth:", userRecord.uid);
     } catch (error: any) {
@@ -68,7 +66,7 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
         return {
           success: false,
           message: "Email already in use. Please try logging in instead.",
-          error: "Email already in use. Please try logging in instead." // Use 'error' instead of 'errors.email'
+          error: "Email already in use. Please try logging in instead."
         };
       }
       throw error;
@@ -76,20 +74,20 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
 
     // Check if this is the first user in the system (to assign admin role)
     console.log("Checking if this is the first user in the system");
-    const usersSnapshot = await adminDb.collection("users").count().get();
+    const usersSnapshot = await admin.adminDb.collection("users").count().get();
     const isFirstUser = usersSnapshot.data().count === 0;
     const role = isFirstUser ? "admin" : "user";
     console.log(`User role determined: ${role} (isFirstUser: ${isFirstUser})`);
 
     // If this is the first user, set custom claims
     if (isFirstUser) {
-      await adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin" });
+      await admin.adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin" });
       console.log("Set admin custom claims for first user");
     }
 
     console.log("Creating user document in Firestore");
     // Create user document in Firestore with the hashed password
-    await adminDb
+    await admin.adminDb
       .collection("users")
       .doc(userRecord.uid)
       .set({
@@ -97,6 +95,7 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
         email,
         role, // Use the determined role instead of hardcoding "user"
         passwordHash, // Store the hashed password
+        emailVerified: false, // Track email verification status
         createdAt: new Date()
       });
     console.log("User document created in Firestore");
@@ -104,8 +103,8 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
     // Log activity
     await logActivity({
       userId: userRecord.uid,
-      type: "login",
-      description: "Account created",
+      type: "register",
+      description: "Account created, email verification required",
       status: "success"
     });
     console.log("Activity logged");
@@ -113,17 +112,19 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
     // Return the user ID, email, and role along with success message
     return {
       success: true,
-      message: "Registration successful!",
+      message: "Registration successful! Please verify your email.",
       userId: userRecord.uid,
       email: email,
-      role: role // Return the determined role instead of hardcoding "user"
+      role: role,
+      requiresVerification: true, // Add this flag to indicate verification is needed
+      password: password // Include password for client-side verification (will be used only for sending verification email)
     };
   } catch (error) {
     console.error("Registration error:", error);
     return {
       success: false,
       message: "An error occurred during registration. Please try again.",
-      error: "An error occurred during registration. Please try again." // Use 'error' instead of 'errors.general'
+      error: "An error occurred during registration. Please try again."
     };
   }
 }

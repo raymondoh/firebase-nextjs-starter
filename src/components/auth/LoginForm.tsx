@@ -1,25 +1,23 @@
 "use client";
 
-import type React from "react";
-import type { LoginState } from "@/types/auth";
-
-import { useState, useEffect, startTransition, useRef } from "react";
-import { useActionState } from "react";
+import React, { useActionState, useState, useEffect, startTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LoaderCircle, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { loginUser } from "@/actions/auth";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { auth } from "@/firebase/client";
+//
+import { useSession } from "next-auth/react";
 import { signInWithCustomToken } from "firebase/auth";
-import { signInWithFirebase } from "@/actions/auth/firebase-auth";
-import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { auth } from "@/firebase/client";
+import { loginUser, signInWithFirebase } from "@/actions/auth";
+import type { LoginState } from "@/types/auth";
+import { GoogleAuthButton } from "@/components";
+import { CloseButton } from "@/components";
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
@@ -136,10 +134,17 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
   return (
     <Card className={className} {...props}>
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your credentials to access your account</CardDescription>
-      </CardHeader>
+      <div className="relative">
+        {" "}
+        {/* Wrapper div with relative positioning */}
+        <CardHeader>
+          <div className="absolute right-2 top-2 z-10">
+            <CloseButton />
+          </div>
+          <CardTitle>Login</CardTitle>
+          <CardDescription>Enter your credentials to access your account</CardDescription>
+        </CardHeader>
+      </div>
       <CardContent>
         {state?.message && !state.success && (
           <Alert variant="destructive" className="mb-6">

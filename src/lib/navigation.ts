@@ -15,7 +15,9 @@ import {
   FileText,
   Database,
   Key,
-  AlertTriangle
+  AlertTriangle,
+  ShoppingBag,
+  CarIcon
 } from "lucide-react";
 
 // export type NavItem = {
@@ -57,6 +59,16 @@ export const generalNavItems: NavItem[] = [
     title: "Debug",
     href: "/debug-session",
     icon: Settings
+  },
+  {
+    title: "Carousel",
+    href: "/carousel",
+    icon: CarIcon
+  },
+  {
+    title: "Products",
+    href: "/products",
+    icon: ShoppingBag
   }
 ];
 

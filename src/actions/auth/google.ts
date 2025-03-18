@@ -1,6 +1,7 @@
 "use server";
 
-import { adminAuth, adminDb } from "@/firebase";
+//import { adminAuth, adminDb } from "@/firebase";
+import * as admin from "@/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { logActivity } from "@/firebase";
 import type { AuthActionResponse } from "@/types/auth/common";
@@ -29,7 +30,7 @@ export async function handleGoogleAuth(userInfo: {
 
     try {
       // Try to get the user by email
-      firebaseUser = await adminAuth.getUserByEmail(userInfo.email);
+      firebaseUser = await admin.adminAuth.getUserByEmail(userInfo.email);
       console.log("User already exists in Firebase:", firebaseUser.uid);
     } catch (error) {
       // User doesn't exist, create a new one
@@ -37,7 +38,7 @@ export async function handleGoogleAuth(userInfo: {
       isNewUser = true;
 
       // Create the user in Firebase Auth
-      firebaseUser = await adminAuth.createUser({
+      firebaseUser = await admin.adminAuth.createUser({
         email: userInfo.email,
         displayName: userInfo.name || userInfo.email.split("@")[0],
         photoURL: userInfo.picture,
@@ -47,14 +48,14 @@ export async function handleGoogleAuth(userInfo: {
     }
 
     // Check if this is the first user in the system (to assign admin role)
-    const usersSnapshot = await adminDb.collection("users").count().get();
+    const usersSnapshot = await admin.adminDb.collection("users").count().get();
     const isFirstUser = usersSnapshot.data().count === 0;
     const role = isFirstUser ? "admin" : "user";
 
     if (isNewUser) {
       // Create user document in Firestore for new users
       const now = new Date();
-      await adminDb
+      await admin.adminDb
         .collection("users")
         .doc(firebaseUser.uid)
         .set({
@@ -70,11 +71,11 @@ export async function handleGoogleAuth(userInfo: {
         });
 
       // Set custom claims for the user
-      await adminAuth.setCustomUserClaims(firebaseUser.uid, { role: role });
+      await admin.adminAuth.setCustomUserClaims(firebaseUser.uid, { role: role });
       console.log("Custom claims set for user");
     } else {
       // Update existing user's information
-      await adminDb
+      await admin.adminDb
         .collection("users")
         .doc(firebaseUser.uid)
         .update({
@@ -88,8 +89,8 @@ export async function handleGoogleAuth(userInfo: {
         });
 
       // Use a transaction to conditionally update fields only if they're empty
-      await adminDb.runTransaction(async transaction => {
-        const userDoc = await transaction.get(adminDb.collection("users").doc(firebaseUser.uid));
+      await admin.adminDb.runTransaction(async transaction => {
+        const userDoc = await transaction.get(admin.adminDb.collection("users").doc(firebaseUser.uid));
         const userData = userDoc.data();
 
         const updates: Record<string, any> = {};
@@ -103,7 +104,7 @@ export async function handleGoogleAuth(userInfo: {
         }
 
         if (Object.keys(updates).length > 0) {
-          transaction.update(adminDb.collection("users").doc(firebaseUser.uid), updates);
+          transaction.update(admin.adminDb.collection("users").doc(firebaseUser.uid), updates);
         }
       });
     }

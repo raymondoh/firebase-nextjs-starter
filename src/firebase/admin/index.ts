@@ -1,3 +1,4 @@
+import "server-only";
 // src/firebase/admin/index.ts
 // Note: No "use server" directive here
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";

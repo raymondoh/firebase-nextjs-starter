@@ -1,7 +1,8 @@
 "use server";
 
 import { auth, signOut } from "@/auth";
-import { adminAuth, adminDb, adminStorage } from "@/firebase";
+//import { adminAuth, adminDb, adminStorage } from "@/firebase";
+import * as admin from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { cookies } from "next/headers";
 import { accountDeletionSchema } from "@/schemas/data-privacy";
@@ -13,14 +14,14 @@ import type { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 export async function processAccountDeletion(userId: string) {
   try {
     // Delete user data from Firestore
-    const userDocRef = adminDb.collection("users").doc(userId);
+    const userDocRef = admin.adminDb.collection("users").doc(userId);
     await userDocRef.delete();
 
     // Delete user data from Firebase Authentication
-    await adminAuth.deleteUser(userId);
+    await admin.adminAuth.deleteUser(userId);
 
     // Delete any associated files from Firebase Storage (example)
-    const storageRef = adminStorage.bucket().file(`users/${userId}/profile.jpg`); // Adjust path as needed
+    const storageRef = admin.adminStorage.bucket().file(`users/${userId}/profile.jpg`); // Adjust path as needed
     try {
       await storageRef.delete();
     } catch (storageError: any) {
@@ -32,14 +33,14 @@ export async function processAccountDeletion(userId: string) {
     }
 
     // Update deletion request status
-    const deletionRequestRef = adminDb.collection("deletionRequests").doc(userId);
+    const deletionRequestRef = admin.adminDb.collection("deletionRequests").doc(userId);
     await deletionRequestRef.update({
       status: "completed",
       completedAt: Timestamp.now()
     });
 
     // Log this activity
-    await adminDb.collection("activityLogs").add({
+    await admin.adminDb.collection("activityLogs").add({
       userId: userId,
       type: "deletion_completed",
       description: "Account deletion completed",
@@ -72,7 +73,7 @@ export async function requestAccountDeletion(
     const validatedData = accountDeletionSchema.parse({ immediateDelete });
 
     // Create a deletion request in Firestore
-    await adminDb.collection("deletionRequests").doc(session.user.id).set({
+    await admin.adminDb.collection("deletionRequests").doc(session.user.id).set({
       userId: session.user.id,
       email: session.user.email,
       requestedAt: Timestamp.now(),
@@ -81,7 +82,7 @@ export async function requestAccountDeletion(
     });
 
     // Log this activity
-    await adminDb.collection("activityLogs").add({
+    await admin.adminDb.collection("activityLogs").add({
       userId: session.user.id,
       type: "deletion_request",
       description: "Account deletion requested",

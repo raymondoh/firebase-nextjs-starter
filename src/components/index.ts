@@ -2,21 +2,16 @@ export { Header } from "./header/Header";
 export { Footer } from "./footer/Footer";
 export { Navbar } from "./header/Navbar";
 export { ModeToggle } from "./header/ModeToggle";
+export { AuthModal } from "./auth/AuthModal";
 export { ChangePasswordForm } from "./auth/ChangePasswordForm";
+export { CloseButton } from "./auth/CloseButton";
+
 export { ForgotPasswordForm } from "./auth/ForgotPasswordForm";
 export { GoogleAuthButton } from "./auth/GoogleAuthButton";
 export { LoginForm } from "./auth/LoginForm";
 export { RegisterForm } from "./auth/RegisterForm";
 export { ResetPasswordForm } from "./auth/ResetPasswordForm";
 
-//sidebar
-// export { AppSidebar } from "./dashboard/AppSidebar";
-// export { DashboardHeader } from "./dashboard/DashboardHeader";
-// export { DashboardShell } from "./dashboard/DashboardShell";
-// export { UserProfileForm } from "./dashboard/UserProfileForm";
-// export { AccountSettingsForm } from "./dashboard/AccountSettingsForm";
-// export { SecuritySettingsForm } from "./dashboard/SecuritySettingsForm";
-// export { PreferenceSettingsForm } from "./dashboard/PreferenceSettingsForm";
 export * from "./dashboard";
 
 export * from "./admin";

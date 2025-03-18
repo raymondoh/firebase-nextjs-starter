@@ -1,27 +1,41 @@
 // src/firebase/index.ts
 // Main exports for the Firebase module
 
-// Import admin objects and server functions
-//import { adminAuth, adminDb, getCurrentUser, logActivity } from "@/firebase";
+/**
+ * HOW TO IMPORT FIREBASE FUNCTIONS:
+ *
+ * -  For Firebase Admin SDK (server-side functions):
+ * import * as admin from "@/firebase/admin";
+ * Then use admin.adminAuth, admin.adminDb, etc., and server functions like
+ * admin.getUserByEmail, admin.createUser, etc.
+ *
+ * -  For Firebase Client SDK (client-side functions):
+ * import { auth, db, ... } from "@/firebase/client";
+ * Or import directly from "@/firebase";  (index.ts re-exports client)
+ * Then use auth, db, and client functions like signInWithGoogle, etc.
+ *
+ * -  For shared utilities:
+ * import { utilityFunction } from "@/firebase/utils/some-util";
+ */
 
-// Import admin objects and server functions
-//import { adminAuth, adminDb, getCurrentUser, logActivity } from "@/firebase";
+import * as admin from "./admin";
 
-// Admin exports
-//export { adminAuth, adminDb, adminStorage } from "./admin";
+export { admin };
 
-// Admin exports
-export { adminAuth, adminDb, adminStorage } from "./admin";
+// Client exports
+export { auth, db, googleProvider, githubProvider } from "./client";
 
+export * from "./client/firestore";
+
+// Firestore utilities
 export {
-  dateToTimestamp,
-  timestampToDate,
-  timestampToISOString,
-  createBatch,
-  getDocRef,
-  getCollectionRef
-} from "./admin/firestore";
-// Server actions exports
+  adminDateToTimestamp,
+  adminTimestampToDate,
+  clientDateToTimestamp,
+  clientTimestampToDate
+} from "./utils/firestore";
+
+// Server actions exports (group in admin)
 export {
   // Auth functions
   setCustomClaims,
@@ -48,28 +62,6 @@ export {
   logActivity,
   getUserActivityLogs
 } from "./actions";
-
-// Client exports
-export { auth, db, googleProvider, githubProvider } from "./client";
-export {
-  signInWithGoogle,
-  signInWithGithub,
-  signOut,
-  resetPassword,
-  verifyResetCode,
-  completePasswordReset,
-  getCurrentUserIdToken
-} from "./client/auth";
-
-export * from "./client/firestore";
-
-// Firestore utilities
-export {
-  adminDateToTimestamp,
-  adminTimestampToDate,
-  clientDateToTimestamp,
-  clientTimestampToDate
-} from "./utils/firestore";
 
 // Helper functions to avoid naming conflicts
 export { getCurrentUser as getServerCurrentUser } from "./actions";

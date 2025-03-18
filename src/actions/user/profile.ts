@@ -1,7 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import { adminAuth, adminDb } from "@/firebase";
+//import { adminAuth, adminDb } from "@/firebase";
+import * as admin from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { profileUpdateSchema } from "@/schemas/user";
 import type { ProfileUpdateState } from "@/types/user/profile";
@@ -23,10 +24,10 @@ export async function getProfile(): Promise<ProfileUpdateState> {
 
   try {
     // Get user data from Firebase Auth
-    const user = await adminAuth.getUser(session.user.id);
+    const user = await admin.adminAuth.getUser(session.user.id);
 
     // Get additional user data from Firestore
-    const userDoc = await adminDb.collection("users").doc(session.user.id).get();
+    const userDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
 
     if (!userData) {
@@ -91,7 +92,7 @@ export async function updateUserProfile(
     if (Object.keys(authUpdate).length > 0) {
       try {
         console.log("Updating Firebase Auth with:", authUpdate);
-        await adminAuth.updateUser(session.user.id, authUpdate);
+        await admin.adminAuth.updateUser(session.user.id, authUpdate);
         console.log("Firebase Auth updated successfully");
       } catch (error) {
         console.error("Error updating Firebase Auth:", error);
@@ -116,7 +117,7 @@ export async function updateUserProfile(
     // Update Firestore
     try {
       console.log("Updating Firestore with:", firestoreUpdate);
-      await adminDb.collection("users").doc(session.user.id).update(firestoreUpdate);
+      await admin.adminDb.collection("users").doc(session.user.id).update(firestoreUpdate);
       console.log("Firestore updated successfully");
     } catch (error) {
       console.error("Error updating Firestore:", error);
@@ -124,8 +125,8 @@ export async function updateUserProfile(
     }
 
     // Fetch the updated user profile
-    const updatedUser = await adminAuth.getUser(session.user.id);
-    const userDoc = await adminDb.collection("users").doc(session.user.id).get();
+    const updatedUser = await admin.adminAuth.getUser(session.user.id);
+    const userDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
 
     return {

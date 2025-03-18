@@ -2,7 +2,8 @@
 
 import bcryptjs from "bcryptjs";
 import { auth } from "@/auth";
-import { adminAuth, adminDb } from "@/firebase";
+//import { adminAuth, adminDb } from "@/firebase";
+import * as admin from "@/firebase/admin";
 import { logActivity } from "@/firebase";
 import { forgotPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
 import type { ForgotPasswordState, UpdatePasswordState } from "@/types/auth/password";
@@ -94,7 +95,7 @@ export async function requestPasswordReset(
     console.log("Attempting to send password reset email for:", email);
 
     // Log Firebase Admin initialization status
-    console.log("Firebase Admin initialized:", !!adminAuth);
+    console.log("Firebase Admin initialized:", !!admin.adminAuth);
 
     // Log the reset URL that will be used
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`;
@@ -111,7 +112,7 @@ export async function requestPasswordReset(
     // Log before the actual API call
     console.log("Calling adminAuth.generatePasswordResetLink...");
 
-    await adminAuth.generatePasswordResetLink(email, actionCodeSettings);
+    await admin.adminAuth.generatePasswordResetLink(email, actionCodeSettings);
 
     console.log("Password reset email sent successfully");
     return { success: true };
@@ -139,14 +140,14 @@ export async function syncPasswordWithFirestore(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Get the user record
-    const userRecord = await adminAuth.getUserByEmail(email);
+    const userRecord = await admin.adminAuth.getUserByEmail(email);
 
     // Hash the new password
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(password, salt);
 
     // Update Firestore
-    await adminDb.collection("users").doc(userRecord.uid).update({
+    await admin.adminDb.collection("users").doc(userRecord.uid).update({
       passwordHash: hashedPassword,
       updatedAt: new Date()
     });
@@ -198,7 +199,7 @@ export async function updatePassword(prevState: UpdatePasswordState, formData: F
 
   try {
     // Get user data from Firestore to check current password
-    const userDoc = await adminDb.collection("users").doc(session.user.id).get();
+    const userDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
 
     if (!userData || !userData.passwordHash) {
@@ -216,12 +217,12 @@ export async function updatePassword(prevState: UpdatePasswordState, formData: F
     const newPasswordHash = await bcryptjs.hash(newPassword, salt);
 
     // Update password in Firebase Auth
-    await adminAuth.updateUser(session.user.id, {
+    await admin.adminAuth.updateUser(session.user.id, {
       password: newPassword
     });
 
     // Update password hash in Firestore
-    await adminDb.collection("users").doc(session.user.id).update({
+    await admin.adminDb.collection("users").doc(session.user.id).update({
       passwordHash: newPasswordHash,
       updatedAt: new Date()
     });

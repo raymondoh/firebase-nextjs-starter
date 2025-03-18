@@ -1,7 +1,8 @@
 // /actions/auth/debug.ts
 "use server";
 
-import { adminAuth, adminDb } from "@/firebase";
+//import { adminAuth, adminDb } from "@/firebase";
+import * as admin from "@/firebase/admin";
 import bcryptjs from "bcryptjs";
 import { auth } from "@/auth";
 
@@ -19,11 +20,11 @@ export async function debugPasswordVerification(email: string, password: string)
   }
   try {
     // Get user from Firebase Auth
-    const userRecord = await adminAuth.getUserByEmail(email);
+    const userRecord = await admin.adminAuth.getUserByEmail(email);
     console.log("User found in Firebase Auth:", userRecord.uid);
 
     // Get user data from Firestore
-    const userDoc = await adminDb.collection("users").doc(userRecord.uid).get();
+    const userDoc = await admin.adminDb.collection("users").doc(userRecord.uid).get();
     const userData = userDoc.data();
 
     if (!userData) {

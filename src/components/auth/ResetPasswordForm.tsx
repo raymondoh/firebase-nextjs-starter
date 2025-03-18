@@ -14,6 +14,7 @@ import { auth } from "@/firebase/client";
 import { verifyPasswordResetCode, confirmPasswordReset } from "firebase/auth";
 import { syncPasswordWithFirestore } from "@/actions/auth/password";
 import type { ResetPasswordState } from "@/types/auth/password";
+//import { WelcomeMessage } from "./WelcomeMessage";
 
 export function ResetPasswordForm() {
   const router = useRouter();

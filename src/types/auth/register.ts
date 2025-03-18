@@ -7,5 +7,7 @@ export type RegisterState =
       userId?: string;
       email?: string;
       role?: UserRole;
+      requiresVerification: boolean;
+      password: string;
     })
   | null;

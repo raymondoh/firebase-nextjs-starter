@@ -36,7 +36,9 @@
     "src/app/(app-dashboard)/layout.tsxX",
     "src/components/dashboard/dashboard-sidebar.tsxX",
     "src/components/SessionChecker.tsxX",
-    "src/app/(app-dashboard)/admin/layout.tsx"
+    "src/app/(app-dashboard)/admin/layout.tsx",
+    "src/actions/auth/register-with-verifications.tsxX",
+    "src/components/auth/RegisterFormWithVerificationX.tsxX"
   ],
   "exclude": ["node_modules"]
 }
