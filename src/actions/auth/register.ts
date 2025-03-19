@@ -1,3 +1,4 @@
+// src/actions/auth/register
 "use server";
 
 import bcryptjs from "bcryptjs";

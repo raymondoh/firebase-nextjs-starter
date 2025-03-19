@@ -1,4 +1,4 @@
-// app/auth-action/page.tsx
+// // app/auth-action/page.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -11,6 +11,9 @@ export default function AuthActionHandler() {
 
   useEffect(() => {
     const mode = searchParams.get("mode");
+    const oobCode = searchParams.get("oobCode");
+
+    // Just pass the original query string without adding serverProcessed flag
     const queryString = window.location.search;
 
     if (mode === "verifyEmail") {

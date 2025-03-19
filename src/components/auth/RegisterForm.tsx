@@ -498,23 +498,23 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { registerUser, loginUser } from "@/actions/auth"; // Import loginUser
-import { useSession } from "next-auth/react"; // Add signIn import
+import { registerUser, loginUser } from "@/actions/auth";
+import { useSession } from "next-auth/react";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import { signInWithCustomToken, sendEmailVerification } from "firebase/auth";
 import { signInWithFirebase } from "@/actions/auth/firebase-auth";
-// Add this import at the top of the file
+
 import { getVerificationSettings } from "@/firebase/client/auth";
 import { CloseButton } from "@/components";
 
 export function RegisterForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
-  const { update } = useSession(); // Add this to get the session update function
+  const { update } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false); // Add state for Google sign-in
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false); //
 
   // Store form values in state
   const [email, setEmail] = useState("");
