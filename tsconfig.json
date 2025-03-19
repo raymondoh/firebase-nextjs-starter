@@ -38,7 +38,9 @@
     "src/components/SessionChecker.tsxX",
     "src/app/(app-dashboard)/admin/layout.tsx",
     "src/actions/auth/register-with-verifications.tsxX",
-    "src/components/auth/RegisterFormWithVerificationX.tsxX"
+    "src/components/auth/RegisterFormWithVerificationX.tsxX",
+    "src/components/auth/EmailVerificationStatusX.tsxX",
+    "src/components/auth/EmailVerification.XtsxX"
   ],
   "exclude": ["node_modules"]
 }

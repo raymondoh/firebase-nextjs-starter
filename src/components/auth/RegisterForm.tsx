@@ -507,6 +507,7 @@ import { signInWithCustomToken, sendEmailVerification } from "firebase/auth";
 import { signInWithFirebase } from "@/actions/auth/firebase-auth";
 // Add this import at the top of the file
 import { getVerificationSettings } from "@/firebase/client/auth";
+import { CloseButton } from "@/components";
 
 export function RegisterForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
@@ -835,10 +836,17 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
 
   return (
     <Card className={className} {...props}>
-      <CardHeader>
-        <CardTitle>Register</CardTitle>
-        <CardDescription>Create a new account</CardDescription>
-      </CardHeader>
+      <div className="relative">
+        {" "}
+        {/* Wrapper div with relative positioning */}
+        <CardHeader>
+          <div className="absolute right-2 top-2 z-10">
+            <CloseButton />
+          </div>
+          <CardTitle>Register</CardTitle>
+          <CardDescription>Create a new account</CardDescription>
+        </CardHeader>
+      </div>
       <CardContent>
         {state?.error && (
           <Alert variant="destructive" className="mb-6">

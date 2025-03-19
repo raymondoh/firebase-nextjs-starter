@@ -1,8 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-//import { adminDb, adminStorage } from "@/firebase";
-import * as admin from "@/firebase/admin";
+import { adminDb, adminStorage } from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { exportDataSchema } from "@/schemas/data-privacy";
 //import type { ExportFormat, ExportDataState } from "@/types/data-privacy";
@@ -31,7 +30,7 @@ export async function exportUserData(prevState: ExportDataState | null, formData
     }
 
     // Get user data from Firestore
-    const userDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
+    const userDoc = await adminDb.collection("users").doc(session.user.id).get();
     if (!userDoc.exists) {
       return { success: false, error: "User data not found" };
     }
@@ -39,7 +38,7 @@ export async function exportUserData(prevState: ExportDataState | null, formData
     // Get user's activity logs
     let activityLogs = [];
     try {
-      const activityLogsSnapshot = await admin.adminDb
+      const activityLogsSnapshot = await adminDb
         .collection("activityLogs")
         .where("userId", "==", session.user.id)
         .orderBy("timestamp", "desc")
@@ -93,7 +92,7 @@ export async function exportUserData(prevState: ExportDataState | null, formData
 
     // Upload to Firebase Storage
     const fileName = `data-exports/${session.user.id}/user-data-${Date.now()}.${fileExtension}`;
-    const bucket = admin.adminStorage.bucket();
+    const bucket = adminStorage.bucket();
     const file = bucket.file(fileName);
 
     await file.save(fileContent, {
@@ -109,7 +108,7 @@ export async function exportUserData(prevState: ExportDataState | null, formData
     });
 
     // Log this export activity
-    await admin.adminDb.collection("activityLogs").add({
+    await adminDb.collection("activityLogs").add({
       userId: session.user.id,
       type: "data_export",
       description: `Data exported in ${format.toUpperCase()} format`,

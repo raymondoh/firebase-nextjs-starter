@@ -1,7 +1,7 @@
 "use server";
 
-import * as admin from "@/firebase/admin";
-import { FieldValue } from "firebase-admin/firestore"; // Import directly!
+import { adminAuth, adminDb } from "@/firebase/admin"; // Import adminAuth and adminDb
+import { FieldValue } from "firebase-admin/firestore";
 import { logActivity } from "@/firebase";
 
 /**
@@ -21,7 +21,7 @@ export async function updateEmailVerificationStatus(userId: string, verified: bo
 
     // First, verify the user exists in Firebase Auth
     try {
-      const userRecord = await admin.adminAuth.getUser(userId);
+      const userRecord = await adminAuth.getUser(userId);
 
       // If the user doesn't exist in Auth, don't proceed
       if (!userRecord) {
@@ -48,7 +48,7 @@ export async function updateEmailVerificationStatus(userId: string, verified: bo
     }
 
     // Update the user document in Firestore
-    await admin.adminDb.collection("users").doc(userId).update({
+    await adminDb.collection("users").doc(userId).update({
       emailVerified: verified,
       updatedAt: FieldValue.serverTimestamp()
     });

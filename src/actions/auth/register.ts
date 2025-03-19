@@ -1,8 +1,7 @@
 "use server";
 
 import bcryptjs from "bcryptjs";
-//import { adminAuth, adminDb } from "@/firebase";
-import * as admin from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin";
 import { logActivity } from "@/firebase/actions";
 import { registerSchema } from "@/schemas";
 import type { RegisterState } from "@/types";
@@ -53,7 +52,7 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
     // Create the user in Firebase Auth
     let userRecord;
     try {
-      userRecord = await admin.adminAuth.createUser({
+      userRecord = await adminAuth.createUser({
         email,
         password,
         displayName: name || email.split("@")[0], // Use email username as fallback
@@ -74,20 +73,20 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
 
     // Check if this is the first user in the system (to assign admin role)
     console.log("Checking if this is the first user in the system");
-    const usersSnapshot = await admin.adminDb.collection("users").count().get();
+    const usersSnapshot = await adminDb.collection("users").count().get();
     const isFirstUser = usersSnapshot.data().count === 0;
     const role = isFirstUser ? "admin" : "user";
     console.log(`User role determined: ${role} (isFirstUser: ${isFirstUser})`);
 
     // If this is the first user, set custom claims
     if (isFirstUser) {
-      await admin.adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin" });
+      await adminAuth.setCustomUserClaims(userRecord.uid, { role: "admin" });
       console.log("Set admin custom claims for first user");
     }
 
     console.log("Creating user document in Firestore");
     // Create user document in Firestore with the hashed password
-    await admin.adminDb
+    await adminDb
       .collection("users")
       .doc(userRecord.uid)
       .set({

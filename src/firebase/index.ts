@@ -5,17 +5,31 @@
  * HOW TO IMPORT FIREBASE FUNCTIONS:
  *
  * -  For Firebase Admin SDK (server-side functions):
- * import * as admin from "@/firebase/admin";
- * Then use admin.adminAuth, admin.adminDb, etc., and server functions like
- * admin.getUserByEmail, admin.createUser, etc.
+ * In server-side files (e.g., actions, API routes), import directly from the admin modules:
+ * * ```typescript
+ * import { adminAuth, adminDb } from "@/firebase/admin";
+ * // Or import the entire namespace if preferred:
+ * // import * as admin from "@/firebase/admin";
+ * ```
+ *
+ * Then, use `adminAuth`, `adminDb`, etc., and server functions like
+ * `adminAuth.getUserByEmail`, `adminAuth.createUser`, etc.
  *
  * -  For Firebase Client SDK (client-side functions):
- * import { auth, db, ... } from "@/firebase/client";
- * Or import directly from "@/firebase";  (index.ts re-exports client)
- * Then use auth, db, and client functions like signInWithGoogle, etc.
+ * In client-side files (e.g., components, pages), import from "@/firebase/client" or directly from "@/firebase" (which re-exports client functions):
+ *
+ * ```typescript
+ * import { auth, db, signInWithGoogle } from "@/firebase/client";
+ * // Or: import { auth, db, signInWithGoogle } from "@/firebase";
+ * ```
+ *
+ * Then, use `auth`, `db`, and client functions like `signInWithGoogle`, etc.
  *
  * -  For shared utilities:
- * import { utilityFunction } from "@/firebase/utils/some-util";
+ * Import from the specific utility file:
+ * * ```typescript
+ * import { clientDateToTimestamp } from "@/firebase/utils/firestore";
+ * ```
  */
 
 import * as admin from "./admin";

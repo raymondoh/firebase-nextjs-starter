@@ -14,7 +14,7 @@ export function CloseButton() {
       className="h-8 w-8 p-0 rounded-full hover:bg-muted"
       onClick={() => router.push("/")}
       aria-label="Close">
-      <X className="h-4 w-4" />
+      <X className="h-6 w-6" />
     </Button>
   );
 }

@@ -16,6 +16,7 @@ import { signInWithCustomToken } from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { loginUser, signInWithFirebase } from "@/actions/auth";
 import type { LoginState } from "@/types/auth";
+
 import { GoogleAuthButton } from "@/components";
 import { CloseButton } from "@/components";
 

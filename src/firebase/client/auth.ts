@@ -15,27 +15,25 @@ import {
 } from "firebase/auth";
 
 // Configure Firebase Auth action code settings
-export const actionCodeSettings: ActionCodeSettings = {
-  // URL you want to redirect back to after email verification
-  url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/verify-email`,
-  // This must be false for email verification to work with custom handling
+const actionCodeSettings: ActionCodeSettings = {
+  url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth-action`,
   handleCodeInApp: false
 };
 
 // Function to apply these settings when sending verification emails
 export function getVerificationSettings(): ActionCodeSettings {
-  // Try to include the current user's UID in the continue URL if available
-  const currentUser = auth.currentUser;
-  let url = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/verify-email`;
-
-  // If we have a current user, add their UID to the URL
-  if (currentUser) {
-    url += `?uid=${currentUser.uid}`;
-  }
-
   return {
-    ...actionCodeSettings,
-    url
+    ...actionCodeSettings
+    // No need to add user ID to URL since we're using a universal handler
+    // url: actionCodeSettings.url, // Using the base url
+  };
+}
+
+// Configure Firebase Auth action code settings for password reset
+export function getPasswordResetSettings(): ActionCodeSettings {
+  return {
+    ...actionCodeSettings
+    // url: actionCodeSettings.url, // Using the base url
   };
 }
 
@@ -58,7 +56,7 @@ export async function signInWithGoogle(): Promise<{ success: boolean; user?: Use
 export async function signInWithGithub(): Promise<{ success: boolean; user?: User; error?: any }> {
   try {
     const result: UserCredential = await signInWithPopup(auth, githubProvider);
-    return { success: true, user: result.user as User };
+    return { success: true, user: result.user };
   } catch (error) {
     console.error("Error signing in with GitHub:", error);
     return { success: false, error };
@@ -83,7 +81,7 @@ export async function signOutUser(): Promise<{ success: boolean; error?: any }> 
  */
 export async function resetPassword(email: string): Promise<{ success: boolean; error?: any }> {
   try {
-    await sendPasswordResetEmail(auth, email);
+    await sendPasswordResetEmail(auth, email, getPasswordResetSettings());
     return { success: true };
   } catch (error) {
     console.error("Error sending password reset email:", error);
@@ -151,7 +149,15 @@ export const sendVerificationEmail = async (
   }
   try {
     if (auth.currentUser) {
-      await sendEmailVerification(auth.currentUser);
+      // Get the basic settings
+      const settings = getVerificationSettings();
+      // Optionally add the UID to the URL
+      let urlWithUid = settings.url;
+      if (auth.currentUser.uid) {
+        urlWithUid += `?uid=${auth.currentUser.uid}`;
+      }
+      // Send the email with the modified settings
+      await sendEmailVerification(auth.currentUser, { ...settings, url: urlWithUid });
       console.log("Verification email sent successfully");
       return Promise.resolve();
     } else {

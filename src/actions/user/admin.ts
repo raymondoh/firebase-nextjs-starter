@@ -1,8 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-//import { adminAuth, adminDb } from "@/firebase";
-import * as admin from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
 import type { User, UserRole, UserSearchState, UserRoleUpdateState } from "@/types/user/common";
@@ -23,7 +22,7 @@ export async function fetchUsers(limit = 10, offset = 0) {
 
   try {
     // Check if user is admin
-    const userDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
+    const userDoc = await adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
 
     if (!userData || userData.role !== "admin") {
@@ -31,11 +30,11 @@ export async function fetchUsers(limit = 10, offset = 0) {
     }
 
     // Fetch users with pagination
-    const usersQuery = admin.adminDb.collection("users").limit(limit).offset(offset);
+    const usersQuery = adminDb.collection("users").limit(limit).offset(offset);
     const usersSnapshot = await usersQuery.get();
 
     // Get total count (for pagination)
-    const totalSnapshot = await admin.adminDb.collection("users").count().get();
+    const totalSnapshot = await adminDb.collection("users").count().get();
     const total = totalSnapshot.data().count;
 
     // Map results to User objects
@@ -85,7 +84,7 @@ export async function searchUsers(prevState: UserSearchState, formData: FormData
 
   try {
     // Check if user is admin
-    const userDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
+    const userDoc = await adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
 
     if (!userData || userData.role !== "admin") {
@@ -98,7 +97,7 @@ export async function searchUsers(prevState: UserSearchState, formData: FormData
     const offset = Number.parseInt(formData.get("offset") as string) || 0;
 
     // Perform search
-    let usersQuery: CollectionReference<DocumentData> | Query<DocumentData> = admin.adminDb.collection("users");
+    let usersQuery: CollectionReference<DocumentData> | Query<DocumentData> = adminDb.collection("users");
 
     if (query) {
       // Search by name, email, or ID
@@ -115,7 +114,7 @@ export async function searchUsers(prevState: UserSearchState, formData: FormData
     const usersSnapshot = await usersQuery.get();
 
     // Get total count (for pagination)
-    const totalSnapshot = await admin.adminDb.collection("users").count().get();
+    const totalSnapshot = await adminDb.collection("users").count().get();
     const total = totalSnapshot.data().count;
 
     // Map results to User objects
@@ -125,7 +124,7 @@ export async function searchUsers(prevState: UserSearchState, formData: FormData
 
         try {
           // Get user from Firebase Auth for latest info
-          const authUser = await admin.adminAuth.getUser(doc.id);
+          const authUser = await adminAuth.getUser(doc.id);
 
           return {
             id: doc.id,
@@ -172,7 +171,7 @@ export async function updateUserRole(prevState: UserRoleUpdateState, formData: F
 
   try {
     // Check if user is admin
-    const adminDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
+    const adminDoc = await adminDb.collection("users").doc(session.user.id).get();
     const adminData = adminDoc.data();
 
     if (!adminData || adminData.role !== "admin") {
@@ -198,7 +197,7 @@ export async function updateUserRole(prevState: UserRoleUpdateState, formData: F
     }
 
     // Update user role in Firestore
-    await admin.adminDb.collection("users").doc(userId).update({
+    await adminDb.collection("users").doc(userId).update({
       role,
       updatedAt: Timestamp.now()
     });
@@ -223,7 +222,7 @@ export async function updateUser(userId: string, userData: Partial<User>) {
 
   try {
     // Check if user is admin
-    const adminDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
+    const adminDoc = await adminDb.collection("users").doc(session.user.id).get();
     const adminData = adminDoc.data();
 
     if (!adminData || adminData.role !== "admin") {
@@ -244,7 +243,7 @@ export async function updateUser(userId: string, userData: Partial<User>) {
     });
 
     // Update the user document
-    await admin.adminDb.collection("users").doc(userId).update(updateData);
+    await adminDb.collection("users").doc(userId).update(updateData);
 
     // Revalidate the users page
     revalidatePath("/admin/users");
@@ -266,7 +265,7 @@ export async function createUser(userData: Partial<User>) {
 
   try {
     // Check if user is admin
-    const adminDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
+    const adminDoc = await adminDb.collection("users").doc(session.user.id).get();
     const adminData = adminDoc.data();
 
     if (!adminData || adminData.role !== "admin") {
@@ -282,7 +281,7 @@ export async function createUser(userData: Partial<User>) {
     };
 
     // Create the user document
-    const userRef = await admin.adminDb.collection("users").add(newUserData);
+    const userRef = await adminDb.collection("users").add(newUserData);
 
     // Revalidate the users page
     revalidatePath("/admin/users");
@@ -304,7 +303,7 @@ export async function deleteUser(userId: string) {
 
   try {
     // Check if user is admin
-    const adminDoc = await admin.adminDb.collection("users").doc(session.user.id).get();
+    const adminDoc = await adminDb.collection("users").doc(session.user.id).get();
     const adminData = adminDoc.data();
 
     if (!adminData || adminData.role !== "admin") {
@@ -317,7 +316,7 @@ export async function deleteUser(userId: string) {
     }
 
     // Delete the user document
-    await admin.adminDb.collection("users").doc(userId).delete();
+    await adminDb.collection("users").doc(userId).delete();
 
     // Revalidate the users page
     revalidatePath("/admin/users");
