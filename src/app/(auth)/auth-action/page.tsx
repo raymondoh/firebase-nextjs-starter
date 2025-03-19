@@ -16,17 +16,19 @@ export default function AuthActionHandler() {
     // Just pass the original query string without adding serverProcessed flag
     const queryString = window.location.search;
 
+    console.log("[AUTH_ACTION] Handling auth action with mode:", mode);
+
     if (mode === "verifyEmail") {
-      console.log("Redirecting to email verification handler");
+      console.log("[AUTH_ACTION] Redirecting to email verification handler");
       router.push(`/verify-email${queryString}`);
     } else if (mode === "resetPassword") {
-      console.log("Redirecting to password reset handler");
+      console.log("[AUTH_ACTION] Redirecting to password reset handler");
       router.push(`/reset-password${queryString}`);
     } else if (mode === "recoverEmail") {
-      console.log("Redirecting to email recovery handler");
+      console.log("[AUTH_ACTION] Redirecting to email recovery handler");
       router.push(`/recover-email${queryString}`);
     } else {
-      console.log("Unknown auth action mode, redirecting to home");
+      console.log("[AUTH_ACTION] Unknown auth action mode, redirecting to home");
       router.push("/");
     }
   }, [router, searchParams]);

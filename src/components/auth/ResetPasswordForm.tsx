@@ -13,7 +13,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
-import { CloseButton } from "@/components";
+
+// Import the server actions
+import { updatePasswordHash, getUserIdByEmail } from "@/actions/auth/password-reset";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -26,6 +28,7 @@ export function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [oobCode, setOobCode] = useState("");
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const mode = searchParams.get("mode");
@@ -41,6 +44,19 @@ export function ResetPasswordForm() {
           // This will throw an error if the code is invalid
           const email = await verifyPasswordResetCode(auth, code);
           setEmail(email);
+
+          // Try to get the user ID from Firebase Auth using our server action
+          try {
+            const result = await getUserIdByEmail(email);
+            if (result.success && result.userId) {
+              setUserId(result.userId);
+              console.log("Found user ID:", result.userId);
+            }
+          } catch (error) {
+            console.error("Error getting user ID:", error);
+            // Continue anyway, we'll try to update the password hash later
+          }
+
           setStatus("ready");
         } catch (error: any) {
           console.error("Error verifying password reset code:", error);
@@ -76,8 +92,34 @@ export function ResetPasswordForm() {
     setStatus("submitting");
 
     try {
-      // Confirm the password reset
+      // Confirm the password reset in Firebase Auth
       await confirmPasswordReset(auth, oobCode, password);
+
+      // Also update the password hash in Firestore if we have the user ID
+      if (userId) {
+        try {
+          console.log("Updating password hash in Firestore for user:", userId);
+          await updatePasswordHash(userId, password);
+          console.log("Password hash updated successfully in Firestore");
+        } catch (hashError) {
+          console.error("Error updating password hash in Firestore:", hashError);
+          // Continue anyway, the password was reset in Firebase Auth
+        }
+      } else if (email) {
+        // If we don't have the user ID but we have the email, try to get the user ID again
+        try {
+          const result = await getUserIdByEmail(email);
+          if (result.success && result.userId) {
+            console.log("Got user ID on second attempt:", result.userId);
+            await updatePasswordHash(result.userId, password);
+            console.log("Password hash updated successfully in Firestore");
+          }
+        } catch (idError) {
+          console.error("Error getting user ID on second attempt:", idError);
+        }
+      } else {
+        console.warn("No user ID or email available, password hash in Firestore not updated");
+      }
 
       setStatus("success");
       toast.success("Password reset successful! You can now log in with your new password.");
