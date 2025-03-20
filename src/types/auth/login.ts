@@ -10,4 +10,5 @@ export type LoginState = {
   email?: string;
   role?: UserRole; // Use UserRole enum here
   customToken?: string;
+  emailVerified?: boolean;
 } | null;

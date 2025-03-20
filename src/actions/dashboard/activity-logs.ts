@@ -1,6 +1,6 @@
 "use server";
 
-import { getUserActivityLogs } from "@/firebase";
+import { getUserActivityLogs } from "@/firebase/actions";
 import { auth } from "@/auth";
 
 interface PaginationParams {
@@ -34,19 +34,23 @@ export async function fetchActivityLogs(limitOrParams: number | PaginationParams
     }
 
     // Use the existing getUserActivityLogs function with pagination
-    const logs = await getUserActivityLogs(limit, startAfter, type);
+    const logsResult = await getUserActivityLogs(limit, startAfter, type);
 
-    // Serialize the logs to make them safe for client components
-    const serializedLogs = logs.map(log => ({
-      ...log,
-      // Convert Firestore Timestamp to ISO string
-      timestamp:
-        log.timestamp && typeof log.timestamp.toDate === "function"
-          ? log.timestamp.toDate().toISOString()
-          : log.timestamp
-    }));
+    if (logsResult.success && logsResult.activities) {
+      const serializedLogs = logsResult.activities.map(log => ({
+        ...log,
+        // Convert Firestore Timestamp to ISO string
+        timestamp:
+          log.timestamp && typeof log.timestamp.toDate === "function"
+            ? log.timestamp.toDate().toISOString()
+            : log.timestamp
+      }));
 
-    return serializedLogs;
+      return serializedLogs;
+    } else {
+      console.error("Error fetching activity logs:", logsResult.error);
+      return [];
+    }
   } catch (error) {
     console.error("Error fetching activity logs:", error);
     return [];

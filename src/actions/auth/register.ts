@@ -40,7 +40,9 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
     return {
       success: false,
       message: errorMessage,
-      error: errorMessage
+      error: errorMessage,
+      requiresVerification: false,
+      password: ""
     };
   }
 
@@ -66,7 +68,9 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
         return {
           success: false,
           message: "Email already in use. Please try logging in instead.",
-          error: "Email already in use. Please try logging in instead."
+          error: "Email already in use. Please try logging in instead.",
+          requiresVerification: false,
+          password: ""
         };
       }
       throw error;
@@ -124,7 +128,9 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
     return {
       success: false,
       message: "An error occurred during registration. Please try again.",
-      error: "An error occurred during registration. Please try again."
+      error: "An error occurred during registration. Please try again.",
+      requiresVerification: false,
+      password: ""
     };
   }
 }

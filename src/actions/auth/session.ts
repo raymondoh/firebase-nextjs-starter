@@ -20,7 +20,7 @@ export async function getSessionInfo() {
 // Check if session is valid
 export async function validateSession() {
   const session = await auth();
-  const cookieStore = cookies();
+  const cookieStore = await cookies(); // Await the promise here!
   const sessionToken = cookieStore.get("next-auth.session-token");
 
   return {

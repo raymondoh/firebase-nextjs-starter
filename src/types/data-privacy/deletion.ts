@@ -23,4 +23,5 @@ export type ProcessDeletionsResult = {
   success: boolean;
   processed: number;
   errors: number;
+  error?: string; // Added error property
 };

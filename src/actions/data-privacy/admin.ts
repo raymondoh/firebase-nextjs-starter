@@ -15,7 +15,12 @@ export async function processPendingDeletions(): Promise<ProcessDeletionsResult>
 
   // Check if user is admin
   if (!session?.user?.role || session.user.role !== "admin") {
-    throw new Error("Unauthorized. Only admins can process deletion requests.");
+    return {
+      success: false,
+      processed: 0,
+      errors: 0,
+      error: "Unauthorized. Only admins can process deletion requests."
+    };
   }
 
   try {
@@ -46,6 +51,6 @@ export async function processPendingDeletions(): Promise<ProcessDeletionsResult>
     return { success: true, processed, errors };
   } catch (error) {
     console.error("Error processing pending deletions:", error);
-    return { success: false, processed: 0, errors: 0 };
+    return { success: false, processed: 0, errors: 0, error: error instanceof Error ? error.message : String(error) };
   }
 }

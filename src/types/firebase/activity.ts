@@ -1,3 +1,4 @@
+// src/types/firebase/activity.ts
 import type { Timestamp } from "firebase-admin/firestore";
 
 /**

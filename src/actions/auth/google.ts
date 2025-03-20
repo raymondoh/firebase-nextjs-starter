@@ -33,6 +33,7 @@ export async function handleGoogleAuth(userInfo: {
       console.log("User already exists in Firebase:", firebaseUser.uid);
     } catch (error) {
       // User doesn't exist, create a new one
+      console.log(error);
       console.log("User doesn't exist in Firebase, creating new user");
       isNewUser = true;
 

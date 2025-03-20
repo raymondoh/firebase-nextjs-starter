@@ -10,7 +10,7 @@ import type { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 // Functions: requestAccountDeletion, processAccountDeletion
 
-export async function processAccountDeletion(userId: string) {
+export async function processAccountDeletion(userId: string): Promise<boolean> {
   try {
     // Delete user data from Firestore
     const userDocRef = adminDb.collection("users").doc(userId);
@@ -49,9 +49,28 @@ export async function processAccountDeletion(userId: string) {
     });
 
     console.log(`Account deletion completed for user ${userId}`);
+    return true; // Indicate success
   } catch (error) {
     console.error("Error processing account deletion:", error);
-    throw new Error("Failed to process account deletion"); // Re-throw to handle in caller
+
+    // Update deletion request status to failed
+    const deletionRequestRef = adminDb.collection("deletionRequests").doc(userId);
+    await deletionRequestRef.update({
+      status: "failed",
+      completedAt: Timestamp.now()
+    });
+
+    // Log this activity
+    await adminDb.collection("activityLogs").add({
+      userId: userId,
+      type: "deletion_failed",
+      description: "Account deletion failed",
+      timestamp: Timestamp.now(),
+      ipAddress: "N/A",
+      status: "failed"
+    });
+
+    return false; // Indicate failure
   }
 }
 
@@ -99,7 +118,7 @@ export async function requestAccountDeletion(
       await signOut({ redirect: false });
 
       // Clear cookies
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       const allCookies = cookieStore.getAll();
       allCookies.forEach((cookie: RequestCookie) => {
         cookieStore.set(cookie.name, "", { maxAge: 0 });

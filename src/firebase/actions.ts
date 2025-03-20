@@ -4,7 +4,12 @@ import { adminAuth, adminDb } from "./admin/index";
 import { auth } from "@/auth";
 import { Timestamp } from "firebase-admin/firestore";
 import type { User, UserRole } from "@/types/user";
-import type { ActivityLogData, GetUserActivityLogsResult, LogActivityResult } from "@/types/firebase/activity";
+import type {
+  ActivityLogData,
+  GetUserActivityLogsResult,
+  LogActivityResult,
+  ActivityLogWithId
+} from "@/types/firebase/activity";
 import type {
   SetCustomClaimsResult,
   VerifyAndCreateUserResult,
@@ -346,14 +351,14 @@ export async function getUserProfile(userId: string): Promise<GetUserProfileResu
  */
 export async function logActivity(data: Omit<ActivityLogData, "timestamp">): Promise<LogActivityResult> {
   try {
-    await adminDb.collection("activityLogs").add({
+    const docRef = await adminDb.collection("activityLogs").add({
       ...data,
       timestamp: Timestamp.now()
     });
-    return true;
+    return { success: true, activityId: docRef.id }; // Return the correct object
   } catch (error) {
     console.error("Error logging activity:", error instanceof Error ? error.message : String(error));
-    return false;
+    return { success: false, error: error instanceof Error ? error.message : String(error) }; // Return the correct object
   }
 }
 
@@ -368,22 +373,18 @@ export async function getUserActivityLogs(
   const session = await auth();
 
   if (!session?.user?.id) {
-    throw new Error("Not authenticated");
+    return { success: false, error: "Not authenticated" };
   }
 
   try {
-    // Start building the query
     let query = adminDb.collection("activityLogs").where("userId", "==", session.user.id);
 
-    // Add type filter if provided
     if (type) {
       query = query.where("type", "==", type);
     }
 
-    // Add ordering
     query = query.orderBy("timestamp", "desc");
 
-    // Add pagination if startAfter is provided
     if (startAfter) {
       const startAfterDoc = await adminDb.collection("activityLogs").doc(startAfter).get();
       if (startAfterDoc.exists) {
@@ -391,18 +392,30 @@ export async function getUserActivityLogs(
       }
     }
 
-    // Add limit
     query = query.limit(limit);
 
-    // Execute query
     const logsSnapshot = await query.get();
 
-    return logsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as GetUserActivityLogsResult;
+    const activities: ActivityLogWithId[] = logsSnapshot.docs.map(
+      doc =>
+        ({
+          id: doc.id,
+          userId: doc.data().userId,
+          type: doc.data().type,
+          description: doc.data().description,
+          status: doc.data().status,
+          timestamp: doc.data().timestamp,
+          ipAddress: doc.data().ipAddress,
+          location: doc.data().location,
+          device: doc.data().device,
+          deviceType: doc.data().deviceType,
+          metadata: doc.data().metadata
+        } as ActivityLogWithId)
+    );
+
+    return { success: true, activities };
   } catch (error) {
     console.error("Error getting activity logs:", error instanceof Error ? error.message : String(error));
-    return [];
+    return { success: false, error: "Error getting activity logs" };
   }
 }
