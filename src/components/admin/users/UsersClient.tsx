@@ -22,7 +22,7 @@ export function UsersClient({ initialUsers, totalUsers }: UsersClientProps) {
     try {
       const result = await fetchUsers(limit, page * limit);
       if (result.success) {
-        setUsers(result.users);
+        setUsers(result.users ?? []);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -38,7 +38,7 @@ export function UsersClient({ initialUsers, totalUsers }: UsersClientProps) {
     try {
       const result = await fetchUsers(limit, newPage * limit);
       if (result.success) {
-        setUsers(result.users);
+        setUsers(result.users ?? []);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -55,7 +55,7 @@ export function UsersClient({ initialUsers, totalUsers }: UsersClientProps) {
     try {
       const result = await fetchUsers(newLimit, 0);
       if (result.success) {
-        setUsers(result.users);
+        setUsers(result.users ?? []);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -65,9 +65,10 @@ export function UsersClient({ initialUsers, totalUsers }: UsersClientProps) {
   };
 
   return (
-    <UsersDataTable
+    <UsersDataTable<User, unknown>
       columns={columns}
-      data={users}
+      initialData={users}
+      totalUsers={totalUsers}
       isLoading={loading}
       refreshUsers={refreshUsers}
       pagination={{

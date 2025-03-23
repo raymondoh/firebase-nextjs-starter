@@ -9,15 +9,8 @@ import { db } from "@/firebase/client";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
-interface User {
-  id: string;
-  name?: string;
-  email: string;
-  role?: string;
-  createdAt: any;
-  lastLoginAt?: any;
-}
+import type { User } from "@/types/user";
+import { formatDate } from "@/utils/date";
 
 interface UserManagementPreviewProps {
   limit?: number;
@@ -42,7 +35,7 @@ export function UserManagementPreview({ limit: userLimit = 5 }: UserManagementPr
             role: data.role || "user",
             createdAt: data.createdAt?.toDate?.() || data.createdAt,
             lastLoginAt: data.lastLoginAt?.toDate?.() || data.lastLoginAt
-          };
+          } as User;
         });
 
         setUsers(usersData);
@@ -56,7 +49,7 @@ export function UserManagementPreview({ limit: userLimit = 5 }: UserManagementPr
     fetchUsers();
   }, [userLimit]);
 
-  function getInitials(name: string, email: string): string {
+  function getInitials(name: string | undefined | null, email: string): string {
     if (name) {
       return name
         .split(" ")
@@ -67,11 +60,6 @@ export function UserManagementPreview({ limit: userLimit = 5 }: UserManagementPr
     }
 
     return email.substring(0, 2).toUpperCase();
-  }
-
-  function formatDate(date: Date) {
-    if (!date) return "N/A";
-    return date.toLocaleDateString();
   }
 
   return (
@@ -104,11 +92,15 @@ export function UserManagementPreview({ limit: userLimit = 5 }: UserManagementPr
               <div key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <Avatar>
-                    <AvatarFallback>{getInitials(user.name || "", user.email)}</AvatarFallback>
+                    <AvatarFallback>{getInitials(user.name, user.email ?? "")}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium leading-none">{user.name || user.email.split("@")[0]}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <p className="text-sm font-medium leading-none">
+                      {user.name || user.email?.split("@")[0] || "Unknown"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{user.email || "No email"}</p>
+
+                    <p className="text-xs text-muted-foreground">{formatDate(user.createdAt)}</p>
                   </div>
                 </div>
                 <Badge variant={user.role === "admin" ? "default" : "outline"}>{user.role}</Badge>

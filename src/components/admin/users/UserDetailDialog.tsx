@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { formatDate } from "@/utils/date"; // Using your utility!
 
 interface UserDetailDialogProps {
   user: User;
@@ -47,11 +48,11 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
     }
   };
 
-  const handleChange = (field: keyof User, value: any) => {
+  const handleChange = (field: keyof User, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  function getInitials(name: string | undefined, email: string): string {
+  function getInitials(name: string, email: string): string {
     if (name) {
       return name
         .split(" ")
@@ -60,26 +61,7 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
         .toUpperCase()
         .substring(0, 2);
     }
-
     return email.substring(0, 2).toUpperCase();
-  }
-
-  function formatDateFull(timestamp: Date | null | undefined): string {
-    if (!timestamp) return "N/A";
-
-    try {
-      return new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        timeZoneName: "short"
-      }).format(timestamp);
-    } catch (error) {
-      return "Invalid date";
-    }
   }
 
   return (
@@ -100,18 +82,20 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
                 {formData.profileImage && (
-                  <AvatarImage src={formData.profileImage} alt={formData.name || formData.email} />
+                  <AvatarImage src={formData.profileImage ?? ""} alt={formData.name ?? formData.email ?? "User"} />
                 )}
-                <AvatarFallback className="text-lg">{getInitials(formData.name, formData.email)}</AvatarFallback>
+                <AvatarFallback className="text-lg">
+                  {getInitials(formData.name ?? "", formData.email ?? "")}
+                </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="text-lg font-medium">{formData.name || formData.email.split("@")[0]}</h3>
-                <p className="text-sm text-muted-foreground">{formData.email}</p>
+                <h3 className="text-lg font-medium">{formData.name ?? formData.email?.split("@")[0]}</h3>
+                <p className="text-sm text-muted-foreground">{formData.email ?? "No email"}</p>
                 <div className="mt-1 flex items-center gap-2">
                   <Badge variant={formData.role === "admin" ? "destructive" : "outline"}>
                     {formData.role || "user"}
                   </Badge>
-                  <Badge variant={formData.status === "active" ? "success" : "destructive"}>
+                  <Badge variant={formData.status === "active" ? "outline" : "destructive"}>
                     {formData.status || "active"}
                   </Badge>
                 </div>
@@ -126,7 +110,7 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
                   </Label>
                   <Input
                     id="name"
-                    value={formData.name || ""}
+                    value={formData.name ?? ""}
                     onChange={e => handleChange("name", e.target.value)}
                     className="col-span-3"
                   />
@@ -137,7 +121,7 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
                   </Label>
                   <Input
                     id="email"
-                    value={formData.email}
+                    value={formData.email ?? ""}
                     onChange={e => handleChange("email", e.target.value)}
                     className="col-span-3"
                   />
@@ -187,7 +171,7 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">Email Verification</h4>
-                  <p className="text-sm text-muted-foreground">User's email verification status</p>
+                  <p className="text-sm text-muted-foreground">User&aposs email verification status</p>
                 </div>
                 <Switch
                   checked={formData.emailVerified}
@@ -234,15 +218,15 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <h4 className="text-sm font-medium">Created At</h4>
-                  <p className="text-sm text-muted-foreground">{formatDateFull(formData.createdAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(formData.createdAt)}</p>
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-sm font-medium">Last Login</h4>
-                  <p className="text-sm text-muted-foreground">{formatDateFull(formData.lastLoginAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(formData.lastLoginAt)}</p>
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-sm font-medium">Last Updated</h4>
-                  <p className="text-sm text-muted-foreground">{formatDateFull(formData.updatedAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(formData.updatedAt)}</p>
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-sm font-medium">IP Address</h4>

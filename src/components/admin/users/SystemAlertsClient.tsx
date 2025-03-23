@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Timestamp } from "firebase/firestore";
 import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 import { db } from "@/firebase/client";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
@@ -15,7 +16,7 @@ interface SystemAlert {
   title: string;
   description: string;
   severity: "info" | "warning" | "error" | "success";
-  timestamp: any;
+  timestamp: Date | Timestamp | null;
   resolved: boolean;
 }
 

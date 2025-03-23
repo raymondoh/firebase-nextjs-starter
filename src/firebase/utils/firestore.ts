@@ -1,7 +1,6 @@
 // src/firebase/utils/firestore.ts
 import { Timestamp as AdminTimestamp } from "firebase-admin/firestore";
 import { Timestamp as ClientTimestamp } from "firebase/firestore";
-//import { Timestamp } from "firebase-admin/firestore";
 
 /**
  * Convert a Date to a Firestore Timestamp (admin)

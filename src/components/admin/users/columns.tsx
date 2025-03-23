@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/types/user/common";
 import Link from "next/link";
+import { formatDate } from "@/utils/date";
 
 // Helper function to get initials from name or email
 function getInitials(name: string | undefined | null, email: string | undefined | null): string {
@@ -26,60 +27,13 @@ function getInitials(name: string | undefined | null, email: string | undefined 
   return "UN";
 }
 
-// Helper function to format dates in a readable way
-function formatDate(date: Date | string | number | null | undefined): string {
-  if (!date) return "N/A";
-
-  try {
-    // Convert to Date object if it's not already
-    const dateObj = date instanceof Date ? date : new Date(date);
-
-    // Check if date is valid
-    if (isNaN(dateObj.getTime())) {
-      return "Invalid date";
-    }
-
-    const now = new Date();
-    const diff = now.getTime() - dateObj.getTime();
-
-    // Less than a minute
-    if (diff < 60 * 1000) {
-      return "Just now";
-    }
-
-    // Less than an hour
-    if (diff < 60 * 60 * 1000) {
-      const minutes = Math.floor(diff / (60 * 1000));
-      return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
-    }
-
-    // Less than a day
-    if (diff < 24 * 60 * 60 * 1000) {
-      const hours = Math.floor(diff / (60 * 60 * 1000));
-      return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
-    }
-
-    // Less than a week
-    if (diff < 7 * 24 * 60 * 60 * 1000) {
-      const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-      return `${days} day${days !== 1 ? "s" : ""} ago`;
-    }
-
-    // Format as date
-    return dateObj.toLocaleDateString();
-  } catch (error) {
-    console.error("Date formatting error:", error);
-    return "Invalid date";
-  }
-}
-
 // Helper function to get role icon
 function getRoleIcon(role: string | undefined) {
   switch (role) {
     case "admin":
       return <ShieldAlert className="h-4 w-4 text-destructive" />;
     case "moderator":
-      return <ShieldCheck className="h-4 w-4 text-warning" />;
+      return <ShieldCheck className="h-4 w-4 text-yellow-500" />;
     case "support":
       return <Shield className="h-4 w-4 text-muted-foreground" />;
     default:
@@ -118,7 +72,7 @@ export const columns: ColumnDef<User>[] = [
         <div className="flex items-center gap-2">
           {getRoleIcon(role)}
           <Badge variant={role === "admin" ? "destructive" : role === "moderator" ? "outline" : "secondary"}>
-            {role || "user"}
+            {role}
           </Badge>
         </div>
       );
@@ -130,8 +84,8 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       const status = (row.getValue("status") as string) || "active";
       return (
-        <Badge variant={status === "active" ? "success" : status === "disabled" ? "destructive" : "outline"}>
-          {status || "active"}
+        <Badge variant={status === "active" ? "default" : status === "disabled" ? "destructive" : "outline"}>
+          {status}
         </Badge>
       );
     }

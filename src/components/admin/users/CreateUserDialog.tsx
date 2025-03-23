@@ -37,23 +37,16 @@ export function CreateUserDialog({ onSuccess, children }: CreateUserDialogProps)
     e.preventDefault();
 
     if (!formData.email) {
-      toast({
-        title: "Error",
-        description: "Email is required",
-        variant: "destructive"
-      });
+      toast.error("Email is required");
       return;
     }
 
     setIsLoading(true);
     try {
       const result = await createUser(formData);
-
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "User created successfully"
-        });
+        toast.success("User created successfully");
+
         setIsOpen(false);
         setFormData({
           name: "",
@@ -62,19 +55,11 @@ export function CreateUserDialog({ onSuccess, children }: CreateUserDialogProps)
         });
         onSuccess?.();
       } else {
-        toast({
-          title: "Error",
-          description: "Failed to create user",
-          variant: "destructive"
-        });
+        toast.error("Failed to create user.");
       }
     } catch (error) {
       console.error("Error creating user:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+      toast.error("An error occurred while creating the user.");
     } finally {
       setIsLoading(false);
     }

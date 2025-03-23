@@ -1,9 +1,9 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import type { User } from "@/types/user/common";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { useRouter } from "next/navigation";
+import { formatDate } from "@/utils/date";
 
 interface UserDetailProps {
   user: User;
@@ -44,31 +44,20 @@ export function UserDetail({ user }: UserDetailProps) {
     try {
       const result = await updateUser(user.id, formData);
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "User updated successfully"
-        });
+        toast.success("User updated successfully");
         router.refresh();
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to update user",
-          variant: "destructive"
-        });
+        toast.error("Failed to update user");
       }
     } catch (error) {
       console.error("Error updating user:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (field: keyof User, value: any) => {
+  const handleChange = (field: keyof User, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -77,25 +66,14 @@ export function UserDetail({ user }: UserDetailProps) {
     try {
       const result = await deleteUser(user.id);
       if (result.success) {
-        toast({
-          title: "Success",
-          description: "User deleted successfully"
-        });
+        toast.success("User deleted successfully");
         router.push("/admin/users");
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to delete user",
-          variant: "destructive"
-        });
+        toast.error("Failed to delete user");
       }
     } catch (error) {
       console.error("Error deleting user:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -110,39 +88,10 @@ export function UserDetail({ user }: UserDetailProps) {
         .toUpperCase()
         .substring(0, 2);
     }
-
     if (email) {
       return email.substring(0, 2).toUpperCase();
     }
-
     return "UN";
-  }
-
-  function formatDateFull(timestamp: Date | string | number | null | undefined): string {
-    if (!timestamp) return "N/A";
-
-    try {
-      // Convert to Date object if it's not already
-      const dateObj = timestamp instanceof Date ? timestamp : new Date(timestamp);
-
-      // Check if date is valid
-      if (isNaN(dateObj.getTime())) {
-        return "Invalid date";
-      }
-
-      return new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        timeZoneName: "short"
-      }).format(dateObj);
-    } catch (error) {
-      console.error("Date formatting error:", error);
-      return "Invalid date";
-    }
   }
 
   return (
@@ -174,7 +123,7 @@ export function UserDetail({ user }: UserDetailProps) {
                     <Badge variant={formData.role === "admin" ? "destructive" : "outline"}>
                       {formData.role || "user"}
                     </Badge>
-                    <Badge variant={formData.status === "active" ? "success" : "destructive"}>
+                    <Badge variant={formData.status === "active" ? "default" : "destructive"}>
                       {formData.status || "active"}
                     </Badge>
                   </div>
@@ -224,9 +173,7 @@ export function UserDetail({ user }: UserDetailProps) {
                     <Label htmlFor="status" className="text-right">
                       Status
                     </Label>
-                    <Select
-                      value={formData.status || "active"}
-                      onValueChange={value => handleChange("status", value as "active" | "disabled" | "pending")}>
+                    <Select value={formData.status || "active"} onValueChange={value => handleChange("status", value)}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
@@ -245,12 +192,13 @@ export function UserDetail({ user }: UserDetailProps) {
                 </div>
               </form>
             </TabsContent>
+
             <TabsContent value="security" className="space-y-4 py-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-medium">Email Verification</h4>
-                    <p className="text-sm text-muted-foreground">User's email verification status</p>
+                    <p className="text-sm text-muted-foreground">User&aposs email verification status</p>
                   </div>
                   <Switch
                     checked={formData.emailVerified}
@@ -311,20 +259,21 @@ export function UserDetail({ user }: UserDetailProps) {
                 </div>
               </div>
             </TabsContent>
+
             <TabsContent value="activity" className="space-y-4 py-4">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium">Created At</h4>
-                    <p className="text-sm text-muted-foreground">{formatDateFull(formData.createdAt)}</p>
+                    <p className="text-sm text-muted-foreground">{formatDate(formData.createdAt)}</p>
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium">Last Login</h4>
-                    <p className="text-sm text-muted-foreground">{formatDateFull(formData.lastLoginAt)}</p>
+                    <p className="text-sm text-muted-foreground">{formatDate(formData.lastLoginAt)}</p>
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium">Last Updated</h4>
-                    <p className="text-sm text-muted-foreground">{formatDateFull(formData.updatedAt)}</p>
+                    <p className="text-sm text-muted-foreground">{formatDate(formData.updatedAt)}</p>
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium">IP Address</h4>

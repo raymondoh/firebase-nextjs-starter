@@ -25,10 +25,19 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   initialData: TData[];
   totalUsers: number;
+  isLoading?: boolean;
+  refreshUsers?: () => Promise<void>;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    onPageChange: (newPage: number) => void | Promise<void>;
+    onLimitChange: (newLimit: number) => void | Promise<void>;
+  };
 }
 
 export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers }: DataTableProps<TData, TValue>) {
-  const [data, setData] = useState<TData[]>(initialData);
+  const [data, setData] = useState<TData[]>(initialData ?? []);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -58,19 +67,11 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
         setData((result.users as TData[]) || []);
         setTotal(result.total || 0);
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to fetch users",
-          variant: "destructive"
-        });
+        toast.error("Failed to fetch users");
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+      toast.error("Failed to fetch users");
     } finally {
       setIsLoading(false);
     }
@@ -85,19 +86,11 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
       if (result.success) {
         setData((result.users as TData[]) || []);
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to fetch users",
-          variant: "destructive"
-        });
+        toast.error("Failed to fetch users");
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -113,19 +106,11 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
       if (result.success) {
         setData((result.users as TData[]) || []);
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to fetch users",
-          variant: "destructive"
-        });
+        toast.error("Failed to fetch users");
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
