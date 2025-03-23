@@ -1,7 +1,7 @@
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin";
-import { FieldValue } from "firebase-admin/firestore";
+import { serverTimestamp } from "@/firebase/admin/firestore";
 import { logActivity } from "@/firebase";
 
 export async function updateEmailVerificationStatus(userId: string, verified: boolean) {
@@ -47,7 +47,7 @@ export async function updateEmailVerificationStatus(userId: string, verified: bo
     try {
       await adminDb.collection("users").doc(userId).update({
         emailVerified: verified,
-        updatedAt: FieldValue.serverTimestamp()
+        updatedAt: serverTimestamp()
       });
       console.log(`[updateEmailVerificationStatus] Firestore updated successfully`);
     } catch (firestoreError) {

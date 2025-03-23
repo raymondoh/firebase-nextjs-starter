@@ -1,9 +1,12 @@
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin";
-import { FieldValue } from "firebase-admin/firestore";
+//import { serverTimestamp } from "@/firebase/admin/firestore";
+import { increment } from "@/firebase/admin/firestore";
+
 import { logActivity } from "@/firebase";
 import type { AuthActionResponse } from "@/types/auth/common";
+import { UserRecord } from "firebase-admin/auth";
 
 /**
  * Handles Google authentication (both sign-in and sign-up)
@@ -24,7 +27,7 @@ export async function handleGoogleAuth(userInfo: {
 
   try {
     // Check if user already exists in Firebase by email
-    let firebaseUser;
+    let firebaseUser: UserRecord;
     let isNewUser = false;
 
     try {
@@ -82,8 +85,8 @@ export async function handleGoogleAuth(userInfo: {
           lastLoginAt: new Date(),
           updatedAt: new Date(),
           // Only update these if they don't exist or are empty
-          name: FieldValue.increment(0),
-          photoURL: FieldValue.increment(0),
+          name: increment(0),
+          photoURL: increment(0),
           provider: "google",
           googleId: userInfo.sub
         });
@@ -93,7 +96,7 @@ export async function handleGoogleAuth(userInfo: {
         const userDoc = await transaction.get(adminDb.collection("users").doc(firebaseUser.uid));
         const userData = userDoc.data();
 
-        const updates: Record<string, any> = {};
+        const updates: { name?: string; photoURL?: string } = {};
 
         if (!userData?.name && userInfo.name) {
           updates.name = userInfo.name;
@@ -128,11 +131,15 @@ export async function handleGoogleAuth(userInfo: {
       email: userInfo.email,
       role: role
     };
-  } catch (error: any) {
+  } catch (error) {
+    let errorMessage = `Google authentication failed: ${"An unexpected error occurred"}`;
+    if (error instanceof Error) {
+      errorMessage = `Google authentication failed: ${error.message}`;
+    }
     console.error("Google authentication error:", error);
     return {
       success: false,
-      message: `Google authentication failed: ${error.message}`
+      message: errorMessage
     };
   }
 }

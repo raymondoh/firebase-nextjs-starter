@@ -30,7 +30,10 @@ export type {
 
   // Admin types
   UserSearchState,
-  UserRoleUpdateState
+  UserRoleUpdateState,
+
+  // Firestore data
+  UserData
 } from "./user";
 
 // Data privacy types

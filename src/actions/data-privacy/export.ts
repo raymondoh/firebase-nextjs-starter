@@ -2,15 +2,12 @@
 
 import { auth } from "@/auth";
 import { adminDb, adminStorage } from "@/firebase/admin";
-import { Timestamp } from "firebase-admin/firestore";
+import { serverTimestamp } from "@/firebase/admin/firestore";
 import { exportDataSchema } from "@/schemas/data-privacy";
-//import type { ExportFormat, ExportDataState } from "@/types/data-privacy";
 import type { ExportFormat, ExportDataState } from "@/types/data-privacy/export";
+import { convertTimestamps } from "@/firebase/utils/firestore";
 
-// To this:
-import { convertTimestamps, objectToCSV } from "@/actions/utils";
-
-// Functions: Export user data
+import { ExportedActivityLog } from "@/types/data-privacy/export";
 
 // Export user data
 export async function exportUserData(prevState: ExportDataState | null, formData: FormData): Promise<ExportDataState> {
@@ -36,7 +33,8 @@ export async function exportUserData(prevState: ExportDataState | null, formData
     }
 
     // Get user's activity logs
-    let activityLogs = [];
+    let activityLogs: ExportedActivityLog[] = [];
+
     try {
       const activityLogsSnapshot = await adminDb
         .collection("activityLogs")
@@ -46,8 +44,8 @@ export async function exportUserData(prevState: ExportDataState | null, formData
         .get();
 
       activityLogs = activityLogsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...convertTimestamps(doc.data())
+        ...(convertTimestamps(doc.data()) as ExportedActivityLog),
+        id: doc.id
       }));
     } catch (indexError) {
       console.warn(
@@ -60,13 +58,14 @@ export async function exportUserData(prevState: ExportDataState | null, formData
     // Compile user data
     const userData = {
       profile: {
-        id: session.user.id,
         email: session.user.email,
         name: session.user.name,
         bio: session.user.bio || "",
         image: session.user.image || "",
-        ...convertTimestamps(userDoc.data())
+        ...(convertTimestamps(userDoc.data()) as Record<string, unknown>),
+        id: session.user.id // move this last so it overrides any "id" from Firestore
       },
+
       activityLogs
     };
 
@@ -80,12 +79,11 @@ export async function exportUserData(prevState: ExportDataState | null, formData
       contentType = "application/json";
       fileExtension = "json";
     } else {
-      // For CSV, we need to flatten the data structure
       const flattenedData = {
         ...userData.profile,
         activityLogs: JSON.stringify(userData.activityLogs)
       };
-      fileContent = objectToCSV(flattenedData);
+      fileContent = await objectToCSV(flattenedData);
       contentType = "text/csv";
       fileExtension = "csv";
     }
@@ -101,19 +99,19 @@ export async function exportUserData(prevState: ExportDataState | null, formData
       }
     });
 
-    // Generate a signed URL that expires in 1 hour
+    // Generate signed URL
     const [signedUrl] = await file.getSignedUrl({
       action: "read",
       expires: Date.now() + 60 * 60 * 1000 // 1 hour
     });
 
-    // Log this export activity
+    // Log export activity
     await adminDb.collection("activityLogs").add({
       userId: session.user.id,
       type: "data_export",
       description: `Data exported in ${format.toUpperCase()} format`,
-      timestamp: Timestamp.now(),
-      ipAddress: "N/A", // In a real app, you might want to capture this
+      timestamp: serverTimestamp(), // ✅ using Firestore server-generated timestamp
+      ipAddress: "N/A",
       status: "success"
     });
 

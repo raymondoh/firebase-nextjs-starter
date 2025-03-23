@@ -2,7 +2,11 @@
 import "server-only"; // Add this to prevent client imports
 
 import { adminDb } from "./index";
-import { Timestamp } from "firebase-admin/firestore";
+import { Timestamp, FieldValue } from "firebase-admin/firestore";
+
+//
+export const serverTimestamp = () => FieldValue.serverTimestamp();
+export const increment = (value: number) => FieldValue.increment(value);
 
 /**
  * Convert a JavaScript Date to a Firestore Timestamp

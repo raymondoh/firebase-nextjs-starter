@@ -28,7 +28,8 @@ export type {
   SendResetPasswordEmailResult,
   VerifyPasswordResetCodeResult,
   ConfirmPasswordResetResult,
-  SetCustomClaimsResult
+  SetCustomClaimsResult,
+  CustomClaims
 } from "./auth";
 
 // Firestore types

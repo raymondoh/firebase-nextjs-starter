@@ -1,17 +1,23 @@
-"use client";
+import type { Metadata } from "next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { CheckCircle, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Your App - Main Value Proposition",
+  description: "A clear, concise description of what your app does and why users should care.",
+  openGraph: {
+    title: "Your App - Main Value Proposition",
+    description: "A clear, concise description of what your app does and why users should care.",
+    type: "website"
+  }
+};
 
 export default function Page() {
-  // In your header component
-  const router = useRouter();
   return (
-    <div className="bg-background text-foregroundcontainer mx-auto px-4">
-      {/* Hero Section */}
-      <section className="py-20 border-b">
+    <div className="text-foreground">
+      {/* Hero Section - Adaptive gradient background */}
+      <section className="py-20 border-b bg-gradient-to-b from-blue-50 to-background dark:from-blue-950/20 dark:to-background">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
@@ -21,23 +27,24 @@ export default function Page() {
               A clear, concise description of what your app does and why users should care.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button asChild size="lg">
-                <Link href="/signup">Get Started</Link>
-              </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/demo">
-                  See Demo
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              <Link
+                href="/signup"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+                Get Started
+              </Link>
+              <Link
+                href="/demo"
+                className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+                See Demo
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>
       </section>
-      <button onClick={() => router.push("/login")}>Login</button>
 
-      {/* Features Section */}
-      <section className="py-20">
+      {/* Features Section - Dark mode responsive background */}
+      <section className="py-20 bg-slate-50 dark:bg-slate-900/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Powerful Features</h2>
@@ -66,8 +73,8 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 bg-muted/30">
+      {/* Benefits Section - Dark mode responsive background */}
+      <section className="py-20 bg-primary/5 dark:bg-primary/10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Why Choose Us</h2>
@@ -91,17 +98,19 @@ export default function Page() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 border-t">
+      {/* CTA Section - Dark mode responsive background */}
+      <section className="py-20 border-t bg-amber-50 dark:bg-amber-950/20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-muted-foreground mb-8">
               Join thousands of satisfied users and take your productivity to the next level.
             </p>
-            <Button asChild size="lg" className="px-8">
-              <Link href="/signup">Sign Up Now</Link>
-            </Button>
+            <Link
+              href="/signup"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+              Sign Up Now
+            </Link>
           </div>
         </div>
       </section>
@@ -111,7 +120,7 @@ export default function Page() {
 
 function FeatureCard({ title, description, icon }: { title: string; description: string; icon: string }) {
   return (
-    <Card className="border border-border hover:border-primary/20 transition-colors">
+    <Card className="border border-border hover:border-primary/20 transition-colors bg-white dark:bg-card">
       <CardHeader>
         <div className="flex flex-col items-center text-center">
           <span className="text-4xl mb-4">{icon}</span>

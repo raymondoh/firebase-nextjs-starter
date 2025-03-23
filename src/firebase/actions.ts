@@ -1,3 +1,4 @@
+// src/firebase/actions.ts
 "use server";
 
 import { adminAuth, adminDb } from "./admin/index";
@@ -14,7 +15,8 @@ import type {
   SetCustomClaimsResult,
   VerifyAndCreateUserResult,
   GetUserFromTokenResult,
-  SendResetPasswordEmailResult
+  SendResetPasswordEmailResult,
+  CustomClaims
 } from "@/types/firebase/auth";
 import type {
   UserDocumentData,
@@ -30,12 +32,13 @@ import type {
 /**
  * Set custom claims for a user
  */
-export async function setCustomClaims(uid: string, claims: Record<string, any>): Promise<SetCustomClaimsResult> {
+
+export async function setCustomClaims(uid: string, claims: CustomClaims): Promise<SetCustomClaimsResult> {
   try {
     await adminAuth.setCustomUserClaims(uid, claims);
     console.log("Custom claims set successfully");
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error setting custom claims:", error);
     return { success: false, error };
   }

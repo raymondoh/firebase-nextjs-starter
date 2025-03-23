@@ -1,10 +1,11 @@
 // /actions/auth/debug.ts
 "use server";
 
-//import { adminAuth, adminDb } from "@/firebase";
-import * as admin from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin";
 import bcryptjs from "bcryptjs";
 import { auth } from "@/auth";
+import { UserRecord } from "firebase-admin/auth";
+import { DocumentSnapshot } from "firebase-admin/firestore";
 
 export async function debugPasswordVerification(email: string, password: string) {
   const session = await auth();
@@ -20,12 +21,12 @@ export async function debugPasswordVerification(email: string, password: string)
   }
   try {
     // Get user from Firebase Auth
-    const userRecord = await admin.adminAuth.getUserByEmail(email);
+    const userRecord: UserRecord = await adminAuth.getUserByEmail(email);
     console.log("User found in Firebase Auth:", userRecord.uid);
 
     // Get user data from Firestore
-    const userDoc = await admin.adminDb.collection("users").doc(userRecord.uid).get();
-    const userData = userDoc.data();
+    const userDoc: DocumentSnapshot = await adminDb.collection("users").doc(userRecord.uid).get();
+    const userData = userDoc.data() as { passwordHash?: string } | undefined;
 
     if (!userData) {
       return { success: false, message: "User data not found in Firestore" };
@@ -47,11 +48,15 @@ export async function debugPasswordVerification(email: string, password: string)
       isPasswordValid,
       message: isPasswordValid ? "Password verification successful" : "Password verification failed"
     };
-  } catch (error: any) {
+  } catch (error) {
+    let errorMessage = "An unexpected error occurred";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
     console.error("Debug error:", error);
     return {
       success: false,
-      message: error.message || "An unexpected error occurred"
+      message: errorMessage
     };
   }
 }

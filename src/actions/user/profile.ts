@@ -6,7 +6,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { profileUpdateSchema } from "@/schemas/user";
 import type { ProfileUpdateState } from "@/types/user/profile";
 import type { User } from "@/types/user/common";
-import { convertTimestamps } from "@/actions/utils";
+import { convertTimestamps } from "@/firebase/utils/firestore";
 
 // Functions: getProfile, updateUserProfile
 // These functions are used to get and update user profiles.

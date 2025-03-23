@@ -3,6 +3,7 @@
 import { auth, signOut } from "@/auth";
 import { adminAuth, adminDb, adminStorage } from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
+import { serverTimestamp } from "@/firebase/admin/firestore";
 import { cookies } from "next/headers";
 import { accountDeletionSchema } from "@/schemas/data-privacy";
 import type { DeleteAccountState } from "@/types/data-privacy/deletion";
@@ -20,11 +21,16 @@ export async function processAccountDeletion(userId: string): Promise<boolean> {
     await adminAuth.deleteUser(userId);
 
     // Delete any associated files from Firebase Storage (example)
-    const storageRef = adminStorage.bucket().file(`users/${userId}/profile.jpg`); // Adjust path as needed
+    const storageRef = adminStorage.bucket().file(`users/${userId}/profile.jpg`);
     try {
       await storageRef.delete();
-    } catch (storageError: any) {
-      if (storageError.code === 404) {
+    } catch (storageError: unknown) {
+      if (
+        typeof storageError === "object" &&
+        storageError !== null &&
+        "code" in storageError &&
+        (storageError as { code?: number }).code === 404
+      ) {
         console.log("File not found, skipping deletion.");
       } else {
         console.error("Error deleting file from storage:", storageError);
@@ -35,7 +41,7 @@ export async function processAccountDeletion(userId: string): Promise<boolean> {
     const deletionRequestRef = adminDb.collection("deletionRequests").doc(userId);
     await deletionRequestRef.update({
       status: "completed",
-      completedAt: Timestamp.now()
+      completedAt: serverTimestamp()
     });
 
     // Log this activity
@@ -43,21 +49,23 @@ export async function processAccountDeletion(userId: string): Promise<boolean> {
       userId: userId,
       type: "deletion_completed",
       description: "Account deletion completed",
-      timestamp: Timestamp.now(),
-      ipAddress: "N/A", // In a real app, you might want to capture this
+      timestamp: serverTimestamp(),
+      ipAddress: "N/A",
       status: "completed"
     });
 
     console.log(`Account deletion completed for user ${userId}`);
-    return true; // Indicate success
+    return true;
   } catch (error) {
     console.error("Error processing account deletion:", error);
+
+    const now = Timestamp.now();
 
     // Update deletion request status to failed
     const deletionRequestRef = adminDb.collection("deletionRequests").doc(userId);
     await deletionRequestRef.update({
       status: "failed",
-      completedAt: Timestamp.now()
+      completedAt: serverTimestamp()
     });
 
     // Log this activity
@@ -65,12 +73,13 @@ export async function processAccountDeletion(userId: string): Promise<boolean> {
       userId: userId,
       type: "deletion_failed",
       description: "Account deletion failed",
-      timestamp: Timestamp.now(),
+      completedAt: serverTimestamp(),
+      completedAtLocal: now,
       ipAddress: "N/A",
       status: "failed"
     });
 
-    return false; // Indicate failure
+    return false;
   }
 }
 
@@ -94,7 +103,7 @@ export async function requestAccountDeletion(
     await adminDb.collection("deletionRequests").doc(session.user.id).set({
       userId: session.user.id,
       email: session.user.email,
-      requestedAt: Timestamp.now(),
+      requestedAt: serverTimestamp(),
       status: "pending",
       completedAt: null
     });
@@ -104,20 +113,17 @@ export async function requestAccountDeletion(
       userId: session.user.id,
       type: "deletion_request",
       description: "Account deletion requested",
-      timestamp: Timestamp.now(),
-      ipAddress: "N/A", // In a real app, you might want to capture this
+      timestamp: serverTimestamp(),
+      ipAddress: "N/A",
       status: "pending"
     });
 
     // Determine if we should process the deletion immediately or wait
     if (validatedData.immediateDelete) {
-      // Process the deletion immediately
       await processAccountDeletion(session.user.id);
 
-      // Sign the user out
       await signOut({ redirect: false });
 
-      // Clear cookies
       const cookieStore = await cookies();
       const allCookies = cookieStore.getAll();
       allCookies.forEach((cookie: RequestCookie) => {

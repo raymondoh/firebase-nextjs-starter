@@ -35,8 +35,8 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="" collapsible="icon">
-      <SidebarContent className="pt-20">
+    <Sidebar className="z-50" collapsible="icon">
+      <SidebarContent className="pt-5">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>

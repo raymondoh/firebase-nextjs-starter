@@ -6,8 +6,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
 import type { User, UserRole, UserSearchState, UserRoleUpdateState } from "@/types/user/common";
 import { revalidatePath } from "next/cache";
-
-import { convertTimestamps } from "@/actions/utils";
+import { convertTimestamps } from "@/firebase/utils/firestore";
 
 // Functions: searchUsers, updateUserRole, updateUser, createUser, deleteUser
 // These functions are used in the admin dashboard to manage users.
@@ -42,12 +41,19 @@ export async function fetchUsers(limit = 10, offset = 0) {
       const data = doc.data();
 
       // Helper function to convert Firestore timestamp to Date
-      const convertTimestamp = (timestamp: any) => {
+      const convertTimestamp = (timestamp: unknown): Date | null => {
         if (!timestamp) return null;
-        if (timestamp.toDate && typeof timestamp.toDate === "function") {
-          return timestamp.toDate();
+
+        if (
+          typeof timestamp === "object" &&
+          timestamp !== null &&
+          "toDate" in timestamp &&
+          typeof (timestamp as { toDate?: unknown }).toDate === "function"
+        ) {
+          return (timestamp as { toDate: () => Date }).toDate();
         }
-        return timestamp;
+
+        return null;
       };
 
       return {
@@ -127,24 +133,27 @@ export async function searchUsers(prevState: UserSearchState, formData: FormData
           const authUser = await adminAuth.getUser(doc.id);
 
           return {
-            id: doc.id,
             name: authUser.displayName || userData.name,
             email: authUser.email,
             image: authUser.photoURL || userData.picture,
             role: userData.role || "user",
             bio: userData.bio || "",
-            ...convertTimestamps(userData)
+            ...(convertTimestamps(userData) as Partial<User>),
+            id: doc.id
           } as User;
-        } catch (error) {
-          // If user doesn't exist in Auth, just return Firestore data
+        } catch (error: unknown) {
+          // Optional: Log the error if needed
+          console.error("Error fetching auth user:", error);
+
+          // Fallback to Firestore-only data
           return {
-            id: doc.id,
             name: userData.name || "",
             email: userData.email || "",
             image: userData.picture || "",
             role: userData.role || "user",
             bio: userData.bio || "",
-            ...convertTimestamps(userData)
+            ...(convertTimestamps(userData) as Partial<User>),
+            id: doc.id
           } as User;
         }
       })

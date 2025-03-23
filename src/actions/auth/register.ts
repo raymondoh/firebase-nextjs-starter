@@ -58,13 +58,19 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
       userRecord = await adminAuth.createUser({
         email,
         password,
-        displayName: name || email.split("@")[0], // Use email username as fallback
-        emailVerified: false // Set to false initially for verification
+        displayName: name || email.split("@")[0],
+        emailVerified: false
       });
       console.log("User created in Firebase Auth:", userRecord.uid);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating user in Firebase Auth:", error);
-      if (error.code === "auth/email-already-exists") {
+
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code?: string }).code === "auth/email-already-exists"
+      ) {
         return {
           success: false,
           message: "Email already in use. Please try logging in instead.",
@@ -73,6 +79,7 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
           password: ""
         };
       }
+
       throw error;
     }
 

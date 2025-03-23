@@ -228,7 +228,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       </CardContent>
       <CardFooter className="flex flex-col items-center gap-4">
         <div className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apost have an account?{" "}
           <Button variant="link" className="p-0 h-auto" asChild>
             <Link href="/register">Sign up</Link>
           </Button>

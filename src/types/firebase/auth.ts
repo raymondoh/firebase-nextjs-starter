@@ -1,7 +1,9 @@
-// types/firebase/auth.ts (update)
+// types/firebase/auth.ts
 /**
  * Firebase Authentication related types
  */
+
+import type { UserRole } from "@/types/user";
 
 export type DecodedIdToken = {
   uid: string;
@@ -40,5 +42,10 @@ export type ConfirmPasswordResetResult = {
 
 export type SetCustomClaimsResult = {
   success: boolean;
-  error?: any;
+  error?: unknown; // safer than `any`
+};
+
+export type CustomClaims = {
+  role?: UserRole;
+  [key: string]: unknown; // Allow other flexible claims
 };

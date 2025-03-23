@@ -6,9 +6,6 @@
   .text-balance {
     text-wrap: balance;
   }
-  .glow-text {
-    text-shadow: 0 0 20px rgba(192, 132, 252, 0.5), 0 0 30px rgba(192, 132, 252, 0.3);
-  }
 }
 
 @layer base {
@@ -103,7 +100,3 @@
     @apply bg-background text-foreground;
   }
 }
-/* Custom styles for the sidebar */
-/* .group-data-[collapsible="icon"] .sidebar-icon {
-  @apply flex items-center justify-center;
-} */

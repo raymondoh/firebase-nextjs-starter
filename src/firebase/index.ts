@@ -46,7 +46,8 @@ export {
   adminDateToTimestamp,
   adminTimestampToDate,
   clientDateToTimestamp,
-  clientTimestampToDate
+  clientTimestampToDate,
+  convertTimestamps
 } from "./utils/firestore";
 
 // Server actions exports (group in admin)

@@ -19,7 +19,9 @@ export type {
   // Search functionality
   UserSearchState,
   // Role management
-  UserRoleUpdateState
+  UserRoleUpdateState,
+  // User management
+  UserData
 } from "./admin";
 
 // Profile-related user types

@@ -1,4 +1,4 @@
-import { User, UserActionResponse } from "./common";
+import { User, UserActionResponse, UserRole } from "./common";
 
 // SEARCH
 export type UserSearchState =
@@ -10,3 +10,11 @@ export type UserSearchState =
 
 // ROLE UPDATE
 export type UserRoleUpdateState = UserActionResponse | null;
+
+// USER DATA
+export type UserData = {
+  email: string;
+  passwordHash?: string;
+  role?: UserRole;
+  // Add any other Firestore fields here
+};

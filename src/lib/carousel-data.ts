@@ -1,3 +1,4 @@
+// src/lib/carousel-data.ts
 // Define the slide type for better type safety
 export interface HeroSlide {
   title: string;

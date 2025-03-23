@@ -1,11 +1,13 @@
 "use server";
 
-// Convert object to CSV string
-export async function objectToCSV(data: any): string {
-  // Get all unique keys from all objects
-  const allKeys = new Set<string>();
+/**
+ * Convert object or array of objects to CSV string
+ */
+export async function objectToCSV(data: Record<string, unknown> | Record<string, unknown>[]): Promise<string> {
   const flattenedData = Array.isArray(data) ? data : [data];
 
+  // Collect all unique keys across all objects
+  const allKeys = new Set<string>();
   flattenedData.forEach(item => {
     Object.keys(item).forEach(key => allKeys.add(key));
   });
@@ -16,11 +18,12 @@ export async function objectToCSV(data: any): string {
   flattenedData.forEach(item => {
     const values = headers.map(header => {
       const value = item[header];
-      // Handle values that might contain commas or quotes
       if (value === null || value === undefined) return "";
+
       const stringValue = typeof value === "object" ? JSON.stringify(value) : String(value);
-      return `"${stringValue.replace(/"/g, '""')}"`;
+      return `"${stringValue.replace(/"/g, '""')}"`; // Escape quotes
     });
+
     csvRows.push(values.join(","));
   });
 

@@ -7,3 +7,7 @@ export type ExportDataState = {
   downloadUrl?: string;
   message?: string;
 };
+export type ExportedActivityLog = {
+  id: string;
+  [key: string]: unknown;
+};
