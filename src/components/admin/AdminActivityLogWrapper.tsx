@@ -7,27 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import { db } from "@/firebase/client";
 import Link from "next/link";
-
-interface Activity {
-  id: string;
-  userId: string;
-  action: string;
-  timestamp: any;
-  details?: string;
-  userEmail?: string;
-}
-
-interface AdminActivityLogWrapperProps {
-  limit?: number;
-  showFilters?: boolean;
-  showHeader?: boolean;
-  showViewAll?: boolean;
-  viewAllUrl?: string;
-}
+import { formatDate } from "@/utils/date";
+import type { Activity, AdminActivityLogWrapperProps } from "@/types/dashboard";
 
 export function AdminActivityLogWrapper({
   limit: activityLimit = 5,
-  showFilters = false,
   showHeader = true,
   showViewAll = true,
   viewAllUrl = "/admin/activity"
@@ -64,39 +48,6 @@ export function AdminActivityLogWrapper({
     fetchActivities();
   }, [activityLimit]);
 
-  function formatTimestamp(timestamp: Date) {
-    if (!timestamp) return "Unknown time";
-
-    const now = new Date();
-    const diff = now.getTime() - timestamp.getTime();
-
-    // Less than a minute
-    if (diff < 60 * 1000) {
-      return "Just now";
-    }
-
-    // Less than an hour
-    if (diff < 60 * 60 * 1000) {
-      const minutes = Math.floor(diff / (60 * 1000));
-      return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
-    }
-
-    // Less than a day
-    if (diff < 24 * 60 * 60 * 1000) {
-      const hours = Math.floor(diff / (60 * 60 * 1000));
-      return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
-    }
-
-    // Less than a week
-    if (diff < 7 * 24 * 60 * 60 * 1000) {
-      const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-      return `${days} day${days !== 1 ? "s" : ""} ago`;
-    }
-
-    // Format as date
-    return timestamp.toLocaleDateString();
-  }
-
   return (
     <Card>
       {showHeader && (
@@ -126,7 +77,7 @@ export function AdminActivityLogWrapper({
               <div key={activity.id} className="flex flex-col space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{activity.userEmail ? activity.userEmail.split("@")[0] : "User"}</span>
-                  <span className="text-xs text-muted-foreground">{formatTimestamp(activity.timestamp)}</span>
+                  <span className="text-xs text-muted-foreground">{formatDate(activity.timestamp)}</span>
                 </div>
                 <p className="text-sm">{activity.action}</p>
                 {activity.details && <p className="text-xs text-muted-foreground">{activity.details}</p>}
@@ -138,7 +89,7 @@ export function AdminActivityLogWrapper({
       {showViewAll && (
         <CardFooter>
           <Button asChild variant="outline" className="w-full">
-            <Link href={viewAllUrl}>View All Activity!!</Link>
+            <Link href={viewAllUrl}>View All Activity</Link>
           </Button>
         </CardFooter>
       )}

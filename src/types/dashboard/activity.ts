@@ -37,3 +37,28 @@ export interface ActivityLogWrapperProps {
 export interface ActivityPageClientProps {
   initialData?: SerializedActivity[];
 }
+
+// Existing content...
+
+/**
+ * Firestore activity log entry for display
+ */
+export interface Activity {
+  id: string;
+  userId: string;
+  action: string;
+  timestamp: Date | string | number | null | undefined;
+  details?: string;
+  userEmail?: string;
+}
+
+/**
+ * Props for the AdminActivityLogWrapper component
+ */
+export interface AdminActivityLogWrapperProps {
+  limit?: number;
+  showFilters?: boolean;
+  showHeader?: boolean;
+  showViewAll?: boolean;
+  viewAllUrl?: string;
+}

@@ -1,17 +1,16 @@
 import { Separator } from "@/components/ui/separator";
-import { DashboardShell, DashboardHeader } from "@/components";
-import { AdminActivityLogWrapper } from "@/components/admin/AdminActivityLogWrapper";
-import { SystemOverviewClient } from "@/components/admin/users/SystemOverviewClient";
-import { UserManagementPreview } from "@/components/admin/users/UserManagementPreview";
-import { SystemAlertsClient } from "@/components/admin/users/SystemAlertsClient";
+import {
+  DashboardShell,
+  DashboardHeader,
+  AdminActivityLogWrapper,
+  SystemOverviewClient,
+  UserManagementPreview,
+  SystemAlertsClient
+} from "@/components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
-
-// Helper function to ensure all data is properly serialized
-function serializeData(data: any) {
-  return JSON.parse(JSON.stringify(data));
-}
+import { serializeData } from "@/utils";
 
 export default async function AdminDashboardPage() {
   // Get the session server-side

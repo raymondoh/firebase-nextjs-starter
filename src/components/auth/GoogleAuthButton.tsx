@@ -10,6 +10,7 @@ import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { signInWithFirebase } from "@/actions/auth/firebase-auth";
 import { useSession } from "next-auth/react"; // Add this import
+import { FirebaseError } from "firebase/app";
 
 interface GoogleAuthButtonProps {
   mode: "signin" | "signup";
@@ -66,13 +67,14 @@ export function GoogleAuthButton({ mode, className }: GoogleAuthButtonProps) {
 
       // Redirect to home page
       router.push("/");
-    } catch (error: any) {
-      console.error("Google auth error:", error);
+    } catch (error: unknown) {
+      const err = error as FirebaseError;
+      console.error("Google auth error:", err);
 
       // Handle specific error cases
-      if (error.code === "auth/popup-closed-by-user") {
+      if (err.code === "auth/popup-closed-by-user") {
         toast.error("Sign-in cancelled. Please try again.");
-      } else if (error.code === "auth/popup-blocked") {
+      } else if (err.code === "auth/popup-blocked") {
         toast.error("Popup was blocked by your browser. Please allow popups for this site.");
       } else {
         toast.error("An unexpected error occurred. Please try again later.");

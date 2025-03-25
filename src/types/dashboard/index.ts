@@ -13,7 +13,9 @@ export type {
   ActivityLogProps,
   ActivityLogClientProps,
   ActivityLogWrapperProps,
-  ActivityPageClientProps
+  ActivityPageClientProps,
+  AdminActivityLogWrapperProps,
+  Activity
 } from "./activity";
 
 // Dashboard metrics and statistics types

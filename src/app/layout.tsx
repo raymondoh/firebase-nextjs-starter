@@ -58,7 +58,7 @@ Readonly<{
                 </main>
                 <Footer />
               </div>
-              <Toaster />
+              <Toaster position="top-center" />
             </ThemeProvider>
           </UserProvider>
         </SessionProvider>

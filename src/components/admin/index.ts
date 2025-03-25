@@ -1,9 +1,11 @@
 export { AdminActivityLogWrapper } from "./AdminActivityLogWrapper";
 export { AdminProfileForm } from "./AdminProfileForm";
-
-export { SystemOverviewClient } from "./users/SystemOverviewClient";
-
-export { UserManagementPreview } from "./users/UserManagementPreview";
-export { SystemAlertsClient } from "./users/SystemAlertsClient";
-
-export * from "./users";
+export { columns } from "./columns";
+export { CreateUserDialog } from "./CreateUserDialog";
+export { SystemAlertsClient } from "./SystemAlertsClient";
+export { SystemOverviewClient } from "./SystemOverviewClient";
+export { UserDetail } from "./UserDetail";
+export { UserDetailDialog } from "./UserDetailDialog";
+export { UsersClient } from "./UsersClient";
+export { UserManagementPreview } from "./UserManagementPreview";
+export { UsersDataTable } from "./UsersDataTable";

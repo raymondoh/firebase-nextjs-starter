@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -13,9 +12,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
-
-// Import the server actions
 import { updatePasswordHash, getUserIdByEmail } from "@/actions/auth/password-reset";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -34,51 +32,44 @@ export function ResetPasswordForm() {
     const mode = searchParams.get("mode");
     const code = searchParams.get("oobCode");
 
-    // If this is a password reset link
     if (mode === "resetPassword" && code) {
       setOobCode(code);
 
-      // Verify the password reset code
       const verifyCode = async () => {
         try {
-          // This will throw an error if the code is invalid
           const email = await verifyPasswordResetCode(auth, code);
           setEmail(email);
 
-          // Try to get the user ID from Firebase Auth using our server action
           try {
             const result = await getUserIdByEmail(email);
             if (result.success && result.userId) {
               setUserId(result.userId);
-              console.log("Found user ID:", result.userId);
             }
-          } catch (error) {
-            console.error("Error getting user ID:", error);
-            // Continue anyway, we'll try to update the password hash later
+          } catch (err) {
+            console.error("Error getting user ID:", err);
           }
 
           setStatus("ready");
-        } catch (error: any) {
-          console.error("Error verifying password reset code:", error);
+        } catch (err) {
+          console.error("Error verifying reset code:", err);
+          const msg = isFirebaseError(err) ? firebaseError(err) : "Invalid or expired password reset link";
+          setErrorMessage(msg);
           setStatus("error");
-          setErrorMessage(error.message || "Invalid or expired password reset link");
         }
       };
 
       verifyCode();
     } else if (mode === "verifyEmail") {
-      // Redirect to verify-email page if this is an email verification link
       router.push(`/verify-email?${searchParams.toString()}`);
     } else {
-      setStatus("error");
       setErrorMessage("Invalid password reset link");
+      setStatus("error");
     }
   }, [searchParams, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Client-side validation
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -92,51 +83,40 @@ export function ResetPasswordForm() {
     setStatus("submitting");
 
     try {
-      // Confirm the password reset in Firebase Auth
       await confirmPasswordReset(auth, oobCode, password);
 
-      // Also update the password hash in Firestore if we have the user ID
       if (userId) {
         try {
-          console.log("Updating password hash in Firestore for user:", userId);
           await updatePasswordHash(userId, password);
-          console.log("Password hash updated successfully in Firestore");
-        } catch (hashError) {
-          console.error("Error updating password hash in Firestore:", hashError);
-          // Continue anyway, the password was reset in Firebase Auth
+        } catch (hashErr) {
+          console.error("Error updating Firestore hash:", hashErr);
         }
       } else if (email) {
-        // If we don't have the user ID but we have the email, try to get the user ID again
         try {
           const result = await getUserIdByEmail(email);
           if (result.success && result.userId) {
-            console.log("Got user ID on second attempt:", result.userId);
             await updatePasswordHash(result.userId, password);
-            console.log("Password hash updated successfully in Firestore");
           }
-        } catch (idError) {
-          console.error("Error getting user ID on second attempt:", idError);
+        } catch (idErr) {
+          console.error("Error getting user ID fallback:", idErr);
         }
-      } else {
-        console.warn("No user ID or email available, password hash in Firestore not updated");
       }
 
       setStatus("success");
-      toast.success("Password reset successful! You can now log in with your new password.");
+      toast.success("Password reset successful! You can now log in.");
 
-      // Redirect to login page after a short delay
       setTimeout(() => {
         router.push("/login");
       }, 3000);
-    } catch (error: any) {
-      console.error("Error resetting password:", error);
+    } catch (err) {
+      console.error("Error resetting password:", err);
+      const msg = isFirebaseError(err) ? firebaseError(err) : "Failed to reset password";
+      setErrorMessage(msg);
       setStatus("error");
-      setErrorMessage(error.message || "Failed to reset password");
-      toast.error(error.message || "Failed to reset password");
+      toast.error(msg);
     }
   };
 
-  // Show different content based on status
   if (status === "verifying") {
     return (
       <div className="container flex items-center justify-center min-h-screen py-12">
@@ -207,7 +187,6 @@ export function ResetPasswordForm() {
     );
   }
 
-  // Ready or submitting state - show the password reset form
   return (
     <div className="container flex items-center justify-center min-h-screen py-12">
       <Card className="max-w-md w-full">

@@ -1,6 +1,6 @@
 import type React from "react";
 
-import { Toaster } from "@/components/ui/sonner";
+//import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 //import { Header } from "@/components";
 
@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* <Header /> */}
         <div className="w-full max-w-md space-y-8">{children}</div>
       </div>
-      <Toaster />
+      {/* <Toaster /> */}
     </ThemeProvider>
   );
 }

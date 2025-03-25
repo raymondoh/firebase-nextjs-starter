@@ -1,7 +1,6 @@
 import { Separator } from "@/components/ui/separator";
-import { DashboardShell, DashboardHeader } from "@/components";
+import { DashboardShell, DashboardHeader, columns } from "@/components";
 import { UsersDataTable } from "@/components/admin";
-import { columns } from "@/components/admin/users/columns";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";

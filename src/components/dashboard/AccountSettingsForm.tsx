@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { User } from "lucide-react";
 
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+
 interface AccountSettingsFormProps {
   id: string;
   onSubmitStart?: () => void;
@@ -17,10 +19,9 @@ interface AccountSettingsFormProps {
 
 export function AccountSettingsForm({ id, onSubmitStart, onSubmitComplete }: AccountSettingsFormProps) {
   const { data: session } = useSession();
-
   const [isUploading, setIsUploading] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit() {
     onSubmitStart?.();
 
     try {
@@ -32,18 +33,17 @@ export function AccountSettingsForm({ id, onSubmitStart, onSubmitComplete }: Acc
       });
 
       onSubmitComplete?.(true);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error updating profile:", error);
-      toast.error("Error", {
-        description: "Failed to update profile. Please try again."
-      });
 
+      const message = isFirebaseError(error) ? firebaseError(error) : "Failed to update profile. Please try again.";
+
+      toast.error("Error", { description: message });
       onSubmitComplete?.(false);
     }
   }
 
   const handleAvatarChange = async () => {
-    // This would be implemented with a file input and upload logic
     setIsUploading(true);
 
     try {
@@ -53,10 +53,10 @@ export function AccountSettingsForm({ id, onSubmitStart, onSubmitComplete }: Acc
       toast.success("Avatar updated", {
         description: "Your profile picture has been updated successfully."
       });
-    } catch (error) {
-      toast.error("Error", {
-        description: "Failed to update avatar. Please try again."
-      });
+    } catch (error: unknown) {
+      const message = isFirebaseError(error) ? firebaseError(error) : "Failed to update avatar. Please try again.";
+
+      toast.error("Error", { description: message });
     } finally {
       setIsUploading(false);
     }

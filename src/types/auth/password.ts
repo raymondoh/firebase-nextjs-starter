@@ -1,4 +1,5 @@
 // types/auth/password.ts
+import type { FirebaseError } from "firebase/app";
 
 // This could be in types/auth/index.ts or types/auth/password.ts
 export interface ForgotPasswordState {
@@ -18,6 +19,6 @@ export interface ResetPasswordState {
 export interface UpdatePasswordState {
   success: boolean;
   message?: string;
-  error?: string; // Add this line
+  error?: string | FirebaseError;
   // other properties...
 }
