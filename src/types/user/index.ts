@@ -11,7 +11,8 @@ export type {
   UserRole,
   User,
   // Response types
-  UserActionResponse
+  UserActionResponse,
+  SerializedUser
 } from "./common";
 
 // Admin-related user types

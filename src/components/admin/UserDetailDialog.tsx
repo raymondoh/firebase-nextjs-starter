@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { formatDate } from "@/utils/date"; // Using your utility!
+import { formatClientDate as formatDate } from "@/utils";
 
 interface UserDetailDialogProps {
   user: User;

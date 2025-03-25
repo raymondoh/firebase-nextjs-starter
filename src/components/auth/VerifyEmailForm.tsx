@@ -624,7 +624,7 @@ export function VerifyEmailForm() {
             </Link>
           </Button>
           <p className="text-xs text-center text-muted-foreground">
-            Didn&apost receive an email? Check your spam folder or{" "}
+            Didn&apos;t receive an email? Check your spam folder or{" "}
             <Link href="/auth/verify-email" className="underline underline-offset-4 hover:text-primary">
               try resending the verification email
             </Link>

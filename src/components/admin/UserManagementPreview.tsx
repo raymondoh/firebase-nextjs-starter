@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { User } from "@/types/user";
-import { formatDate } from "@/utils/date";
+import { formatClientDate as formatDate } from "@/utils";
 
 interface UserManagementPreviewProps {
   limit?: number;

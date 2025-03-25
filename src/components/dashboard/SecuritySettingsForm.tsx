@@ -5,11 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { updatePassword } from "@/actions/auth";
 import type { UpdatePasswordState } from "@/types/auth/password";
+
+// ✅ Firebase error utils
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
 interface SecuritySettingsFormProps {
   id: string;
@@ -27,14 +29,15 @@ export function SecuritySettingsForm({ id, onSubmitStart, onSubmitComplete }: Se
     setIsSubmitting(true);
 
     try {
-      // Provide the initial state as the first argument
       const initialState: UpdatePasswordState = { success: false };
       const result = await updatePassword(initialState, formData);
 
       if (result.success) {
         setMessage({ type: "success", text: "Password updated successfully!" });
-        // Clear form
-        (document.getElementById(id) as HTMLFormElement).reset();
+
+        // Reset the form
+        const form = document.getElementById(id) as HTMLFormElement;
+        if (form) form.reset();
 
         toast.success("Password updated", {
           description: "Your password has been updated successfully."
@@ -42,22 +45,26 @@ export function SecuritySettingsForm({ id, onSubmitStart, onSubmitComplete }: Se
 
         onSubmitComplete?.(true);
       } else {
-        setMessage({ type: "error", text: result.error || "Failed to update password" });
+        const errorMessage = isFirebaseError(result.error)
+          ? firebaseError(result.error)
+          : result.error || "Failed to update password";
+
+        setMessage({ type: "error", text: errorMessage });
 
         toast.error("Error", {
-          description: result.error || "Failed to update password"
+          description: errorMessage
         });
 
         onSubmitComplete?.(false);
       }
     } catch (error) {
-      setMessage({ type: "error", text: "An unexpected error occurred" });
+      const message = isFirebaseError(error) ? firebaseError(error) : "An unexpected error occurred";
 
-      toast.error("Error", {
-        description: "An unexpected error occurred"
-      });
+      setMessage({ type: "error", text: message });
 
+      toast.error("Error", { description: message });
       console.error(error);
+
       onSubmitComplete?.(false);
     } finally {
       setIsSubmitting(false);

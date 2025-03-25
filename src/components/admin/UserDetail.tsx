@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { formatDate } from "@/utils/date";
+import { formatClientDate as formatDate } from "@/utils";
 
 interface UserDetailProps {
   user: User;

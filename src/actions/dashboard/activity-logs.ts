@@ -1,7 +1,9 @@
+// src/actions/dashboard/activity-logs.ts
 "use server";
 
 import { getUserActivityLogs } from "@/firebase/actions";
 import { auth } from "@/auth";
+import { parseServerDate } from "@/utils/date-server";
 
 interface PaginationParams {
   limit: number;
@@ -39,11 +41,7 @@ export async function fetchActivityLogs(limitOrParams: number | PaginationParams
     if (logsResult.success && logsResult.activities) {
       const serializedLogs = logsResult.activities.map(log => ({
         ...log,
-        // Convert Firestore Timestamp to ISO string
-        timestamp:
-          log.timestamp && typeof log.timestamp.toDate === "function"
-            ? log.timestamp.toDate().toISOString()
-            : log.timestamp
+        timestamp: parseServerDate(log.timestamp)?.toISOString() ?? new Date().toISOString()
       }));
 
       return serializedLogs;

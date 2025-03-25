@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
+// ✅ Firebase error helpers
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+
 interface PreferenceSettingsFormProps {
   id: string;
   onSubmitStart?: () => void;
@@ -25,13 +28,11 @@ export function PreferenceSettingsForm({ id, onSubmitStart, onSubmitComplete }: 
     setIsSubmitting(true);
 
     try {
-      // Get form data
       const formTheme = formData.get("theme") as string;
       const formLanguage = formData.get("language") as string;
       const formTimezone = formData.get("timezone") as string;
       const formAnimations = formData.get("animations") === "on";
 
-      // Update state
       setTheme(formTheme);
       setLanguage(formLanguage);
       setTimezone(formTimezone);
@@ -46,11 +47,10 @@ export function PreferenceSettingsForm({ id, onSubmitStart, onSubmitComplete }: 
 
       onSubmitComplete?.(true);
     } catch (error) {
-      console.error("Error updating preferences:", error);
-      toast.error("Error", {
-        description: "Failed to update preferences. Please try again."
-      });
+      const message = isFirebaseError(error) ? firebaseError(error) : "Failed to update preferences. Please try again.";
 
+      console.error("Error updating preferences:", error);
+      toast.error("Error", { description: message });
       onSubmitComplete?.(false);
     } finally {
       setIsSubmitting(false);

@@ -7,7 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import { db } from "@/firebase/client";
 import Link from "next/link";
-import { formatDate } from "@/utils/date";
+//import { formatDate, parseDate } from "@/utils/date";
+import { formatClientDate as formatDate, parseDate } from "@/utils";
+
 import type { Activity, AdminActivityLogWrapperProps } from "@/types/dashboard";
 
 export function AdminActivityLogWrapper({
@@ -25,15 +27,17 @@ export function AdminActivityLogWrapper({
         const activitiesQuery = query(collection(db, "activities"), orderBy("timestamp", "desc"), limit(activityLimit));
 
         const snapshot = await getDocs(activitiesQuery);
-        const activitiesData = snapshot.docs.map(doc => {
+
+        const activitiesData: Activity[] = snapshot.docs.map(doc => {
           const data = doc.data();
+
           return {
             id: doc.id,
-            userId: data.userId,
-            action: data.action,
-            timestamp: data.timestamp?.toDate?.() || data.timestamp,
-            details: data.details,
-            userEmail: data.userEmail
+            userId: data.userId ?? "",
+            action: data.action ?? "",
+            timestamp: parseDate(data.timestamp), // ✅ safer conversion
+            details: data.details ?? "",
+            userEmail: data.userEmail ?? ""
           };
         });
 

@@ -5,9 +5,11 @@ import { ArrowUpDown, Shield, ShieldAlert, ShieldCheck, UserIcon } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { User } from "@/types/user/common";
+//import type { User } from "@/types/user/common";
 import Link from "next/link";
-import { formatDate } from "@/utils/date";
+import type { SerializedUser } from "@/types/user/common";
+
+import { formatClientDate as formatDate } from "@/utils";
 
 // Helper function to get initials from name or email
 function getInitials(name: string | undefined | null, email: string | undefined | null): string {
@@ -41,7 +43,7 @@ function getRoleIcon(role: string | undefined) {
   }
 }
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<SerializedUser>[] = [
   {
     accessorKey: "name",
     header: "User",

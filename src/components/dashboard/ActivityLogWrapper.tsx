@@ -1,23 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActivityLogClient } from "./ActivityLogClient";
 import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
-
-// Use the serialized activity type
-interface SerializedActivity {
-  id: string;
-  userId: string;
-  type: string;
-  description: string;
-  status: "success" | "failure";
-  timestamp: string; // ISO string
-  metadata?: Record<string, any>;
-}
+import type { SerializedActivity } from "@/types/firebase/activity";
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
 interface ActivityLogWrapperProps {
   limit?: number;
@@ -45,18 +37,19 @@ export function ActivityLogWrapper({
     try {
       setIsRefreshing(true);
       const data = await fetchActivityLogs(limit);
-      console.log("Received activity data:", data);
 
-      // Ensure we have valid data
       if (Array.isArray(data)) {
         setActivities(data);
       } else {
         console.error("Invalid data format received:", data);
         setError("Invalid data format received");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to fetch activity logs:", err);
-      setError("Failed to load activity logs");
+
+      const message = isFirebaseError(err) ? firebaseError(err) : "Failed to load activity logs";
+
+      setError(message);
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -66,10 +59,6 @@ export function ActivityLogWrapper({
   useEffect(() => {
     loadActivities();
   }, [limit]);
-
-  const handleRefresh = () => {
-    loadActivities();
-  };
 
   return (
     <Card className={className}>
@@ -82,7 +71,7 @@ export function ActivityLogWrapper({
           <Button
             variant="outline"
             size="sm"
-            onClick={handleRefresh}
+            onClick={loadActivities}
             disabled={isRefreshing}
             className="h-8 w-8 p-0"
             aria-label="Refresh activity logs">
@@ -101,6 +90,7 @@ export function ActivityLogWrapper({
           </Button>
         </CardHeader>
       )}
+
       <CardContent>
         {loading && !isRefreshing ? (
           <p className="text-muted-foreground text-sm">Loading activity logs...</p>
@@ -112,6 +102,7 @@ export function ActivityLogWrapper({
           <ActivityLogClient activities={activities} showFilters={showFilters} isRefreshing={isRefreshing} />
         )}
       </CardContent>
+
       {showViewAll && activities.length > 0 && (
         <CardFooter className="pt-0">
           <Button asChild variant="outline" size="sm" className="gap-1 ml-auto">

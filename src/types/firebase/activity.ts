@@ -66,7 +66,7 @@ export interface SerializedActivity {
   type: ActivityType | string;
   description: string;
   status: ActivityStatus;
-  timestamp: string | Timestamp; // Allow both ISO string and Timestamp
+  timestamp: string; //
   ipAddress?: string;
   location?: string;
   device?: string;

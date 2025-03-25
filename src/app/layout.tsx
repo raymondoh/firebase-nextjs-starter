@@ -19,22 +19,22 @@ const geistMono = Geist_Mono({
 });
 export const metadata: Metadata = {
   title: "Firebase Boilerplate",
-  description: "A Next.js Firebase boilerplate",
+  description: "A Next.js Firebase boilerplate"
   // Add CSP meta tag
-  other: {
-    "content-security-policy": `
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.googleapis.com https://*.gstatic.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      img-src 'self' data: https://*.googleusercontent.com https://*.google.com;
-      font-src 'self' https://fonts.gstatic.com;
-      connect-src 'self' https://*.googleapis.com https://*.google.com https://firestore.googleapis.com https://*.firebaseio.com https://identitytoolkit.googleapis.com;
-      frame-src 'self' https://*.firebaseapp.com https://accounts.google.com;
-    `
-      .replace(/\s+/g, " ")
-      .trim(),
-    "cross-origin-opener-policy": "same-origin-allow-popups"
-  }
+  // other: {
+  //   "content-security-policy": `
+  //     default-src 'self';
+  //     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.googleapis.com https://*.gstatic.com;
+  //     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  //     img-src 'self' data: https://*.googleusercontent.com https://*.google.com;
+  //     font-src 'self' https://fonts.gstatic.com;
+  //     connect-src 'self' https://*.googleapis.com https://*.google.com https://firestore.googleapis.com https://*.firebaseio.com https://identitytoolkit.googleapis.com;
+  //     frame-src 'self' https://*.firebaseapp.com https://accounts.google.com;
+  //   `
+  //     .replace(/\s+/g, " ")
+  //     .trim(),
+  //   "cross-origin-opener-policy": "same-origin-allow-popups"
+  // }
 };
 
 export default function RootLayout({
