@@ -3,17 +3,14 @@
 import { auth } from "@/auth";
 import { adminDb } from "@/firebase/admin";
 import { processAccountDeletion } from "./deletion";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { ProcessDeletionsResult } from "@/types/data-privacy/deletion";
 
-// Functions: processPendingDeletions
-// Description: Process all pending deletion requests
-// Returns: ProcessDeletionsResult
-
-// For admin use: Process all pending deletion requests
+// Admin-only: Process all pending deletion requests
 export async function processPendingDeletions(): Promise<ProcessDeletionsResult> {
   const session = await auth();
 
-  // Check if user is admin
+  // Authorization check
   if (!session?.user?.role || session.user.role !== "admin") {
     return {
       success: false,
@@ -24,7 +21,6 @@ export async function processPendingDeletions(): Promise<ProcessDeletionsResult>
   }
 
   try {
-    // Get all pending deletion requests
     const pendingRequestsSnapshot = await adminDb.collection("deletionRequests").where("status", "==", "pending").get();
 
     console.log(`Found ${pendingRequestsSnapshot.size} pending deletion requests`);
@@ -32,25 +28,49 @@ export async function processPendingDeletions(): Promise<ProcessDeletionsResult>
     let processed = 0;
     let errors = 0;
 
-    // Process each request
     for (const doc of pendingRequestsSnapshot.docs) {
       const request = doc.data();
+      const userId = request.userId;
+
+      if (!userId) {
+        console.warn(`Skipping deletion request with missing userId in doc ${doc.id}`);
+        errors++;
+        continue;
+      }
+
       try {
-        const success = await processAccountDeletion(request.userId);
+        const success = await processAccountDeletion(userId);
         if (success) {
           processed++;
         } else {
           errors++;
         }
-      } catch (error) {
-        console.error(`Error processing deletion for user ${request.userId}:`, error);
+      } catch (err: unknown) {
+        console.error(`Error processing deletion for user ${userId}:`, err);
+
+        if (isFirebaseError(err)) {
+          console.error(firebaseError(err));
+        }
+
         errors++;
       }
     }
 
     return { success: true, processed, errors };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error processing pending deletions:", error);
-    return { success: false, processed: 0, errors: 0, error: error instanceof Error ? error.message : String(error) };
+
+    const errorMessage = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : String(error);
+
+    return {
+      success: false,
+      processed: 0,
+      errors: 0,
+      error: errorMessage
+    };
   }
 }

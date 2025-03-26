@@ -1,22 +1,17 @@
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin";
-//import { serverTimestamp } from "@/firebase/admin/firestore";
-import { increment } from "@/firebase/admin/firestore";
-
+import { serverTimestamp, increment } from "@/firebase/admin/firestore";
 import { logActivity } from "@/firebase";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error"; // ✅
 import type { AuthActionResponse } from "@/types/auth/common";
 import { UserRecord } from "firebase-admin/auth";
 
-/**
- * Handles Google authentication (both sign-in and sign-up)
- * This function is called after a successful Google OAuth flow
- */
 export async function handleGoogleAuth(userInfo: {
   email: string;
   name?: string;
   picture?: string;
-  sub: string; // Google's unique ID
+  sub: string;
 }): Promise<AuthActionResponse> {
   console.log("handleGoogleAuth called with user info:", {
     email: userInfo.email,
@@ -26,93 +21,70 @@ export async function handleGoogleAuth(userInfo: {
   });
 
   try {
-    // Check if user already exists in Firebase by email
     let firebaseUser: UserRecord;
     let isNewUser = false;
 
     try {
-      // Try to get the user by email
       firebaseUser = await adminAuth.getUserByEmail(userInfo.email);
       console.log("User already exists in Firebase:", firebaseUser.uid);
     } catch (error) {
-      // User doesn't exist, create a new one
-      console.log(error);
-      console.log("User doesn't exist in Firebase, creating new user");
+      console.warn("User not found, creating...");
+      console.error("getUserByEmail failed:", error);
       isNewUser = true;
 
-      // Create the user in Firebase Auth
       firebaseUser = await adminAuth.createUser({
         email: userInfo.email,
         displayName: userInfo.name || userInfo.email.split("@")[0],
         photoURL: userInfo.picture,
-        emailVerified: true // Google accounts are already verified
+        emailVerified: true
       });
       console.log("Created new Firebase user:", firebaseUser.uid);
     }
 
-    // Check if this is the first user in the system (to assign admin role)
     const usersSnapshot = await adminDb.collection("users").count().get();
     const isFirstUser = usersSnapshot.data().count === 0;
     const role = isFirstUser ? "admin" : "user";
 
+    const userRef = adminDb.collection("users").doc(firebaseUser.uid);
+
     if (isNewUser) {
-      // Create user document in Firestore for new users
-      const now = new Date();
-      await adminDb
-        .collection("users")
-        .doc(firebaseUser.uid)
-        .set({
-          email: userInfo.email,
-          name: userInfo.name || userInfo.email.split("@")[0],
-          photoURL: userInfo.picture || null,
-          role: role,
-          provider: "google",
-          googleId: userInfo.sub,
-          createdAt: now,
-          updatedAt: now,
-          lastLoginAt: now
-        });
+      await userRef.set({
+        email: userInfo.email,
+        name: userInfo.name || userInfo.email.split("@")[0],
+        photoURL: userInfo.picture || null,
+        role,
+        provider: "google",
+        googleId: userInfo.sub,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        lastLoginAt: serverTimestamp()
+      });
 
-      // Set custom claims for the user
-      await adminAuth.setCustomUserClaims(firebaseUser.uid, { role: role });
-      console.log("Custom claims set for user");
+      await adminAuth.setCustomUserClaims(firebaseUser.uid, { role });
     } else {
-      // Update existing user's information
-      await adminDb
-        .collection("users")
-        .doc(firebaseUser.uid)
-        .update({
-          lastLoginAt: new Date(),
-          updatedAt: new Date(),
-          // Only update these if they don't exist or are empty
-          name: increment(0),
-          photoURL: increment(0),
-          provider: "google",
-          googleId: userInfo.sub
-        });
+      await userRef.update({
+        lastLoginAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        name: increment(0),
+        photoURL: increment(0),
+        provider: "google",
+        googleId: userInfo.sub
+      });
 
-      // Use a transaction to conditionally update fields only if they're empty
       await adminDb.runTransaction(async transaction => {
-        const userDoc = await transaction.get(adminDb.collection("users").doc(firebaseUser.uid));
+        const userDoc = await transaction.get(userRef);
         const userData = userDoc.data();
 
         const updates: { name?: string; photoURL?: string } = {};
-
-        if (!userData?.name && userInfo.name) {
-          updates.name = userInfo.name;
-        }
-
-        if (!userData?.photoURL && userInfo.picture) {
-          updates.photoURL = userInfo.picture;
-        }
+        if (!userData?.name && userInfo.name) updates.name = userInfo.name;
+        if (!userData?.photoURL && userInfo.picture) updates.photoURL = userInfo.picture;
 
         if (Object.keys(updates).length > 0) {
-          transaction.update(adminDb.collection("users").doc(firebaseUser.uid), updates);
+          transaction.update(userRef, updates);
         }
       });
     }
 
-    // Log the activity
     await logActivity({
       userId: firebaseUser.uid,
       type: isNewUser ? "register" : "login",
@@ -129,14 +101,17 @@ export async function handleGoogleAuth(userInfo: {
       message: isNewUser ? "Google account created successfully" : "Google login successful",
       userId: firebaseUser.uid,
       email: userInfo.email,
-      role: role
+      role
     };
-  } catch (error) {
-    let errorMessage = `Google authentication failed: ${"An unexpected error occurred"}`;
-    if (error instanceof Error) {
-      errorMessage = `Google authentication failed: ${error.message}`;
-    }
+  } catch (error: unknown) {
     console.error("Google authentication error:", error);
+
+    const errorMessage = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? `Google authentication failed: ${error.message}`
+      : "Google authentication failed: An unexpected error occurred";
+
     return {
       success: false,
       message: errorMessage

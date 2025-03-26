@@ -4,53 +4,53 @@
 import { getUserActivityLogs } from "@/firebase/actions";
 import { auth } from "@/auth";
 import { parseServerDate } from "@/utils/date-server";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import type { SerializedActivity } from "@/types/firebase/activity";
 
 interface PaginationParams {
   limit: number;
-  startAfter?: string; // Document ID to start after for pagination
-  type?: string; // Filter by activity type
+  startAfter?: string;
+  type?: string;
 }
 
 /**
  * Server action to fetch activity logs for the current user
  */
-export async function fetchActivityLogs(limitOrParams: number | PaginationParams = 5) {
+export async function fetchActivityLogs(limitOrParams: number | PaginationParams = 5): Promise<SerializedActivity[]> {
   try {
-    // Verify authentication
     const session = await auth();
     if (!session?.user?.id) {
       throw new Error("Not authenticated");
     }
 
-    // Parse parameters
     let limit = 5;
-    let startAfter: string | undefined = undefined;
-    let type: string | undefined = undefined;
+    let startAfter: string | undefined;
+    let type: string | undefined;
 
     if (typeof limitOrParams === "number") {
       limit = limitOrParams;
     } else {
-      limit = limitOrParams.limit;
-      startAfter = limitOrParams.startAfter;
-      type = limitOrParams.type;
+      ({ limit, startAfter, type } = limitOrParams);
     }
 
-    // Use the existing getUserActivityLogs function with pagination
     const logsResult = await getUserActivityLogs(limit, startAfter, type);
 
     if (logsResult.success && logsResult.activities) {
-      const serializedLogs = logsResult.activities.map(log => ({
+      return logsResult.activities.map(log => ({
         ...log,
         timestamp: parseServerDate(log.timestamp)?.toISOString() ?? new Date().toISOString()
       }));
-
-      return serializedLogs;
     } else {
       console.error("Error fetching activity logs:", logsResult.error);
       return [];
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching activity logs:", error);
+
+    if (isFirebaseError(error)) {
+      console.error("Firebase error:", firebaseError(error));
+    }
+
     return [];
   }
 }

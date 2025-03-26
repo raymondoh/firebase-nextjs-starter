@@ -7,3 +7,4 @@ export { formatDate as formatServerDate } from "./date-server";
 // Other utils
 export * from "./serializeData";
 export * from "./firebase-error";
+export * from "./serializeUser";

@@ -1,3 +1,4 @@
+// app/dashboard/admin/user/page.tsx
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader, columns } from "@/components";
 import { UsersDataTable } from "@/components/admin";
@@ -5,27 +6,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
 import { fetchUsers } from "@/actions/user/admin";
-
-// Helper function to ensure all data is properly serialized
-function serializeData(data: any) {
-  // Convert Firestore timestamps to ISO strings
-  const serialized = JSON.parse(
-    JSON.stringify(data, (key, value) => {
-      // Check if the value is a Firestore timestamp
-      if (value && typeof value === "object" && value.seconds !== undefined && value.nanoseconds !== undefined) {
-        // Convert to Date and then to ISO string
-        return new Date(value.seconds * 1000 + value.nanoseconds / 1000000).toISOString();
-      }
-      // Check if it's already a Date object
-      if (value instanceof Date) {
-        return value.toISOString();
-      }
-      return value;
-    })
-  );
-
-  return serialized;
-}
+import type { SerializedUser } from "@/types/user";
+import { serializeUserArray } from "@/utils/serializeUser";
 
 export default async function AdminUsersPage() {
   // Get the session server-side
@@ -64,7 +46,7 @@ export default async function AdminUsersPage() {
   const totalUsers = result.success ? result.total || 0 : 0;
 
   // Serialize the data for client components
-  const serializedUsers = serializeData(initialUsers);
+  const serializedUsers = serializeUserArray(initialUsers);
 
   return (
     <DashboardShell>
@@ -72,7 +54,11 @@ export default async function AdminUsersPage() {
       <Separator className="mb-8" />
 
       {/* Pass the serialized data directly to the data table */}
-      <UsersDataTable columns={columns} initialData={serializedUsers} totalUsers={totalUsers} />
+      <UsersDataTable<SerializedUser, unknown>
+        columns={columns}
+        initialData={serializedUsers}
+        totalUsers={totalUsers}
+      />
     </DashboardShell>
   );
 }

@@ -2,23 +2,23 @@
 
 import { auth } from "@/auth";
 import { adminDb, adminStorage } from "@/firebase/admin";
-import { serverTimestamp } from "@/firebase/admin/firestore";
+
 import { exportDataSchema } from "@/schemas/data-privacy";
-import type { ExportFormat, ExportDataState } from "@/types/data-privacy/export";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import { logActivity } from "@/firebase";
 import { convertTimestamps } from "@/firebase/utils/firestore";
-
+import type { ExportFormat, ExportDataState } from "@/types/data-privacy/export";
 import { ExportedActivityLog } from "@/types/data-privacy/export";
+import { objectToCSV } from "@/actions/utils/format-helpers";
 
-// Export user data
 export async function exportUserData(prevState: ExportDataState | null, formData: FormData): Promise<ExportDataState> {
   const session = await auth();
 
-  if (!session || !session.user || !session.user.id) {
+  if (!session?.user?.id) {
     return { success: false, error: "Not authenticated" };
   }
 
   try {
-    // Validate format
     const format = formData.get("format") as ExportFormat;
     const result = exportDataSchema.safeParse({ format });
 
@@ -26,36 +26,29 @@ export async function exportUserData(prevState: ExportDataState | null, formData
       return { success: false, error: "Invalid export format" };
     }
 
-    // Get user data from Firestore
     const userDoc = await adminDb.collection("users").doc(session.user.id).get();
     if (!userDoc.exists) {
       return { success: false, error: "User data not found" };
     }
 
-    // Get user's activity logs
     let activityLogs: ExportedActivityLog[] = [];
 
     try {
-      const activityLogsSnapshot = await adminDb
+      const snapshot = await adminDb
         .collection("activityLogs")
         .where("userId", "==", session.user.id)
         .orderBy("timestamp", "desc")
         .limit(100)
         .get();
 
-      activityLogs = activityLogsSnapshot.docs.map(doc => ({
+      activityLogs = snapshot.docs.map(doc => ({
         ...(convertTimestamps(doc.data()) as ExportedActivityLog),
         id: doc.id
       }));
     } catch (indexError) {
-      console.warn(
-        "Activity logs index not yet available:",
-        indexError instanceof Error ? indexError.message : String(indexError)
-      );
-      // Continue without activity logs
+      console.warn("Activity logs index issue:", indexError);
     }
 
-    // Compile user data
     const userData = {
       profile: {
         email: session.user.email,
@@ -63,13 +56,11 @@ export async function exportUserData(prevState: ExportDataState | null, formData
         bio: session.user.bio || "",
         image: session.user.image || "",
         ...(convertTimestamps(userDoc.data()) as Record<string, unknown>),
-        id: session.user.id // move this last so it overrides any "id" from Firestore
+        id: session.user.id
       },
-
       activityLogs
     };
 
-    // Convert to requested format
     let fileContent: string;
     let contentType: string;
     let fileExtension: string;
@@ -79,40 +70,36 @@ export async function exportUserData(prevState: ExportDataState | null, formData
       contentType = "application/json";
       fileExtension = "json";
     } else {
-      const flattenedData = {
+      const flattened = {
         ...userData.profile,
         activityLogs: JSON.stringify(userData.activityLogs)
       };
-      fileContent = await objectToCSV(flattenedData);
+      fileContent = await objectToCSV(flattened);
       contentType = "text/csv";
       fileExtension = "csv";
     }
 
-    // Upload to Firebase Storage
     const fileName = `data-exports/${session.user.id}/user-data-${Date.now()}.${fileExtension}`;
-    const bucket = adminStorage.bucket();
-    const file = bucket.file(fileName);
+    const file = adminStorage.bucket().file(fileName);
 
     await file.save(fileContent, {
-      metadata: {
-        contentType
-      }
+      metadata: { contentType }
     });
 
-    // Generate signed URL
     const [signedUrl] = await file.getSignedUrl({
       action: "read",
-      expires: Date.now() + 60 * 60 * 1000 // 1 hour
+      expires: Date.now() + 60 * 60 * 1000
     });
 
-    // Log export activity
-    await adminDb.collection("activityLogs").add({
+    await logActivity({
       userId: session.user.id,
       type: "data_export",
-      description: `Data exported in ${format.toUpperCase()} format`,
-      timestamp: serverTimestamp(), // ✅ using Firestore server-generated timestamp
-      ipAddress: "N/A",
-      status: "success"
+      description: `Exported data in ${format.toUpperCase()} format`,
+      status: "success",
+      metadata: {
+        format,
+        fileName
+      }
     });
 
     return {
@@ -121,7 +108,8 @@ export async function exportUserData(prevState: ExportDataState | null, formData
       message: `Your data has been exported in ${format.toUpperCase()} format`
     };
   } catch (error) {
-    console.error("Error exporting user data:", error instanceof Error ? error.message : String(error));
-    return { success: false, error: "Failed to export data" };
+    const message = isFirebaseError(error) ? firebaseError(error) : "Failed to export data";
+    console.error("Error exporting data:", error);
+    return { success: false, error: message };
   }
 }
