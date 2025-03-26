@@ -15,4 +15,4 @@ export { VerifyEmailForm } from "./auth/VerifyEmailForm";
 export { VerificationSuccessForm } from "./auth/VerifyificationSuccessForm";
 
 export * from "./dashboard";
-export * from "./admin";
+export * from "./dashboard/admin";

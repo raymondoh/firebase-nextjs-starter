@@ -27,20 +27,22 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/(app-dashboard)/adminX/layout.tsxX",
+    "src/app/(dashboard)/adminX/layout.tsxX",
     "src/app/layout.tsxX",
     "src/app/ClientLayout.tsxX",
     "src/app/(root)/layout.tsxX",
-    "src/app/(app-dashboard)/user/layout.tsx",
+    "src/app/(dashboard)/user/layout.tsx",
     "src/components/DashboardSidebar.tsxX",
-    "src/app/(app-dashboard)/layout.tsxX",
+    "src/app/(dashboard)/layout.tsxX",
     "src/components/dashboard/dashboard-sidebar.tsxX",
     "src/components/SessionChecker.tsxX",
-    "src/app/(app-dashboard)/admin/layout.tsx",
+    "src/app/(dashboard)/admin/layout.tsx",
     "src/actions/auth/register-with-verifications.tsxX",
     "src/components/auth/RegisterFormWithVerificationX.tsxX",
     "src/components/auth/EmailVerificationStatusX.tsxX",
-    "src/components/auth/EmailVerification.XtsxX"
+    "src/components/auth/EmailVerification.XtsxX",
+    "src/components/dashboard/admin/UsersClient.tsx",
+    "src/components/SecuritySettingsForm.tsxX"
   ],
   "exclude": ["node_modules"]
 }
