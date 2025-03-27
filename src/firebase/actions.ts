@@ -368,6 +368,60 @@ export async function logActivity(data: Omit<ActivityLogData, "timestamp">): Pro
 /**
  * Get user activity logs with pagination support
  */
+// export async function getUserActivityLogs(
+//   limit = 100,
+//   startAfter?: string,
+//   type?: string
+// ): Promise<GetUserActivityLogsResult> {
+//   const session = await auth();
+
+//   if (!session?.user?.id) {
+//     return { success: false, error: "Not authenticated" };
+//   }
+
+//   try {
+//     let query = adminDb.collection("activityLogs").where("userId", "==", session.user.id);
+
+//     if (type) {
+//       query = query.where("type", "==", type);
+//     }
+
+//     query = query.orderBy("timestamp", "desc");
+
+//     if (startAfter) {
+//       const startAfterDoc = await adminDb.collection("activityLogs").doc(startAfter).get();
+//       if (startAfterDoc.exists) {
+//         query = query.startAfter(startAfterDoc);
+//       }
+//     }
+
+//     query = query.limit(limit);
+
+//     const logsSnapshot = await query.get();
+
+//     const activities: ActivityLogWithId[] = logsSnapshot.docs.map(
+//       doc =>
+//         ({
+//           id: doc.id,
+//           userId: doc.data().userId,
+//           type: doc.data().type,
+//           description: doc.data().description,
+//           status: doc.data().status,
+//           timestamp: doc.data().timestamp,
+//           ipAddress: doc.data().ipAddress,
+//           location: doc.data().location,
+//           device: doc.data().device,
+//           deviceType: doc.data().deviceType,
+//           metadata: doc.data().metadata
+//         } as ActivityLogWithId)
+//     );
+
+//     return { success: true, activities };
+//   } catch (error) {
+//     console.error("Error getting activity logs:", error instanceof Error ? error.message : String(error));
+//     return { success: false, error: "Error getting activity logs" };
+//   }
+// }
 export async function getUserActivityLogs(
   limit = 100,
   startAfter?: string,
@@ -399,21 +453,33 @@ export async function getUserActivityLogs(
 
     const logsSnapshot = await query.get();
 
-    const activities: ActivityLogWithId[] = logsSnapshot.docs.map(
-      doc =>
-        ({
+    const activities: ActivityLogWithId[] = await Promise.all(
+      logsSnapshot.docs.map(async doc => {
+        const data = doc.data();
+        let userEmail = "";
+
+        try {
+          const userRecord = await adminAuth.getUser(data.userId);
+          userEmail = userRecord.email ?? "";
+        } catch (authError) {
+          console.warn(`Failed to fetch email for user ${data.userId}:`, authError);
+        }
+
+        return {
           id: doc.id,
-          userId: doc.data().userId,
-          type: doc.data().type,
-          description: doc.data().description,
-          status: doc.data().status,
-          timestamp: doc.data().timestamp,
-          ipAddress: doc.data().ipAddress,
-          location: doc.data().location,
-          device: doc.data().device,
-          deviceType: doc.data().deviceType,
-          metadata: doc.data().metadata
-        } as ActivityLogWithId)
+          userId: data.userId,
+          userEmail,
+          type: data.type,
+          description: data.description,
+          status: data.status,
+          timestamp: data.timestamp,
+          ipAddress: data.ipAddress,
+          location: data.location,
+          device: data.device,
+          deviceType: data.deviceType,
+          metadata: data.metadata
+        };
+      })
     );
 
     return { success: true, activities };

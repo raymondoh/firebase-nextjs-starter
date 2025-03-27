@@ -2,10 +2,10 @@ import { Separator } from "@/components/ui/separator";
 import {
   DashboardShell,
   DashboardHeader,
-  AdminActivityLogWrapper,
-  SystemOverviewClient,
-  UserManagementPreview,
-  SystemAlertsClient
+  AdminSystemOverview,
+  AdminSystemAlerts,
+  AdminUserPreview,
+  AdminRecentActivity
 } from "@/components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -96,19 +96,19 @@ export default async function AdminDashboardPage() {
       {/* Top row - 2 columns */}
       <div className="grid gap-8 md:grid-cols-2 mb-8">
         {/* System Overview Card */}
-        <SystemOverviewClient systemStats={serializedSystemStats} />
+        <AdminSystemOverview systemStats={serializedSystemStats} />
 
         {/* System Alerts */}
-        <SystemAlertsClient />
+        <AdminSystemAlerts />
       </div>
 
       {/* Bottom row - 2 columns */}
       <div className="grid gap-8 md:grid-cols-2">
         {/* User Management Preview */}
-        <UserManagementPreview limit={5} />
+        <AdminUserPreview limit={5} />
 
         {/* Admin Activity Log */}
-        <AdminActivityLogWrapper
+        <AdminRecentActivity
           limit={5}
           showFilters={false}
           showHeader={true}

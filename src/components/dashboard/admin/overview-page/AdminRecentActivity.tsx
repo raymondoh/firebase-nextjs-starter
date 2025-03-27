@@ -12,7 +12,7 @@ import { formatClientDate as formatDate, parseDate } from "@/utils";
 
 import type { Activity, AdminActivityLogWrapperProps } from "@/types/dashboard";
 
-export function AdminActivityLogWrapper({
+export function AdminRecentActivity({
   limit: activityLimit = 5,
   showHeader = true,
   showViewAll = true,

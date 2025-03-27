@@ -10,6 +10,7 @@ export type {
   // Core user types
   UserRole,
   User,
+  PreviewUser,
   // Response types
   UserActionResponse,
   SerializedUser

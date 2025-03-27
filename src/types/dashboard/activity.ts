@@ -1,4 +1,6 @@
+// types/dashboard/activity.ts
 import type { SerializedActivity } from "../firebase/activity";
+import { Timestamp } from "firebase/firestore";
 
 /**
  * Props for the ActivityLog server component
@@ -61,4 +63,19 @@ export interface AdminActivityLogWrapperProps {
   showHeader?: boolean;
   showViewAll?: boolean;
   viewAllUrl?: string;
+}
+
+export interface SystemStats {
+  totalUsers: number;
+  activeUsers: number;
+  newUsersToday: number;
+  totalActivities: number;
+}
+export interface SystemAlert {
+  id: string;
+  title: string;
+  description: string;
+  severity: "info" | "warning" | "error" | "success";
+  timestamp: Date | Timestamp | null;
+  resolved: boolean;
 }

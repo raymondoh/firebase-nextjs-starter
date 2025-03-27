@@ -15,7 +15,9 @@ export type {
   ActivityLogWrapperProps,
   ActivityPageClientProps,
   AdminActivityLogWrapperProps,
-  Activity
+  Activity,
+  SystemStats,
+  SystemAlert
 } from "./activity";
 
 // Dashboard metrics and statistics types

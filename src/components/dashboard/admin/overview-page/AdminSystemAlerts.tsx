@@ -5,22 +5,15 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Timestamp } from "firebase/firestore";
 import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 import { db } from "@/firebase/client";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { SystemAlert } from "@/types/dashboard";
+import { parseDate } from "@/utils/date-client";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
-interface SystemAlert {
-  id: string;
-  title: string;
-  description: string;
-  severity: "info" | "warning" | "error" | "success";
-  timestamp: Date | Timestamp | null;
-  resolved: boolean;
-}
-
-export function SystemAlertsClient() {
+export function AdminSystemAlerts() {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,15 +35,19 @@ export function SystemAlertsClient() {
             title: data.title,
             description: data.description,
             severity: data.severity,
-            timestamp: data.timestamp?.toDate?.() || data.timestamp,
+            timestamp: parseDate(data.timestamp),
             resolved: data.resolved
           };
         });
 
         setAlerts(alertsData);
       } catch (error) {
-        console.error("Error fetching system alerts:", error);
-        // If collection doesn't exist or other error, show sample data
+        if (isFirebaseError(error)) {
+          console.error("Error fetching users:", firebaseError(error));
+        } else {
+          console.error("Error fetching users:", "An unexpected error occurred.");
+        }
+
         setAlerts([
           {
             id: "sample1",
@@ -69,7 +66,7 @@ export function SystemAlertsClient() {
     fetchAlerts();
   }, []);
 
-  function getSeverityIcon(severity: string) {
+  function getSeverityIcon(severity: SystemAlert["severity"]) {
     switch (severity) {
       case "error":
         return <AlertCircle className="h-4 w-4" />;
@@ -82,7 +79,7 @@ export function SystemAlertsClient() {
     }
   }
 
-  function getSeverityClass(severity: string) {
+  function getSeverityClass(severity: SystemAlert["severity"]) {
     switch (severity) {
       case "error":
         return "bg-destructive/15 text-destructive";

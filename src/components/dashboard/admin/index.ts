@@ -1,8 +1,13 @@
-// Overview Page
-export { AdminActivityLogWrapper } from "./overview-page/AdminActivityLogWrapper";
-export { SystemAlertsClient } from "./overview-page/SystemAlertsClient";
-export { SystemOverviewClient } from "./overview-page/SystemOverviewClient";
-export { UserManagementPreview } from "./overview-page/UserManagementPreview";
+// Admin Overview Page
+export { AdminSystemAlerts } from "./overview-page/AdminSystemAlerts";
+export { AdminSystemOverview } from "./overview-page/AdminSystemOverview";
+export { AdminUserPreview } from "./overview-page/AdminUserPreview";
+export { AdminRecentActivity } from "./overview-page/AdminRecentActivity";
+
+// Admin Activity
+export { AdminActivityPageClient } from "./activity-page/AdminActivityPageClient";
+export { AdminActivityLogClient } from "./activity-page/AdminActivityLogClient";
+
 // Manage Users
 export { CreateUserDialog } from "./manage-users-page/CreateUserDialog";
 export { UsersDataTable } from "./manage-users-page/UsersDataTable";

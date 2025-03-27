@@ -52,6 +52,14 @@ export interface User {
   metadata?: Record<string, any>;
 }
 
+export interface PreviewUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  role?: string;
+  createdAt?: Date;
+}
+
 /**
  * Serialized user safe for client components
  * All dates are converted to ISO strings

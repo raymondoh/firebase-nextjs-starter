@@ -9,38 +9,42 @@ import { db } from "@/firebase/client";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { User } from "@/types/user";
 import { formatClientDate as formatDate } from "@/utils";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import { PreviewUser } from "@/types/user";
 
 interface UserManagementPreviewProps {
   limit?: number;
 }
 
-export function UserManagementPreview({ limit: userLimit = 5 }: UserManagementPreviewProps) {
-  const [users, setUsers] = useState<User[]>([]);
+export function AdminUserPreview({ limit: userLimit = 5 }: UserManagementPreviewProps) {
+  const [users, setUsers] = useState<PreviewUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUsers() {
       try {
         const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(userLimit));
-
         const snapshot = await getDocs(usersQuery);
-        const usersData = snapshot.docs.map(doc => {
+
+        const usersData: PreviewUser[] = snapshot.docs.map(doc => {
           const data = doc.data();
           return {
             id: doc.id,
             name: data.name,
             email: data.email,
             role: data.role || "user",
-            createdAt: data.createdAt?.toDate?.() || data.createdAt,
-            lastLoginAt: data.lastLoginAt?.toDate?.() || data.lastLoginAt
-          } as User;
+            createdAt: data.createdAt?.toDate?.() || data.createdAt
+          };
         });
 
         setUsers(usersData);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        if (isFirebaseError(error)) {
+          console.error("Error fetching users:", firebaseError(error));
+        } else {
+          console.error("Error fetching users:", "An unexpected error occurred.");
+        }
       } finally {
         setLoading(false);
       }
@@ -99,7 +103,6 @@ export function UserManagementPreview({ limit: userLimit = 5 }: UserManagementPr
                       {user.name || user.email?.split("@")[0] || "Unknown"}
                     </p>
                     <p className="text-xs text-muted-foreground">{user.email || "No email"}</p>
-
                     <p className="text-xs text-muted-foreground">{formatDate(user.createdAt)}</p>
                   </div>
                 </div>
