@@ -1,21 +1,22 @@
 "use client";
 
-import type React from "react";
 import { useState } from "react";
-import type { User } from "@/types/user/common";
 import { useRouter } from "next/navigation";
+import type { User } from "@/types/user/common";
+import { toast } from "sonner";
+import { updateUser, deleteUser } from "@/actions/user/admin";
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+import { formatClientDate as formatDate } from "@/utils";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { updateUser, deleteUser } from "@/actions/user/admin";
-import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,13 +28,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { formatClientDate as formatDate } from "@/utils";
 
-interface UserDetailProps {
+export interface AdminUserDetailCardProps {
   user: User;
 }
-
-export function UserDetail({ user }: UserDetailProps) {
+// click view in the view coloumn on the manage users page
+export function AdminUserDetailCard({ user }: AdminUserDetailCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<User>({ ...user });
@@ -47,18 +47,15 @@ export function UserDetail({ user }: UserDetailProps) {
         toast.success("User updated successfully");
         router.refresh();
       } else {
-        toast.error("Failed to update user");
+        toast.error(result.error || "Failed to update user");
       }
-    } catch (error) {
-      console.error("Error updating user:", error);
-      toast.error("An unexpected error occurred");
+    } catch (err) {
+      const message = isFirebaseError(err) ? firebaseError(err) : "An unexpected error occurred";
+      toast.error(message);
+      console.error("Update error:", err);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleChange = (field: keyof User, value: unknown) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleDeleteUser = async () => {
@@ -69,30 +66,30 @@ export function UserDetail({ user }: UserDetailProps) {
         toast.success("User deleted successfully");
         router.push("/admin/users");
       } else {
-        toast.error("Failed to delete user");
+        toast.error(result.error || "Failed to delete user");
       }
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("An unexpected error occurred");
+    } catch (err) {
+      const message = isFirebaseError(err) ? firebaseError(err) : "An unexpected error occurred";
+      toast.error(message);
+      console.error("Delete error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  function getInitials(name: string | undefined | null, email: string | undefined | null): string {
-    if (name) {
-      return name
-        .split(" ")
-        .map(n => n[0])
-        .join("")
-        .toUpperCase()
-        .substring(0, 2);
-    }
-    if (email) {
-      return email.substring(0, 2).toUpperCase();
-    }
-    return "UN";
-  }
+  const handleChange = (field: keyof User, value: unknown) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const getInitials = (name?: string | null, email?: string | null): string =>
+    name
+      ? name
+          .split(" ")
+          .map(n => n[0])
+          .join("")
+          .toUpperCase()
+          .substring(0, 2)
+      : (email ?? "UN").substring(0, 2).toUpperCase();
 
   return (
     <div className="space-y-6">
@@ -108,6 +105,8 @@ export function UserDetail({ user }: UserDetailProps) {
               <TabsTrigger value="security">Security</TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
             </TabsList>
+
+            {/* Details Tab */}
             <TabsContent value="details" className="space-y-4 py-4">
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
@@ -115,23 +114,20 @@ export function UserDetail({ user }: UserDetailProps) {
                   <AvatarFallback className="text-lg">{getInitials(formData.name, formData.email)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-medium">
-                    {formData.name || (formData.email ? formData.email.split("@")[0] : "Unknown")}
-                  </h3>
+                  <h3 className="text-lg font-medium">{formData.name || formData.email?.split("@")[0]}</h3>
                   <p className="text-sm text-muted-foreground">{formData.email}</p>
                   <div className="mt-1 flex items-center gap-2">
-                    <Badge variant={formData.role === "admin" ? "destructive" : "outline"}>
-                      {formData.role || "user"}
-                    </Badge>
-                    <Badge variant={formData.status === "active" ? "default" : "destructive"}>
-                      {formData.status || "active"}
-                    </Badge>
+                    <Badge variant={formData.role === "admin" ? "destructive" : "outline"}>{formData.role}</Badge>
+                    <Badge variant={formData.status === "active" ? "default" : "destructive"}>{formData.status}</Badge>
                   </div>
                 </div>
               </div>
               <Separator />
+
+              {/* Edit Form */}
               <form onSubmit={handleSubmit}>
                 <div className="grid gap-4 py-4">
+                  {/* Name */}
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="name" className="text-right">
                       Name
@@ -143,6 +139,7 @@ export function UserDetail({ user }: UserDetailProps) {
                       className="col-span-3"
                     />
                   </div>
+                  {/* Email */}
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="email" className="text-right">
                       Email
@@ -154,6 +151,7 @@ export function UserDetail({ user }: UserDetailProps) {
                       className="col-span-3"
                     />
                   </div>
+                  {/* Role */}
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="role" className="text-right">
                       Role
@@ -169,6 +167,7 @@ export function UserDetail({ user }: UserDetailProps) {
                       </SelectContent>
                     </Select>
                   </div>
+                  {/* Status */}
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="status" className="text-right">
                       Status
@@ -185,6 +184,7 @@ export function UserDetail({ user }: UserDetailProps) {
                     </Select>
                   </div>
                 </div>
+
                 <div className="flex justify-end">
                   <Button type="submit" disabled={isLoading}>
                     {isLoading ? "Saving..." : "Save changes"}
@@ -193,12 +193,13 @@ export function UserDetail({ user }: UserDetailProps) {
               </form>
             </TabsContent>
 
+            {/* Security Tab */}
             <TabsContent value="security" className="space-y-4 py-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-medium">Email Verification</h4>
-                    <p className="text-sm text-muted-foreground">User&aposs email verification status</p>
+                    <p className="text-sm text-muted-foreground">User's email verification status</p>
                   </div>
                   <Switch
                     checked={formData.emailVerified}
@@ -241,16 +242,15 @@ export function UserDetail({ user }: UserDetailProps) {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the user account and remove all
-                            associated data.
+                            This action will permanently delete the user account.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction onClick={handleDeleteUser} disabled={isLoading}>
-                            {isLoading ? "Deleting..." : "Delete Account"}
+                            {isLoading ? "Deleting..." : "Delete"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -260,31 +260,30 @@ export function UserDetail({ user }: UserDetailProps) {
               </div>
             </TabsContent>
 
+            {/* Activity Tab */}
             <TabsContent value="activity" className="space-y-4 py-4">
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium">Created At</h4>
-                    <p className="text-sm text-muted-foreground">{formatDate(formData.createdAt)}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium">Last Login</h4>
-                    <p className="text-sm text-muted-foreground">{formatDate(formData.lastLoginAt)}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium">Last Updated</h4>
-                    <p className="text-sm text-muted-foreground">{formatDate(formData.updatedAt)}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium">IP Address</h4>
-                    <p className="text-sm text-muted-foreground">Not available</p>
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium">Created At</h4>
+                  <p className="text-sm text-muted-foreground">{formatDate(formData.createdAt)}</p>
                 </div>
-                <Separator />
-                <div className="space-y-2">
-                  <h4 className="font-medium">Recent Activity</h4>
-                  <p className="text-sm text-muted-foreground">Activity log not available in this preview</p>
+                <div>
+                  <h4 className="text-sm font-medium">Last Login</h4>
+                  <p className="text-sm text-muted-foreground">{formatDate(formData.lastLoginAt)}</p>
                 </div>
+                <div>
+                  <h4 className="text-sm font-medium">Last Updated</h4>
+                  <p className="text-sm text-muted-foreground">{formatDate(formData.updatedAt)}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium">IP Address</h4>
+                  <p className="text-sm text-muted-foreground">Not available</p>
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <h4 className="font-medium">Recent Activity</h4>
+                <p className="text-sm text-muted-foreground">Activity log not available in this preview</p>
               </div>
             </TabsContent>
           </Tabs>

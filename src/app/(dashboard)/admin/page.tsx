@@ -1,16 +1,22 @@
+import type { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import {
   DashboardShell,
   DashboardHeader,
-  AdminSystemOverview,
-  AdminSystemAlerts,
+  AdminSystemPreview,
+  AdminAlertsPreview,
   AdminUserPreview,
-  AdminRecentActivity
+  AdminRecentActivityPreview
 } from "@/components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
 import { serializeData } from "@/utils";
+
+export const metadata: Metadata = {
+  title: "Admin Dashboard",
+  description: "Admin Dashboard"
+};
 
 export default async function AdminDashboardPage() {
   // Get the session server-side
@@ -96,10 +102,10 @@ export default async function AdminDashboardPage() {
       {/* Top row - 2 columns */}
       <div className="grid gap-8 md:grid-cols-2 mb-8">
         {/* System Overview Card */}
-        <AdminSystemOverview systemStats={serializedSystemStats} />
+        <AdminSystemPreview systemStats={serializedSystemStats} />
 
         {/* System Alerts */}
-        <AdminSystemAlerts />
+        <AdminAlertsPreview />
       </div>
 
       {/* Bottom row - 2 columns */}
@@ -108,7 +114,7 @@ export default async function AdminDashboardPage() {
         <AdminUserPreview limit={5} />
 
         {/* Admin Activity Log */}
-        <AdminRecentActivity
+        <AdminRecentActivityPreview
           limit={5}
           showFilters={false}
           showHeader={true}

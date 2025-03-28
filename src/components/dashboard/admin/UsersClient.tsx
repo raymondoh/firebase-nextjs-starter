@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UsersDataTable } from "./manage-users-page/UsersDataTable";
+import { UsersDataTable } from "./manage-users/AdminUsersDataTable";
 import { columns } from "./columns";
 import { fetchUsers } from "@/actions/user/admin";
 import type { User } from "@/types/user/common";

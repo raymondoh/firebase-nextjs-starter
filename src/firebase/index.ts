@@ -75,7 +75,8 @@ export {
 
   // Activity functions
   logActivity,
-  getUserActivityLogs
+  getUserActivityLogs,
+  getAllActivityLogs
 } from "./actions";
 
 // Helper functions to avoid naming conflicts

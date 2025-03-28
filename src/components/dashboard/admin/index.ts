@@ -1,19 +1,19 @@
 // Admin Overview Page
-export { AdminSystemAlerts } from "./overview-page/AdminSystemAlerts";
-export { AdminSystemOverview } from "./overview-page/AdminSystemOverview";
+export { AdminAlertsPreview } from "./overview-page/AdminAlertsPreview";
+export { AdminSystemPreview } from "./overview-page/AdminSystemPreview";
 export { AdminUserPreview } from "./overview-page/AdminUserPreview";
-export { AdminRecentActivity } from "./overview-page/AdminRecentActivity";
+export { AdminRecentActivityPreview } from "./overview-page/AdminRecentActivityPreview";
 
-// Admin Activity
+// Admin Activity page
 export { AdminActivityPageClient } from "./activity-page/AdminActivityPageClient";
 export { AdminActivityLogClient } from "./activity-page/AdminActivityLogClient";
 
-// Manage Users
-export { CreateUserDialog } from "./manage-users-page/CreateUserDialog";
-export { UsersDataTable } from "./manage-users-page/UsersDataTable";
-export { UserDetail } from "./manage-users-page/UserDetail";
-export { UserDetailDialog } from "./manage-users-page/UserDetailDialog";
-// Admin Profile
+// Manage Users page
+export { AdminUserCreateDialog } from "./manage-users/AdminUserCreateDialog";
+export { AdminUsersDataTable } from "./manage-users/AdminUsersDataTable";
+export { AdminUserDetailCard } from "./manage-users/AdminUserDetailCard";
+
+// Admin Profile page
 export { AdminProfileForm } from "./admin-profile/AdminProfileForm";
 //
 export { columns } from "./columns";

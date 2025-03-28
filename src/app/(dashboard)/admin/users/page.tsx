@@ -1,13 +1,19 @@
 // app/dashboard/admin/user/page.tsx
+import type { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader, columns } from "@/components";
-import { UsersDataTable } from "@/components/dashboard/admin";
+import { AdminUsersDataTable } from "@/components/dashboard/admin";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
 import { fetchUsers } from "@/actions/user/admin";
 import type { SerializedUser } from "@/types/user";
 import { serializeUserArray } from "@/utils/serializeUser";
+
+export const metadata: Metadata = {
+  title: "Manage Users - Admin",
+  description: "View and manage all users in your application."
+};
 
 export default async function AdminUsersPage() {
   // Get the session server-side
@@ -50,11 +56,11 @@ export default async function AdminUsersPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader heading="User Management" text="View and manage all users in your application." />
+      <DashboardHeader heading="Manage Users" text="View and manage all users in your application." />
       <Separator className="mb-8" />
 
       {/* Pass the serialized data directly to the data table */}
-      <UsersDataTable<SerializedUser, unknown>
+      <AdminUsersDataTable<SerializedUser, unknown>
         columns={columns}
         initialData={serializedUsers}
         totalUsers={totalUsers}

@@ -13,7 +13,7 @@ import { SystemAlert } from "@/types/dashboard";
 import { parseDate } from "@/utils/date-client";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
-export function AdminSystemAlerts() {
+export function AdminAlertsPreview() {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
   const [loading, setLoading] = useState(true);
 

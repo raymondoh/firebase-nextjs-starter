@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { UserDetail } from "@/components/dashboard/admin";
+import { AdminUserDetailCard } from "@/components/dashboard/admin";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
@@ -116,7 +116,7 @@ export default async function UserDetailPage({ params }: { params: { id: string 
       </div>
       <Separator className="mb-8" />
 
-      <UserDetail user={serializedUser} />
+      <AdminUserDetailCard user={serializedUser} />
     </DashboardShell>
   );
 }

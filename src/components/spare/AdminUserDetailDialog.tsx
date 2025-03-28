@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
 import type { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
@@ -23,14 +21,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { formatClientDate as formatDate } from "@/utils";
+import { toast } from "sonner";
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
-interface UserDetailDialogProps {
+interface AdminUserDetailDialogProps {
   user: User;
   onUpdate: (user: User) => Promise<void>;
   children: React.ReactNode;
 }
 
-export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogProps) {
+export function AdminUserDetailDialog({ user, onUpdate, children }: AdminUserDetailDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<User>({ ...user });
@@ -41,8 +41,11 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
     try {
       await onUpdate(formData);
       setIsOpen(false);
-    } catch (error) {
-      console.error("Error updating user:", error);
+      toast.success("User updated successfully");
+    } catch (err) {
+      console.error("Error updating user:", err);
+      const message = isFirebaseError(err) ? firebaseError(err) : "An unexpected error occurred";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -52,17 +55,17 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  function getInitials(name: string, email: string): string {
+  const getInitials = (name: string, email: string) => {
     if (name) {
       return name
         .split(" ")
         .map(n => n[0])
         .join("")
         .toUpperCase()
-        .substring(0, 2);
+        .slice(0, 2);
     }
-    return email.substring(0, 2).toUpperCase();
-  }
+    return email?.slice(0, 2).toUpperCase() || "UN";
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -72,18 +75,18 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
           <DialogTitle>User Details</DialogTitle>
           <DialogDescription>View and edit user information.</DialogDescription>
         </DialogHeader>
+
         <Tabs defaultValue="details">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
+
           <TabsContent value="details" className="space-y-4 py-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                {formData.profileImage && (
-                  <AvatarImage src={formData.profileImage ?? ""} alt={formData.name ?? formData.email ?? "User"} />
-                )}
+                {formData.image && <AvatarImage src={formData.image} alt={formData.name || formData.email || "User"} />}
                 <AvatarFallback className="text-lg">
                   {getInitials(formData.name ?? "", formData.email ?? "")}
                 </AvatarFallback>
@@ -101,7 +104,9 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
                 </div>
               </div>
             </div>
+
             <Separator />
+
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -159,6 +164,7 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
                   </Select>
                 </div>
               </div>
+
               <DialogFooter>
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? "Saving..." : "Save changes"}
@@ -166,12 +172,13 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
               </DialogFooter>
             </form>
           </TabsContent>
+
           <TabsContent value="security" className="space-y-4 py-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">Email Verification</h4>
-                  <p className="text-sm text-muted-foreground">User&aposs email verification status</p>
+                  <p className="text-sm text-muted-foreground">User’s email verification status</p>
                 </div>
                 <Switch
                   checked={formData.emailVerified}
@@ -182,7 +189,7 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">Password</h4>
-                  <p className="text-sm text-muted-foreground">User has a password set</p>
+                  <p className="text-sm text-muted-foreground">Password set status</p>
                 </div>
                 <Badge variant={formData.hasPassword ? "outline" : "destructive"}>
                   {formData.hasPassword ? "Set" : "Not Set"}
@@ -192,52 +199,29 @@ export function UserDetailDialog({ user, onUpdate, children }: UserDetailDialogP
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">Two-Factor Authentication</h4>
-                  <p className="text-sm text-muted-foreground">Additional security layer</p>
+                  <p className="text-sm text-muted-foreground">Extra layer of security</p>
                 </div>
                 <Switch checked={formData.has2FA} onCheckedChange={checked => handleChange("has2FA", checked)} />
               </div>
-              <Separator />
-              <div className="space-y-2">
-                <h4 className="font-medium">Security Actions</h4>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm">
-                    Reset Password
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Force Sign Out
-                  </Button>
-                  <Button variant="destructive" size="sm">
-                    Delete Account
-                  </Button>
-                </div>
-              </div>
             </div>
           </TabsContent>
+
           <TabsContent value="activity" className="space-y-4 py-4">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-medium">Created At</h4>
-                  <p className="text-sm text-muted-foreground">{formatDate(formData.createdAt)}</p>
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-medium">Last Login</h4>
-                  <p className="text-sm text-muted-foreground">{formatDate(formData.lastLoginAt)}</p>
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-medium">Last Updated</h4>
-                  <p className="text-sm text-muted-foreground">{formatDate(formData.updatedAt)}</p>
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-medium">IP Address</h4>
-                  <p className="text-sm text-muted-foreground">Not available</p>
-                </div>
-              </div>
-              <Separator />
-              <div className="space-y-2">
-                <h4 className="font-medium">Recent Activity</h4>
-                <p className="text-sm text-muted-foreground">Activity log not available in this preview</p>
-              </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-medium">Created At</h4>
+              <p className="text-sm text-muted-foreground">{formatDate(formData.createdAt)}</p>
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-medium">Last Login</h4>
+              <p className="text-sm text-muted-foreground">{formatDate(formData.lastLoginAt)}</p>
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-medium">Last Updated</h4>
+              <p className="text-sm text-muted-foreground">{formatDate(formData.updatedAt)}</p>
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-medium">IP Address</h4>
+              <p className="text-sm text-muted-foreground">Not available</p>
             </div>
           </TabsContent>
         </Tabs>

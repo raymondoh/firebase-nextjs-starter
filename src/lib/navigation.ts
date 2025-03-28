@@ -11,21 +11,15 @@ import {
   Activity,
   Users,
   Shield,
-  BarChart,
+  //BarChart,
   FileText,
   Database,
-  Key,
+  //Key,
   AlertTriangle,
   ShoppingBag,
   CarIcon
 } from "lucide-react";
 
-// export type NavItem = {
-//   title: string;
-//   href: string;
-//   //icon: React.ComponentType;
-//   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-// };
 export type NavItem = {
   title: string;
   href: string;
@@ -125,48 +119,8 @@ export const adminNavItems: NavItem[] = [
     icon: Users
   },
   {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart
-  },
-  {
-    title: "Security",
-    href: "/admin/security",
-    icon: Shield
-  },
-  {
-    title: "Audit Logs",
-    href: "/admin/audit-logs",
-    icon: FileText
-  },
-  {
-    title: "System Alerts",
-    href: "/admin/alerts",
-    icon: AlertTriangle
-  },
-  {
-    title: "Content Management",
-    href: "/admin/content",
-    icon: Database
-  },
-  {
-    title: "API Management",
-    href: "/admin/api",
-    icon: Key
-  },
-  {
-    title: "Notifications",
-    href: "/admin/notifications",
-    icon: Bell
-  },
-  {
     title: "Admin Profile",
     href: "/admin/profile",
     icon: UserCircle
-  },
-  {
-    title: "Settings",
-    href: "/admin/settings",
-    icon: Settings
   }
 ];

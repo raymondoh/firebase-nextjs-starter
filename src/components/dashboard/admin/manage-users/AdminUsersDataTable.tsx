@@ -5,9 +5,10 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
-  useReactTable,
   getPaginationRowModel,
   getSortedRowModel,
+  getFilteredRowModel,
+  useReactTable,
   type SortingState
 } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, UserPlus, RefreshCw } from "lucide-react";
@@ -17,33 +18,29 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreateUserDialog } from "./CreateUserDialog";
+import { AdminUserCreateDialog } from "./AdminUserCreateDialog";
 import { fetchUsers } from "@/actions/user/admin";
 import { toast } from "sonner";
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
-interface DataTableProps<TData, TValue> {
+interface AdminUsersDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   initialData: TData[];
   totalUsers: number;
-  isLoading?: boolean;
-  refreshUsers?: () => Promise<void>;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    onPageChange: (newPage: number) => void | Promise<void>;
-    onLimitChange: (newLimit: number) => void | Promise<void>;
-  };
 }
 
-export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers }: DataTableProps<TData, TValue>) {
+export function AdminUsersDataTable<TData, TValue>({
+  columns,
+  initialData,
+  totalUsers
+}: AdminUsersDataTableProps<TData, TValue>) {
   const [data, setData] = useState<TData[]>(initialData ?? []);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [total, setTotal] = useState(totalUsers);
+  const [total, setTotal] = useState(totalUsers || 0);
 
   const table = useReactTable({
     data,
@@ -51,14 +48,16 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
+    getFilteredRowModel: getFilteredRowModel(), // ✅ enable filtering
     state: {
       sorting,
       globalFilter
-    }
+    },
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: "includesString" // ✅ default filter function
   });
 
-  // Function to refresh users data
   const refreshUsers = async () => {
     setIsLoading(true);
     try {
@@ -67,17 +66,16 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
         setData((result.users as TData[]) || []);
         setTotal(result.total || 0);
       } else {
-        toast.error("Failed to fetch users");
+        toast.error(result.error || "Failed to fetch users");
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("Failed to fetch users");
+    } catch (err) {
+      const message = isFirebaseError(err) ? firebaseError(err) : "Failed to fetch users";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle pagination
   const handlePageChange = async (newPage: number) => {
     setPage(newPage);
     setIsLoading(true);
@@ -86,31 +84,31 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
       if (result.success) {
         setData((result.users as TData[]) || []);
       } else {
-        toast.error("Failed to fetch users");
+        toast.error(result.error || "Failed to fetch users");
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("An unexpected error occurred");
+    } catch (err) {
+      const message = isFirebaseError(err) ? firebaseError(err) : "An unexpected error occurred";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle page size change
   const handlePageSizeChange = async (newPageSize: number) => {
     setPageSize(newPageSize);
-    setPage(0); // Reset to first page when changing page size
+    setPage(0);
     setIsLoading(true);
     try {
       const result = await fetchUsers(newPageSize, 0);
       if (result.success) {
         setData((result.users as TData[]) || []);
+        setTotal(result.total || 0);
       } else {
-        toast.error("Failed to fetch users");
+        toast.error(result.error || "Failed to fetch users");
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("An unexpected error occurred");
+    } catch (err) {
+      const message = isFirebaseError(err) ? firebaseError(err) : "An unexpected error occurred";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -133,14 +131,13 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
             <span className="sr-only">Refresh</span>
           </Button>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <CreateUserDialog onSuccess={refreshUsers}>
-            <Button size="sm" className="h-8">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add User
-            </Button>
-          </CreateUserDialog>
-        </div>
+
+        <AdminUserCreateDialog onSuccess={refreshUsers}>
+          <Button size="sm" className="h-8">
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add User
+          </Button>
+        </AdminUserCreateDialog>
       </div>
 
       <div className="rounded-md border">
@@ -191,49 +188,37 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex-1 text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span>
-                {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-                selected.
-              </span>
-              <Button variant="outline" size="sm">
-                Bulk Actions
-              </Button>
-            </div>
+            <span>{table.getFilteredSelectedRowModel().rows.length} row(s) selected</span>
           )}
         </div>
+
         <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
-            <Select
-              value={`${pageSize}`}
-              onValueChange={value => {
-                handlePageSizeChange(Number(value));
-              }}>
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={pageSize} />
-              </SelectTrigger>
-              <SelectContent side="top">
-                {[10, 20, 30, 40, 50].map(size => (
-                  <SelectItem key={size} value={`${size}`}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+          <p className="text-sm font-medium">Rows per page</p>
+          <Select value={`${pageSize}`} onValueChange={value => handlePageSizeChange(Number(value))}>
+            <SelectTrigger className="h-8 w-[70px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {[10, 20, 30, 40, 50].map(size => (
+                <SelectItem key={size} value={`${size}`}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="text-sm font-medium">
             Page {page + 1} of {Math.max(1, Math.ceil(total / pageSize))}
           </div>
+
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               className="h-8 w-8 p-0"
               onClick={() => handlePageChange(Math.max(0, page - 1))}
               disabled={page === 0}>
-              <span className="sr-only">Go to previous page</span>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -241,7 +226,6 @@ export function UsersDataTable<TData, TValue>({ columns, initialData, totalUsers
               className="h-8 w-8 p-0"
               onClick={() => handlePageChange(Math.min(Math.ceil(total / pageSize) - 1, page + 1))}
               disabled={page >= Math.ceil(total / pageSize) - 1}>
-              <span className="sr-only">Go to next page</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

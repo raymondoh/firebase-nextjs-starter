@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,13 +17,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createUser } from "@/actions/user/admin";
 import { toast } from "sonner";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
-interface CreateUserDialogProps {
+interface AdminUserCreateDialogProps {
   onSuccess?: () => void;
   children: React.ReactNode;
 }
-
-export function CreateUserDialog({ onSuccess, children }: CreateUserDialogProps) {
+// Add User button on manage users page
+export function AdminUserCreateDialog({ onSuccess, children }: AdminUserCreateDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -46,20 +46,16 @@ export function CreateUserDialog({ onSuccess, children }: CreateUserDialogProps)
       const result = await createUser(formData);
       if (result.success) {
         toast.success("User created successfully");
-
+        setFormData({ name: "", email: "", role: "user" });
         setIsOpen(false);
-        setFormData({
-          name: "",
-          email: "",
-          role: "user"
-        });
         onSuccess?.();
       } else {
-        toast.error("Failed to create user.");
+        toast.error(result.error || "Failed to create user.");
       }
     } catch (error) {
+      const message = isFirebaseError(error) ? firebaseError(error) : "An unexpected error occurred";
       console.error("Error creating user:", error);
-      toast.error("An error occurred while creating the user.");
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

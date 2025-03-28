@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
 import { AdminProfileForm } from "@/components/dashboard/admin";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
+
+export const metadata: Metadata = {
+  title: "Admin Profile - Admin",
+  description: "Manage your admin account settings and profile information."
+};
 
 export default async function AdminProfilePage() {
   // Get the session server-side

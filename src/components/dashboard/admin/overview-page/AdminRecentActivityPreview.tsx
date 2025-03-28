@@ -1,56 +1,51 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
-import { db } from "@/firebase/client";
-import Link from "next/link";
-//import { formatDate, parseDate } from "@/utils/date";
-import { formatClientDate as formatDate, parseDate } from "@/utils";
+import { formatClientDate as formatDate } from "@/utils";
+import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
+import type { SerializedActivity } from "@/types/firebase/activity";
+import type { AdminActivityLogWrapperProps } from "@/types/dashboard";
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
-import type { Activity, AdminActivityLogWrapperProps } from "@/types/dashboard";
-
-export function AdminRecentActivity({
-  limit: activityLimit = 5,
+export function AdminRecentActivityPreview({
+  limit = 5,
   showHeader = true,
   showViewAll = true,
   viewAllUrl = "/admin/activity"
 }: AdminActivityLogWrapperProps) {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<SerializedActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchActivities() {
+    async function loadActivities() {
       try {
-        const activitiesQuery = query(collection(db, "activities"), orderBy("timestamp", "desc"), limit(activityLimit));
+        const result = await fetchActivityLogs({ limit });
 
-        const snapshot = await getDocs(activitiesQuery);
+        if (Array.isArray(result)) {
+          setActivities(result);
+        } else {
+          const message = result.error || "Failed to load activity logs";
+          console.error("Failed to load activity logs:", message);
+          setError(message);
+        }
+      } catch (err) {
+        console.error("Unexpected error loading admin activity:", err);
 
-        const activitiesData: Activity[] = snapshot.docs.map(doc => {
-          const data = doc.data();
+        const message = isFirebaseError(err) ? firebaseError(err) : "Unexpected error loading activity logs";
 
-          return {
-            id: doc.id,
-            userId: data.userId ?? "",
-            action: data.action ?? "",
-            timestamp: parseDate(data.timestamp), // ✅ safer conversion
-            details: data.details ?? "",
-            userEmail: data.userEmail ?? ""
-          };
-        });
-
-        setActivities(activitiesData);
-      } catch (error) {
-        console.error("Error fetching activities:", error);
+        setError(message);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchActivities();
-  }, [activityLimit]);
+    loadActivities();
+  }, [limit]);
 
   return (
     <Card>
@@ -63,7 +58,7 @@ export function AdminRecentActivity({
       <CardContent>
         {loading ? (
           <div className="space-y-4">
-            {Array.from({ length: activityLimit }).map((_, i) => (
+            {Array.from({ length: limit }).map((_, i) => (
               <div key={i} className="flex items-start space-x-4">
                 <Skeleton className="h-12 w-12 rounded-full" />
                 <div className="space-y-2">
@@ -73,8 +68,10 @@ export function AdminRecentActivity({
               </div>
             ))}
           </div>
+        ) : error ? (
+          <p className="text-red-500 text-sm">{error}</p>
         ) : activities.length === 0 ? (
-          <p className="text-center text-muted-foreground py-4">No activities found</p>
+          <p className="text-muted-foreground text-sm text-center">No activities found</p>
         ) : (
           <div className="space-y-4">
             {activities.map(activity => (
@@ -83,14 +80,17 @@ export function AdminRecentActivity({
                   <span className="font-medium">{activity.userEmail ? activity.userEmail.split("@")[0] : "User"}</span>
                   <span className="text-xs text-muted-foreground">{formatDate(activity.timestamp)}</span>
                 </div>
-                <p className="text-sm">{activity.action}</p>
-                {activity.details && <p className="text-xs text-muted-foreground">{activity.details}</p>}
+                <p className="text-sm">{activity.description}</p>
+                {activity.metadata?.details && (
+                  <p className="text-xs text-muted-foreground">{activity.metadata.details}</p>
+                )}
               </div>
             ))}
           </div>
         )}
       </CardContent>
-      {showViewAll && (
+
+      {showViewAll && activities.length > 0 && (
         <CardFooter>
           <Button asChild variant="outline" className="w-full">
             <Link href={viewAllUrl}>View All Activity</Link>
