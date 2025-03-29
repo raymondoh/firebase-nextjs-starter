@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
 // Helper function to ensure all data is properly serialized
 function serializeData(data: any) {
   // Convert Firestore timestamps to ISO strings
@@ -29,7 +35,7 @@ function serializeData(data: any) {
   return serialized;
 }
 
-export default async function UserDetailPage({ params }: { params: { id: string } }) {
+export default async function UserDetailPage({ params }: PageProps) {
   // Get the user ID from params
   const userId = params.id;
 
