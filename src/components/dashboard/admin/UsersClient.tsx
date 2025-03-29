@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { UsersDataTable } from "./manage-users/AdminUsersDataTable";
+import { AdminUsersDataTable } from "./manage-users/AdminUsersDataTable";
 import { columns } from "./columns";
 import { fetchUsers } from "@/actions/user/admin";
-import type { User } from "@/types/user/common";
+import type { User, SerializedUser } from "@/types/user/common";
+import { serializeUser } from "@/utils/serializeUser";
 
 interface UsersClientProps {
   initialUsers: User[];
@@ -64,10 +65,13 @@ export function UsersClient({ initialUsers, totalUsers }: UsersClientProps) {
     }
   };
 
+  // 🔄 Convert users to SerializedUser before passing to table
+  const serializedUsers: SerializedUser[] = users.map(user => serializeUser(user));
+
   return (
-    <UsersDataTable<User, unknown>
+    <AdminUsersDataTable<SerializedUser, unknown>
       columns={columns}
-      initialData={users}
+      initialData={serializedUsers}
       totalUsers={totalUsers}
       isLoading={loading}
       refreshUsers={refreshUsers}

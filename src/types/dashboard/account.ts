@@ -1,3 +1,4 @@
+// types/dashboard/account.ts
 import type { User, SerializedUser } from "../user/common";
 
 /**

@@ -2,9 +2,11 @@
 "use server";
 
 import { adminAuth, adminDb } from "./admin/index";
+import { Query, DocumentData } from "firebase-admin/firestore";
 import { auth } from "@/auth";
 import { Timestamp } from "firebase-admin/firestore";
 import type { User, UserRole } from "@/types/user";
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type {
   ActivityLogData,
   GetUserActivityLogsResult,
@@ -450,7 +452,8 @@ export async function getAllActivityLogs(
   }
 
   try {
-    let query = adminDb.collection("activityLogs");
+    const collectionRef = adminDb.collection("activityLogs");
+    let query: Query<DocumentData> = collectionRef;
 
     if (type) {
       query = query.where("type", "==", type);
@@ -459,7 +462,7 @@ export async function getAllActivityLogs(
     query = query.orderBy("timestamp", "desc");
 
     if (startAfter) {
-      const startAfterDoc = await adminDb.collection("activityLogs").doc(startAfter).get();
+      const startAfterDoc = await collectionRef.doc(startAfter).get();
       if (startAfterDoc.exists) {
         query = query.startAfter(startAfterDoc);
       }
@@ -477,8 +480,9 @@ export async function getAllActivityLogs(
         try {
           const user = await adminAuth.getUser(data.userId);
           userEmail = user.email ?? "";
-        } catch (err) {
-          console.warn(`Failed to fetch user for ID ${data.userId}`);
+        } catch (error) {
+          const message = isFirebaseError(error) ? firebaseError(error) : "Unknown error fetching user email";
+          console.warn(`Failed to fetch user for ID ${data.userId}: ${message}`);
         }
 
         return {
@@ -500,7 +504,13 @@ export async function getAllActivityLogs(
 
     return { success: true, activities };
   } catch (error) {
-    console.error("Error getting all activity logs:", error instanceof Error ? error.message : String(error));
-    return { success: false, error: "Error getting all activity logs" };
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error";
+
+    console.error("Error getting all activity logs:", message);
+    return { success: false, error: message };
   }
 }

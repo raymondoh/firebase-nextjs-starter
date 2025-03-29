@@ -1,6 +1,8 @@
 import type { NextAuthConfig } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { AdapterSession } from "@auth/core/adapters";
+import type { Adapter } from "next-auth/adapters";
+
 import CredentialsProvider from "next-auth/providers/credentials";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
 import { cert } from "firebase-admin/app";
@@ -134,7 +136,7 @@ export const authOptions: NextAuthConfig = {
       }
     })
   ],
-  adapter: FirestoreAdapter(firebaseAdminConfig) as any,
+  adapter: FirestoreAdapter(firebaseAdminConfig) as Adapter,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60 // 30 days
@@ -195,12 +197,29 @@ export const authOptions: NextAuthConfig = {
   },
   events: {
     // Fix: Type the parameter correctly
-    async signOut(params: { session: AdapterSession | null | undefined } | { token: JWT | null }) {
-      // Check if token exists in the params
-      if ("token" in params && params.token) {
-        // Perform any cleanup or additional logout logic here
-        console.log("User signed out:", params.token);
-        // You could add additional logic here, such as invalidating the session in your database
+    // async signOut(params: { session: AdapterSession | null | undefined } | { token: JWT | null }) {
+    //   // Check if token exists in the params
+    //   if ("token" in params && params.token) {
+    //     // Perform any cleanup or additional logout logic here
+    //     console.log("User signed out:", params.token);
+    //     // You could add additional logic here, such as invalidating the session in your database
+    //   }
+    // }
+    async signOut(
+      message: { session: void | AdapterSession | null | undefined } | { token: JWT | null }
+    ): Promise<void> {
+      if ("session" in message) {
+        const session = message.session;
+
+        if (session && typeof session !== "undefined") {
+          console.log("User signed out with session:", session);
+        } else {
+          console.log("Sign out triggered but no session data.");
+        }
+      }
+
+      if ("token" in message) {
+        console.log("User signed out with token:", message.token);
       }
     }
   },

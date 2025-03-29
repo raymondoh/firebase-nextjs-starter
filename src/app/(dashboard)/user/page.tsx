@@ -19,20 +19,21 @@ export default async function UserDashboardOverviewPage() {
   }
 
   const userId = session.user.id;
+  const sessionUser = session.user as User;
 
   // Start with session values and fallback structure
   let userData: User = {
     id: userId,
-    name: session.user.name ?? "",
-    email: session.user.email ?? "",
-    image: session.user.image ?? "",
-    role: session.user.role,
-    emailVerified: session.user.emailVerified ?? false,
+    name: sessionUser.name ?? "",
+    email: sessionUser.email ?? "",
+    image: sessionUser.image ?? "",
+    role: sessionUser.role,
+    emailVerified: sessionUser.emailVerified ?? false, // ✅ no error now
     hasPassword: false,
     has2FA: false,
-    createdAt: new Date(), // fallback
-    lastLoginAt: new Date(), // fallback
-    updatedAt: new Date() // fallback
+    createdAt: new Date(),
+    lastLoginAt: new Date(),
+    updatedAt: new Date()
   };
 
   try {

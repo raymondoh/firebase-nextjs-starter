@@ -1,15 +1,6 @@
-import { User, UserActionResponse, UserRole } from "./common";
+// types/user/admin.ts
 
-// SEARCH
-export type UserSearchState =
-  | (UserActionResponse & {
-      users?: User[];
-      total?: number;
-    })
-  | null;
-
-// ROLE UPDATE
-export type UserRoleUpdateState = UserActionResponse | null;
+import { UserRole } from "./common";
 
 // USER DATA
 export type UserData = {

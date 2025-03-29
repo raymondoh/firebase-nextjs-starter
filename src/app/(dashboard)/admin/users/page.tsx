@@ -16,20 +16,16 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminUsersPage() {
-  // Get the session server-side
   const session = await auth();
 
-  // Redirect if not authenticated
   if (!session?.user) {
     redirect("/login");
   }
 
-  // Check if user has admin role
   const userId = session.user.id;
   let isAdmin = false;
 
   try {
-    // Fetch the user document from Firestore to check admin status
     const userDoc = await adminDb.collection("users").doc(userId).get();
 
     if (userDoc.exists) {
@@ -37,7 +33,6 @@ export default async function AdminUsersPage() {
       isAdmin = userData?.role === "admin";
     }
 
-    // Redirect if not an admin
     if (!isAdmin) {
       redirect("/user/dashboard");
     }
@@ -46,12 +41,10 @@ export default async function AdminUsersPage() {
     redirect("/user/dashboard");
   }
 
-  // Fetch initial users data
   const result = await fetchUsers(10, 0);
   const initialUsers = result.success ? result.users || [] : [];
   const totalUsers = result.success ? result.total || 0 : 0;
 
-  // Serialize the data for client components
   const serializedUsers = serializeUserArray(initialUsers);
 
   return (
@@ -59,11 +52,19 @@ export default async function AdminUsersPage() {
       <DashboardHeader heading="Manage Users" text="View and manage all users in your application." />
       <Separator className="mb-8" />
 
-      {/* Pass the serialized data directly to the data table */}
       <AdminUsersDataTable<SerializedUser, unknown>
         columns={columns}
         initialData={serializedUsers}
         totalUsers={totalUsers}
+        isLoading={false} // Static page — not loading dynamically
+        refreshUsers={() => {}} // No client interaction here
+        pagination={{
+          page: 0,
+          limit: 10,
+          total: totalUsers,
+          onPageChange: () => {},
+          onLimitChange: () => {}
+        }}
       />
     </DashboardShell>
   );

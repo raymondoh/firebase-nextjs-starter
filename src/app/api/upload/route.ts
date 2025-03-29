@@ -73,10 +73,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ url });
     } catch (storageError) {
       console.error("Firebase Storage error:", storageError);
-      return NextResponse.json({ error: `Storage error: ${storageError.message}` }, { status: 500 });
+
+      if (storageError instanceof Error) {
+        return NextResponse.json({ error: `Storage error: ${storageError.message}` }, { status: 500 });
+      }
+
+      return NextResponse.json({ error: "Unknown storage error occurred" }, { status: 500 });
     }
   } catch (error) {
     console.error("Error in upload API route:", error);
-    return NextResponse.json({ error: `Failed to upload file: ${error.message}` }, { status: 500 });
+
+    if (error instanceof Error) {
+      return NextResponse.json({ error: `Failed to upload file: ${error.message}` }, { status: 500 });
+    }
+
+    return NextResponse.json({ error: "Unknown error occurred" }, { status: 500 });
   }
 }

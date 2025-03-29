@@ -1,3 +1,4 @@
+// types/user/profile.ts
 import { User, UserActionResponse } from "./common";
 
 // PROFILE

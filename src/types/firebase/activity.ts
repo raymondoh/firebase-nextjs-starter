@@ -53,7 +53,8 @@ export interface ActivityLogData {
   //id: string;
   userId: string;
   userEmail?: string;
-  type: string;
+  //type: string;
+  type: ActivityType | string;
   description: string;
   status: string;
   timestamp: Timestamp | string | Date;

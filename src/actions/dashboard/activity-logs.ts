@@ -41,14 +41,14 @@ export async function fetchActivityLogs({
       type: activity.type,
       description: activity.description,
       status: activity.status,
-      timestamp: activity.timestamp, // this will be converted by serializeData
+      timestamp: activity.timestamp, // will be handled by serializeData
       ipAddress: activity.ipAddress ?? "",
       location: activity.location ?? "",
       device: activity.device ?? "",
       deviceType: activity.deviceType ?? "",
       metadata: activity.metadata ?? {}
     }))
-  );
+  ) as SerializedActivity[];
 
   return serialized;
 }

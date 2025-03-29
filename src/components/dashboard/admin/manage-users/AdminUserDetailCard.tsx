@@ -6,7 +6,6 @@ import type { User } from "@/types/user/common";
 import { toast } from "sonner";
 import { updateUser, deleteUser } from "@/actions/user/admin";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
-import { formatClientDate as formatDate } from "@/utils";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
@@ -28,6 +27,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
+// import from server version (which supports AdminTimestamp)
+import { formatDate as formatServerDate } from "@/utils/date-server";
 
 export interface AdminUserDetailCardProps {
   user: User;
@@ -199,7 +200,7 @@ export function AdminUserDetailCard({ user }: AdminUserDetailCardProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-medium">Email Verification</h4>
-                    <p className="text-sm text-muted-foreground">User's email verification status</p>
+                    <p className="text-sm text-muted-foreground">User&aposs email verification status</p>
                   </div>
                   <Switch
                     checked={formData.emailVerified}
@@ -265,15 +266,15 @@ export function AdminUserDetailCard({ user }: AdminUserDetailCardProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium">Created At</h4>
-                  <p className="text-sm text-muted-foreground">{formatDate(formData.createdAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatServerDate(formData.createdAt)}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium">Last Login</h4>
-                  <p className="text-sm text-muted-foreground">{formatDate(formData.lastLoginAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatServerDate(formData.lastLoginAt)}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium">Last Updated</h4>
-                  <p className="text-sm text-muted-foreground">{formatDate(formData.updatedAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatServerDate(formData.updatedAt)}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium">IP Address</h4>

@@ -10,7 +10,8 @@ export interface AuthActionResponse extends ActionResponse {
   // You can add auth-specific properties here if needed in the future
   userId?: string;
   email?: string;
-  role?: string | UserRole;
+  //role?: string | UserRole;
+  role?: UserRole;
   errors?: Record<string, string>;
 }
 

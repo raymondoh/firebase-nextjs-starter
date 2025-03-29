@@ -1,3 +1,4 @@
+// types/data-privacy/export.ts
 // Types for data export
 export type ExportFormat = "json" | "csv";
 

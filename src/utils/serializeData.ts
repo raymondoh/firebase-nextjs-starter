@@ -1,14 +1,19 @@
 // utils/serializeData.ts
 
-// Enhanced serialization to handle Firestore Timestamps and Dates
 export function serializeData<T>(data: T): T {
   return JSON.parse(
     JSON.stringify(data, (key, value) => {
-      if (value && typeof value === "object" && value.seconds !== undefined && value.nanoseconds !== undefined) {
-        // Firestore Timestamp -> ISO string
+      // Firestore Timestamp shape
+      if (
+        value &&
+        typeof value === "object" &&
+        typeof value.seconds === "number" &&
+        typeof value.nanoseconds === "number"
+      ) {
         return new Date(value.seconds * 1000 + value.nanoseconds / 1000000).toISOString();
       }
 
+      // Native Date
       if (value instanceof Date) {
         return value.toISOString();
       }

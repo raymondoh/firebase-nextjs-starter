@@ -1,3 +1,4 @@
+// types/next-auth/index.d.ts
 import type { DefaultSession } from "next-auth";
 import type { UserRole } from "../user/common";
 
@@ -13,7 +14,9 @@ declare module "next-auth" {
       id: string;
       name: string;
       email: string;
-      role: string;
+      //role: string;
+      role: UserRole;
+
       bio?: string;
       image?: string;
     } & DefaultSession["user"];

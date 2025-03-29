@@ -1,3 +1,4 @@
+// types/data-privacy/deletion.ts
 // Types for account deletion
 export type DeleteAccountState = {
   success: boolean;

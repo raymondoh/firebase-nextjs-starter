@@ -23,10 +23,24 @@ import { fetchUsers } from "@/actions/user/admin";
 import { toast } from "sonner";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
+// interface AdminUsersDataTableProps<TData, TValue> {
+//   columns: ColumnDef<TData, TValue>[];
+//   initialData: TData[];
+//   totalUsers: number;
+// }
 interface AdminUsersDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   initialData: TData[];
   totalUsers: number;
+  isLoading: boolean;
+  refreshUsers: () => void;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    onPageChange: (page: number) => void;
+    onLimitChange: (limit: number) => void;
+  };
 }
 
 export function AdminUsersDataTable<TData, TValue>({
