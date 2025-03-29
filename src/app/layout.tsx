@@ -1,5 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
+import { siteConfig } from "@/config/siteConfig";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/providers/ThemeProvider";
@@ -17,6 +18,31 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"]
 });
+export const metadata: Metadata = {
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  openGraph: {
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name
+      }
+    ],
+    type: "website"
+  },
+  authors: [{ name: siteConfig.author }],
+  metadataBase: new URL(siteConfig.url)
+};
 //export const metadata: Metadata = {
 // title: "Firebase Boilerplate",
 //description: "A Next.js Firebase boilerplate"

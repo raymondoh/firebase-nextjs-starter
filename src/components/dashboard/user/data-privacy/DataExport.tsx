@@ -9,24 +9,26 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useActionState } from "react";
 import { exportUserData } from "@/actions/data-privacy";
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
 export function DataExport() {
   const [lastExport, setLastExport] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [state, formAction, isPending] = useActionState(exportUserData, null);
 
-  // Handle export result
   useEffect(() => {
     if (state) {
       if (state.success && state.downloadUrl) {
         setLastExport(new Date().toISOString());
         setDownloadUrl(state.downloadUrl);
+
         toast.success(state.message || "Data export successful", {
           description: "Click the download button to save your data",
           duration: 5000
         });
       } else if (state.error) {
-        toast.error(state.error);
+        const message = isFirebaseError(state.error) ? firebaseError(state.error) : state.error || "Export failed";
+        toast.error(message);
       }
     }
   }, [state]);
@@ -34,29 +36,23 @@ export function DataExport() {
   const handleExport = (format: string) => {
     const formData = new FormData();
     formData.append("format", format);
-    // Wrap in startTransition to fix the action context error
     React.startTransition(() => {
       formAction(formData);
     });
   };
 
-  // Function to trigger download
   const downloadFile = () => {
     if (!downloadUrl) return;
 
-    // Create a temporary link element
     const link = document.createElement("a");
     link.href = downloadUrl;
 
-    // Extract filename from the URL or create a default one
     const urlParts = downloadUrl.split("/");
-    const suggestedFilename = urlParts[urlParts.length - 1].split("?")[0]; // Get filename without query params
+    const suggestedFilename = urlParts[urlParts.length - 1].split("?")[0];
     const fileExtension = suggestedFilename.includes(".json") ? "json" : "csv";
 
-    // Set a meaningful filename
     link.setAttribute("download", `user-data-export-${new Date().toISOString().split("T")[0]}.${fileExtension}`);
 
-    // Append to body, click, and remove
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -70,6 +66,7 @@ export function DataExport() {
         <CardTitle>Export Your Data</CardTitle>
         <CardDescription>Download a copy of your personal data in various formats</CardDescription>
       </CardHeader>
+
       <CardContent>
         {state?.success && downloadUrl && (
           <Alert className="mb-6 bg-green-50 text-green-800 border-green-200">
@@ -159,6 +156,7 @@ export function DataExport() {
           </TabsContent>
         </Tabs>
       </CardContent>
+
       {lastExport && (
         <CardFooter className="text-sm text-muted-foreground">
           Last export: {new Date(lastExport).toLocaleString()}

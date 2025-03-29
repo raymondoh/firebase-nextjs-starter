@@ -65,9 +65,15 @@ export function ChangePasswordForm() {
     return true;
   };
 
+  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   if (!validateForm()) {
+  //     e.preventDefault();
+  //   }
+  // };
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (!validateForm()) {
       e.preventDefault();
+      return;
     }
   };
 

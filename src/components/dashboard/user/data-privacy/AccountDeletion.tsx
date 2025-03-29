@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { AlertCircle, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -17,11 +16,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useActionState } from "react";
 import { requestAccountDeletion } from "@/actions/data-privacy";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export function AccountDeletion() {
   const router = useRouter();
@@ -32,35 +33,27 @@ export function AccountDeletion() {
   const [state, formAction, isPending] = useActionState(requestAccountDeletion, null);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // Handle deletion result
   useEffect(() => {
     if (state?.success && !isRedirecting) {
       toast.success(state.message || "Account deletion request submitted");
       setDialogOpen(false);
 
-      // Redirect to homepage if requested
       if (state.shouldRedirect) {
         setIsRedirecting(true);
 
-        // Force sign out completely
         const handleCompleteSignOut = async () => {
           try {
-            // Clear client-side storage
             if (typeof window !== "undefined") {
-              // Clear all local storage items related to auth
               localStorage.removeItem("next-auth.session-token");
               localStorage.removeItem("next-auth.callback-url");
               localStorage.removeItem("next-auth.csrf-token");
 
-              // Clear session storage items too
               sessionStorage.removeItem("next-auth.session-token");
               sessionStorage.removeItem("next-auth.callback-url");
               sessionStorage.removeItem("next-auth.csrf-token");
 
-              // Set a cookie to indicate account deletion
               document.cookie = "account-deleted=true; path=/; max-age=60";
 
-              // Trigger storage event to notify other tabs
               window.dispatchEvent(
                 new StorageEvent("storage", {
                   key: "next-auth.session-token",
@@ -69,20 +62,14 @@ export function AccountDeletion() {
               );
             }
 
-            // Force sign out with next-auth
             await signOut({ redirect: false });
-
-            // Force update the session
             await update();
 
-            // Add a small delay before redirecting
             setTimeout(() => {
-              // Use window.location for a full page refresh
               window.location.href = "/";
             }, 500);
           } catch (error) {
             console.error("Error during sign out process:", error);
-            // If there's an error, still try to redirect
             window.location.href = "/";
           }
         };
@@ -90,7 +77,12 @@ export function AccountDeletion() {
         handleCompleteSignOut();
       }
     } else if (state?.error) {
-      toast.error(state.error);
+      const message = isFirebaseError(state.error)
+        ? firebaseError(state.error)
+        : typeof state.error === "string"
+        ? state.error
+        : "An unexpected error occurred";
+      toast.error(message);
     }
   }, [state, router, update, isRedirecting]);
 
@@ -103,7 +95,6 @@ export function AccountDeletion() {
     const formData = new FormData();
     formData.append("immediateDelete", immediateDelete.toString());
 
-    // Wrap in startTransition
     React.startTransition(() => {
       formAction(formData);
     });

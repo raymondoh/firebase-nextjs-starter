@@ -1,8 +1,9 @@
+// src/actions/dashboard/activity-logs.ts
 "use server";
 
 import { getUserActivityLogs, getAllActivityLogs } from "@/firebase/actions";
-import { convertTimestamps } from "@/firebase/utils/firestore";
 import type { SerializedActivity, ActivityLogWithId } from "@/types/firebase/activity";
+import { serializeData } from "@/utils/serializeData";
 import { auth } from "@/auth";
 
 interface FetchActivityLogsParams {
@@ -10,9 +11,8 @@ interface FetchActivityLogsParams {
   startAfter?: string;
   type?: string;
 }
-
 export async function fetchActivityLogs({
-  limit = 10,
+  limit = 5,
   startAfter,
   type
 }: FetchActivityLogsParams): Promise<SerializedActivity[] | { error: string }> {
@@ -32,24 +32,23 @@ export async function fetchActivityLogs({
     return { error: result.error || "Failed to fetch logs" };
   }
 
-  const serialized: SerializedActivity[] = result.activities.map((activity: ActivityLogWithId) => {
-    const data = convertTimestamps(activity) as Partial<ActivityLogWithId>;
-
-    return {
+  // 🪄 Use your serializeData utility here!
+  const serialized = serializeData(
+    result.activities.map((activity: ActivityLogWithId) => ({
       id: activity.id,
       userId: activity.userId,
       userEmail: activity.userEmail ?? "Unknown",
       type: activity.type,
       description: activity.description,
       status: activity.status,
-      timestamp: (data.timestamp instanceof Date ? data.timestamp : new Date()).toISOString(),
+      timestamp: activity.timestamp, // this will be converted by serializeData
       ipAddress: activity.ipAddress ?? "",
       location: activity.location ?? "",
       device: activity.device ?? "",
       deviceType: activity.deviceType ?? "",
       metadata: activity.metadata ?? {}
-    };
-  });
+    }))
+  );
 
   return serialized;
 }

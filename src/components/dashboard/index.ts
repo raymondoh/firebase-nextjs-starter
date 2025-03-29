@@ -1,16 +1,4 @@
-export { AccountDeletion } from "../user/data-privacy/AccountDeletion";
-//export { AccountSettingsForm } from "../AccountSettingsForm";
-export { AccountSummary } from "../user/overview/AccountSummary";
-export { AccountSummaryClient } from "../user/overview/AccountSummaryClient";
-//export { ActivityLog } from "../ActivityLog";
-export { ActivityLogClient } from "../user/overview/ActivityLogClient";
-export { ActivityLogWrapper } from "../user/overview/ActivityLogWrapper";
-export { ActivityPageClient } from "../user/activity/ActivityPageClient";
 export { AppSidebar } from "./AppSidebar";
 export { DashboardHeader } from "./DashboardHeader";
 export { DashboardShell } from "./DashboardShell";
-export { DataExport } from "../user/data-privacy/DataExport";
-export { NotificationForm } from "../user/notifications/NotificationForm";
-//export { PreferenceSettingsForm } from "../PreferenceSettingsForm";
-//export { SecuritySettingsForm } from "../SecuritySettingsForm";
-export { UserProfileForm } from "../user/profile/UserProfileForm";
+export { DataExport } from "./user/data-privacy/DataExport";

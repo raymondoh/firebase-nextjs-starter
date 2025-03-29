@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { CheckCircle, ArrowRight } from "lucide-react";
+import { siteConfig } from "@/config/siteConfig";
 
 export const metadata: Metadata = {
-  title: "Your App - Main Value Proposition",
-  description: "A clear, concise description of what your app does and why users should care.",
+  title: `${siteConfig.name} - Main Value Proposition`,
+  description: siteConfig.description,
   openGraph: {
-    title: "Your App - Main Value Proposition",
-    description: "A clear, concise description of what your app does and why users should care.",
+    title: `${siteConfig.name} - Main Value Proposition`,
+    description: siteConfig.description,
     type: "website"
   }
 };

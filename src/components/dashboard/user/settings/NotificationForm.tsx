@@ -3,26 +3,29 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 
+// Schema
 const FormSchema = z.object({
   marketing_emails: z.boolean().default(false).optional(),
   security_emails: z.boolean()
 });
 
+// Type alias for form values
+type NotificationFormValues = z.infer<typeof FormSchema>;
+
 export function NotificationForm() {
-  const form = useForm<z.infer<typeof FormSchema>>({
+  const form = useForm<NotificationFormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       security_emails: true
     }
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  function onSubmit(data: NotificationFormValues) {
     toast.success("Notification preferences updated", {
       description: (
         <pre className="mt-2 w-full max-w-xs rounded-md bg-slate-950 p-4 overflow-auto">

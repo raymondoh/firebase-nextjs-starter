@@ -11,7 +11,7 @@ import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
 import type { SerializedActivity } from "@/types/firebase/activity";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
-interface ActivityLogWrapperProps {
+interface UserActivityPreviewProps {
   limit?: number;
   showFilters?: boolean;
   showHeader?: boolean;
@@ -20,14 +20,14 @@ interface ActivityLogWrapperProps {
   className?: string;
 }
 
-export function ActivityLogWrapper({
+export function UserActivityPreview({
   limit = 5,
   showFilters = true,
   showHeader = true,
   showViewAll = true,
   viewAllUrl = "/user/activity",
   className = ""
-}: ActivityLogWrapperProps) {
+}: UserActivityPreviewProps) {
   const [activities, setActivities] = useState<SerializedActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,20 +36,19 @@ export function ActivityLogWrapper({
   const loadActivities = async () => {
     try {
       setIsRefreshing(true);
-      const data = await fetchActivityLogs(limit);
+      const data = await fetchActivityLogs({ limit });
+      console.log("Fetching activity logs with limit:", limit);
 
       if (Array.isArray(data)) {
         setActivities(data);
+        setError(null);
       } else {
-        console.error("Invalid data format received:", data);
         setError("Invalid data format received");
+        console.error("Invalid data format received:", data);
       }
     } catch (err: unknown) {
       console.error("Failed to fetch activity logs:", err);
-
-      const message = isFirebaseError(err) ? firebaseError(err) : "Failed to load activity logs";
-
-      setError(message);
+      setError(isFirebaseError(err) ? firebaseError(err) : "Failed to load activity logs");
     } finally {
       setLoading(false);
       setIsRefreshing(false);

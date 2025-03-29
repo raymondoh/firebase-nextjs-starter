@@ -72,7 +72,7 @@ export function ActivityLogClient({ activities, showFilters = true, isRefreshing
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Activityssww</TableHead>
+              <TableHead>Activity</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Time</TableHead>

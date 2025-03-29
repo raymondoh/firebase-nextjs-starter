@@ -1,3 +1,4 @@
+// src/utils/date-client.ts
 import { Timestamp as ClientTimestamp } from "firebase/firestore";
 
 export type SupportedClientDate = Date | string | number | ClientTimestamp | null | undefined;
@@ -40,7 +41,10 @@ function toDate(value: SupportedClientDate): Date | null {
 
   if (value instanceof Date) return value;
   if (isFirestoreTimestamp(value)) return value.toDate();
-  if (typeof value === "string" || typeof value === "number") return new Date(value);
+  if (typeof value === "string" || typeof value === "number") {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
 
   return null;
 }
@@ -52,10 +56,20 @@ export function formatDate(date: SupportedClientDate): string {
   const now = new Date();
   const diff = now.getTime() - dateObj.getTime();
 
-  if (diff < 60 * 1000) return "Just now";
-  if (diff < 60 * 60 * 1000) return `${Math.floor(diff / (60 * 1000))} minutes ago`;
-  if (diff < 24 * 60 * 60 * 1000) return `${Math.floor(diff / (60 * 60 * 1000))} hours ago`;
-  if (diff < 7 * 24 * 60 * 60 * 1000) return `${Math.floor(diff / (24 * 60 * 60 * 1000))} days ago`;
+  const ONE_MIN = 60 * 1000;
+  const ONE_HOUR = 60 * ONE_MIN;
+  const ONE_DAY = 24 * ONE_HOUR;
+  const ONE_MONTH = 30 * ONE_DAY;
 
-  return dateObj.toLocaleDateString();
+  if (diff < ONE_MIN) return "Just now";
+  if (diff < ONE_HOUR) return `${Math.floor(diff / ONE_MIN)} minute(s) ago`;
+  if (diff < ONE_DAY) return `${Math.floor(diff / ONE_HOUR)} hour(s) ago`;
+  if (diff < ONE_MONTH) return `${Math.floor(diff / ONE_DAY)} day(s) ago`;
+
+  // For anything older than ~30 days → return absolute format
+  return dateObj.toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit"
+  }); // e.g., "10 Oct 2025"
 }

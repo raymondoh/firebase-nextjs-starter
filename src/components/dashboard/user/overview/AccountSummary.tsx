@@ -130,7 +130,7 @@ export function AccountSummary({ user, profileUrl = "/user/profile", className }
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Account Summaryaa</CardTitle>
+        <CardTitle>Account Summary</CardTitle>
         <CardDescription>Your account status and information</CardDescription>
       </CardHeader>
       <CardContent>

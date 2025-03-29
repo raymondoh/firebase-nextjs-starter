@@ -1,3 +1,135 @@
+// "use server";
+
+// import bcryptjs from "bcryptjs";
+// import { auth } from "@/auth";
+// import { adminAuth, adminDb } from "@/firebase/admin";
+// import { serverTimestamp } from "@/firebase/admin/firestore";
+// import { logActivity } from "@/firebase";
+// import { forgotPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
+// import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+// import type { ForgotPasswordState, UpdatePasswordState } from "@/types/auth/password";
+// import type { UserData } from "@/types";
+
+// // REQUEST PASSWORD RESET
+// export async function requestPasswordReset(
+//   prevState: ForgotPasswordState,
+//   formData: FormData
+// ): Promise<ForgotPasswordState> {
+//   if (!formData) return { success: false, error: "Invalid form submission" };
+
+//   const email = formData.get("email");
+//   if (!email || typeof email !== "string") return { success: false, error: "Email is required" };
+
+//   const result = forgotPasswordSchema.safeParse({ email });
+//   if (!result.success) return { success: false, error: "Invalid email format" };
+
+//   try {
+//     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`;
+//     const actionCodeSettings = { url: resetUrl };
+
+//     await adminAuth.generatePasswordResetLink(email, actionCodeSettings);
+//     return { success: true };
+//   } catch (error: unknown) {
+//     if (isFirebaseError(error) && error.code === "auth/user-not-found") {
+//       return { success: true }; // Don't reveal user existence
+//     }
+
+//     return {
+//       success: false,
+//       error: isFirebaseError(error) ? firebaseError(error) : "Failed to send password reset email"
+//     };
+//   }
+// }
+
+// // SYNC PASSWORD WITH FIRESTORE
+// export async function syncPasswordWithFirestore(
+//   email: string,
+//   password: string
+// ): Promise<{ success: boolean; error?: string }> {
+//   try {
+//     const userRecord = await adminAuth.getUserByEmail(email);
+
+//     const salt = await bcryptjs.genSalt(10);
+//     const hashedPassword = await bcryptjs.hash(password, salt);
+
+//     await adminDb.collection("users").doc(userRecord.uid).update({
+//       passwordHash: hashedPassword,
+//       updatedAt: serverTimestamp()
+//     });
+
+//     return { success: true };
+//   } catch (error: unknown) {
+//     return {
+//       success: false,
+//       error: isFirebaseError(error) ? firebaseError(error) : "Failed to sync password"
+//     };
+//   }
+// }
+
+// // UPDATE PASSWORD FOR LOGGED-IN USER
+// export async function updatePassword(prevState: UpdatePasswordState, formData: FormData): Promise<UpdatePasswordState> {
+//   const session = await auth();
+//   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
+
+//   const currentPassword = formData.get("currentPassword");
+//   const newPassword = formData.get("newPassword");
+//   const confirmPassword = formData.get("confirmPassword");
+
+//   if (!currentPassword || typeof currentPassword !== "string")
+//     return { success: false, error: "Current password is required" };
+//   if (!newPassword || typeof newPassword !== "string") return { success: false, error: "New password is required" };
+//   if (!confirmPassword || typeof confirmPassword !== "string")
+//     return { success: false, error: "Confirm password is required" };
+
+//   const result = updatePasswordSchema.safeParse({
+//     currentPassword,
+//     newPassword,
+//     confirmPassword
+//   });
+//   if (!result.success) {
+//     const errorMessage = result.error.issues[0]?.message || "Invalid form data";
+//     return { success: false, error: errorMessage };
+//   }
+
+//   try {
+//     const userDoc = await adminDb.collection("users").doc(session.user.id).get();
+//     const userData = userDoc.data() as UserData | undefined;
+//     if (!userData?.passwordHash) return { success: false, error: "User data not found" };
+
+//     const isCurrentPasswordValid = await bcryptjs.compare(currentPassword, userData.passwordHash);
+//     if (!isCurrentPasswordValid) return { success: false, error: "Current password is incorrect" };
+
+//     const newPasswordHash = await bcryptjs.hash(newPassword, await bcryptjs.genSalt(10));
+
+//     await adminAuth.updateUser(session.user.id, { password: newPassword });
+
+//     await adminDb.collection("users").doc(session.user.id).update({
+//       passwordHash: newPasswordHash,
+//       updatedAt: serverTimestamp()
+//     });
+
+//     await logActivity({
+//       userId: session.user.id,
+//       type: "password_change",
+//       description: "Password changed successfully",
+//       status: "success"
+//     });
+
+//     return { success: true };
+//   } catch (error: unknown) {
+//     if (isFirebaseError(error) && error.code === "auth/weak-password") {
+//       return {
+//         success: false,
+//         error: "The password is too weak. Please choose a stronger password."
+//       };
+//     }
+
+//     return {
+//       success: false,
+//       error: isFirebaseError(error) ? firebaseError(error) : "Failed to update password. Please try again."
+//     };
+//   }
+// }
 "use server";
 
 import bcryptjs from "bcryptjs";
@@ -10,15 +142,23 @@ import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { ForgotPasswordState, UpdatePasswordState } from "@/types/auth/password";
 import type { UserData } from "@/types";
 
-// REQUEST PASSWORD RESET
+/**
+ * Helper to safely extract a string value from FormData
+ */
+function getFormValue(formData: FormData, key: string): string | null {
+  const value = formData.get(key);
+  return typeof value === "string" && value.trim() !== "" ? value : null;
+}
+
+/**
+ * REQUEST PASSWORD RESET
+ */
 export async function requestPasswordReset(
   prevState: ForgotPasswordState,
   formData: FormData
 ): Promise<ForgotPasswordState> {
-  if (!formData) return { success: false, error: "Invalid form submission" };
-
-  const email = formData.get("email");
-  if (!email || typeof email !== "string") return { success: false, error: "Email is required" };
+  const email = getFormValue(formData, "email");
+  if (!email) return { success: false, error: "Email is required" };
 
   const result = forgotPasswordSchema.safeParse({ email });
   if (!result.success) return { success: false, error: "Invalid email format" };
@@ -41,7 +181,9 @@ export async function requestPasswordReset(
   }
 }
 
-// SYNC PASSWORD WITH FIRESTORE
+/**
+ * SYNC PASSWORD WITH FIRESTORE (used after reset to update local hash)
+ */
 export async function syncPasswordWithFirestore(
   email: string,
   password: string
@@ -66,26 +208,22 @@ export async function syncPasswordWithFirestore(
   }
 }
 
-// UPDATE PASSWORD FOR LOGGED-IN USER
+/**
+ * UPDATE PASSWORD FOR LOGGED-IN USER
+ */
 export async function updatePassword(prevState: UpdatePasswordState, formData: FormData): Promise<UpdatePasswordState> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
-  const currentPassword = formData.get("currentPassword");
-  const newPassword = formData.get("newPassword");
-  const confirmPassword = formData.get("confirmPassword");
+  const currentPassword = getFormValue(formData, "currentPassword");
+  const newPassword = getFormValue(formData, "newPassword");
+  const confirmPassword = getFormValue(formData, "confirmPassword");
 
-  if (!currentPassword || typeof currentPassword !== "string")
-    return { success: false, error: "Current password is required" };
-  if (!newPassword || typeof newPassword !== "string") return { success: false, error: "New password is required" };
-  if (!confirmPassword || typeof confirmPassword !== "string")
-    return { success: false, error: "Confirm password is required" };
+  if (!currentPassword) return { success: false, error: "Current password is required" };
+  if (!newPassword) return { success: false, error: "New password is required" };
+  if (!confirmPassword) return { success: false, error: "Confirm password is required" };
 
-  const result = updatePasswordSchema.safeParse({
-    currentPassword,
-    newPassword,
-    confirmPassword
-  });
+  const result = updatePasswordSchema.safeParse({ currentPassword, newPassword, confirmPassword });
   if (!result.success) {
     const errorMessage = result.error.issues[0]?.message || "Invalid form data";
     return { success: false, error: errorMessage };
@@ -93,13 +231,19 @@ export async function updatePassword(prevState: UpdatePasswordState, formData: F
 
   try {
     const userDoc = await adminDb.collection("users").doc(session.user.id).get();
-    const userData = userDoc.data() as UserData | undefined;
-    if (!userData?.passwordHash) return { success: false, error: "User data not found" };
+    const userData = userDoc.exists ? (userDoc.data() as UserData | undefined) : undefined;
+
+    if (!userData?.passwordHash) {
+      return { success: false, error: "User data not found or password not set" };
+    }
 
     const isCurrentPasswordValid = await bcryptjs.compare(currentPassword, userData.passwordHash);
-    if (!isCurrentPasswordValid) return { success: false, error: "Current password is incorrect" };
+    if (!isCurrentPasswordValid) {
+      return { success: false, error: "Current password is incorrect" };
+    }
 
-    const newPasswordHash = await bcryptjs.hash(newPassword, await bcryptjs.genSalt(10));
+    const salt = await bcryptjs.genSalt(10);
+    const newPasswordHash = await bcryptjs.hash(newPassword, salt);
 
     await adminAuth.updateUser(session.user.id, { password: newPassword });
 

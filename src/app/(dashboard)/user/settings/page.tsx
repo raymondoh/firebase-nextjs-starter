@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { ChangePasswordForm } from "@/components/auth/ChangePasswordForm";
-import { NotificationForm } from "@/components/user/notifications/NotificationForm";
+import { ChangePasswordForm } from "@/components/dashboard/user/settings/ChangePasswordForm";
+import { NotificationForm } from "@/components/dashboard/user/settings/NotificationForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SettingsPage() {
