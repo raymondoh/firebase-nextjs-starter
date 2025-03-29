@@ -1,4 +1,5 @@
-// app/dashboard/admin/user/page.tsx
+// app/dashboard/admin/users/page.tsx
+
 import type { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader, columns } from "@/components";
@@ -56,15 +57,6 @@ export default async function AdminUsersPage() {
         columns={columns}
         initialData={serializedUsers}
         totalUsers={totalUsers}
-        isLoading={false} // Static page — not loading dynamically
-        refreshUsers={() => {}} // No client interaction here
-        pagination={{
-          page: 0,
-          limit: 10,
-          total: totalUsers,
-          onPageChange: () => {},
-          onLimitChange: () => {}
-        }}
       />
     </DashboardShell>
   );

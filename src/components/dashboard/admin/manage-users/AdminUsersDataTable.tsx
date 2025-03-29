@@ -32,14 +32,14 @@ interface AdminUsersDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   initialData: TData[];
   totalUsers: number;
-  isLoading: boolean;
-  refreshUsers: () => void;
-  pagination: {
+  isLoading?: boolean;
+  refreshUsers?: () => void;
+  pagination?: {
     page: number;
     limit: number;
     total: number;
-    onPageChange: (page: number) => void;
-    onLimitChange: (limit: number) => void;
+    onPageChange: (newPage: number) => void;
+    onLimitChange: (newLimit: number) => void;
   };
 }
 

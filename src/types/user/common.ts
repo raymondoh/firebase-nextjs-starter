@@ -49,7 +49,7 @@ export interface User {
   status?: UserStatus; // Account status (active, disabled, pending)
 
   // Additional metadata
-  metadata?: Record<string, any>;
+  //metadata?: Record<string, any>;
 }
 
 export interface PreviewUser {
@@ -74,9 +74,7 @@ export interface SerializedUser extends Omit<User, "createdAt" | "lastLoginAt" |
 /**
  * User-specific action response
  */
-export interface UserActionResponse extends ActionResponse {
-  // User-specific fields can be added here
-}
+export type UserActionResponse = ActionResponse;
 
 /**
  * Response for user search operations

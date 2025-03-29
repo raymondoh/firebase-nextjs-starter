@@ -12,6 +12,7 @@ import type { Timestamp } from "firebase-admin/firestore";
 
 export default async function UserDetailPage({ params }: { params: { id: string } }) {
   const userId = params.id;
+  console.log("THE PARAMS", userId);
 
   const session = await auth();
   if (!session?.user) {
@@ -42,21 +43,21 @@ export default async function UserDetailPage({ params }: { params: { id: string 
 
   const userData = userDoc.data();
 
-  const convertTimestamp = (timestamp: Timestamp | Date | string | number | null | undefined): Date | null => {
-    if (!timestamp) return null;
+  const convertTimestamp = (timestamp: Timestamp | Date | string | number | null | undefined): Date | undefined => {
+    if (!timestamp) return undefined;
 
     if (timestamp instanceof Date) return timestamp;
 
     if (typeof timestamp === "string" || typeof timestamp === "number") {
       const parsed = new Date(timestamp);
-      return isNaN(parsed.getTime()) ? null : parsed;
+      return isNaN(parsed.getTime()) ? undefined : parsed;
     }
 
     if (typeof timestamp === "object" && "toDate" in timestamp && typeof timestamp.toDate === "function") {
       return timestamp.toDate();
     }
 
-    return null;
+    return undefined;
   };
 
   const user = {
