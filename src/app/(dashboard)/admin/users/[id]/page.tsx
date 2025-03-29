@@ -136,13 +136,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-type Props = {
-  params: {
-    id: string;
-  };
-};
-
-export default async function UserDetailPage({ params }: Props) {
+export default async function UserDetailPage({ params }: { params: { id: string } }) {
   const userId = params.id;
 
   const session = await auth();
