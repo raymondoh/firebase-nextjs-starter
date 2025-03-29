@@ -10,9 +10,12 @@ import { ChevronLeft } from "lucide-react";
 import { serializeData } from "@/utils/serializeData";
 import type { Timestamp } from "firebase-admin/firestore";
 
-export default async function UserDetailPage({ params }: { params: { id: string } }) {
-  const userId = params.id;
-  console.log("THE PARAMS", userId);
+// export default async function UserDetailPage({ params }: { params: { id: string } }) {
+export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const userId = resolvedParams.id;
+  //const userId = params.id;
+  //console.log("THE PARAMS", userId);
 
   const session = await auth();
   if (!session?.user) {
