@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
+import { notFound } from "next/navigation";
 import { ClientSessionDebug } from "@/components/debug/client-session";
 
 export default async function DebugSessionPage() {
+  // Only show this in development
+  if (process.env.NODE_ENV !== "development") {
+    notFound();
+  }
   // Get session using your auth helper
   const session = await auth();
 
