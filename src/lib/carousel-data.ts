@@ -3,33 +3,33 @@
 export interface HeroSlide {
   title: string;
   description: string;
-  cta: string;
-  ctaHref?: string;
   backgroundImage: string;
+  cta?: string;
+  ctaHref?: string;
 }
 
 // Hero Carousel Data
 export const heroSlides: HeroSlide[] = [
   {
-    title: "Welcome to Your Application",
-    description: "A powerful starting point for your next project with authentication, admin dashboard, and more.",
-    cta: "Get Started",
-    ctaHref: "#",
-    backgroundImage: "/images/carousel/hero/hero-1.jpg"
+    title: "Spring Sale is Here!",
+    description: "Get up to 50% off select products. Limited time only.",
+    backgroundImage: "/images/hero/hero-1.jpg",
+    cta: "Shop Now",
+    ctaHref: "/products"
   },
   {
-    title: "Powerful Admin Dashboard",
-    description: "Manage users, view analytics, and control your application with ease.",
-    cta: "Explore Features",
-    ctaHref: "#features",
-    backgroundImage: "/images/carousel/hero/hero-2.jpg"
+    title: "New Arrivals",
+    description: "Check out our latest collection of quality items.",
+    backgroundImage: "/images/hero/hero-2.jpg",
+    cta: "Browse",
+    ctaHref: "/products"
   },
   {
-    title: "Built with Next.js & Firebase",
-    description: "Leverage the power of Next.js and Firebase for a scalable, modern application.",
-    cta: "Learn More",
-    ctaHref: "#about",
-    backgroundImage: "/images/carousel/hero/hero-3.jpg"
+    title: "it's Here!",
+    description: "Men all around.",
+    backgroundImage: "/images/hero/hero-3.jpg",
+    cta: "Browse",
+    ctaHref: "/products"
   }
 ];
 

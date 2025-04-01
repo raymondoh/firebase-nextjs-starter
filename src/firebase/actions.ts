@@ -14,7 +14,13 @@ import type {
   UpdateUserProfileResult,
   SetUserRoleResult
 } from "@/types/firebase/firestore";
-import type { GetProductByIdResult, UpdateProductInput, UpdateProductResult, Product } from "@/types/product";
+import type {
+  GetProductByIdFromFirestoreResult,
+  UpdateProductInput,
+  UpdateProductResult,
+  Product,
+  SerializedProduct
+} from "@/types/product";
 
 import type {
   GetUserActivityLogsResult,
@@ -30,8 +36,8 @@ import type {
   CustomClaims
 } from "@/types/firebase/auth";
 import type { SerializedHeroSlide, GetHeroSlidesResult, GetHeroSlidesError } from "@/types/carousel/hero";
-
 import type { User, UserRole } from "@/types/user";
+import { serializeProduct, serializeProductArray } from "@/utils/serializeProduct";
 
 // ================= User CRUD =================
 
@@ -533,7 +539,7 @@ export async function verifyIdToken(token: string) {
   }
 }
 
-// ================= Products =================
+// ================= Product =================
 
 export async function getAllProductsFromFirestore(): Promise<
   { success: true; data: Product[] } | { success: false; error: string }
@@ -552,12 +558,14 @@ export async function getAllProductsFromFirestore(): Promise<
         price: data.price,
         inStock: data.inStock,
         badge: data.badge,
-        createdAt:
-          data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : new Date().toISOString()
+        isFeatured: data.isFeatured ?? false,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
       };
     });
 
-    return { success: true, data: products };
+    // ✅ Use the serializer here
+    return { success: true, data: serializeProductArray(products) };
   } catch (error) {
     const message = isFirebaseError(error)
       ? firebaseError(error)
@@ -569,15 +577,31 @@ export async function getAllProductsFromFirestore(): Promise<
 }
 
 export async function addProductToFirestore(
-  data: Omit<Product, "id" | "createdAt">
-): Promise<{ success: true; id: string } | { success: false; error: string }> {
+  data: Omit<Product, "id" | "createdAt" | "updatedAt">
+): Promise<{ success: true; id: string; product: SerializedProduct } | { success: false; error: string }> {
   try {
-    const docRef = await adminDb.collection("products").add({
-      ...data,
-      createdAt: Timestamp.now()
-    });
+    const now = Timestamp.now();
 
-    return { success: true, id: docRef.id };
+    const productData = {
+      ...data,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const docRef = await adminDb.collection("products").add(productData);
+
+    const fullProduct: Product = {
+      id: docRef.id,
+      ...productData
+    };
+
+    const serializedProduct = serializeProduct(fullProduct);
+
+    return {
+      success: true,
+      id: docRef.id,
+      product: serializedProduct
+    };
   } catch (error: unknown) {
     const message = isFirebaseError(error)
       ? firebaseError(error)
@@ -590,69 +614,87 @@ export async function addProductToFirestore(
   }
 }
 
-export async function getProductByIdFromFirestore(productId: string): Promise<GetProductByIdResult> {
+export async function getProductByIdFromFirestore(id: string): Promise<GetProductByIdFromFirestoreResult> {
   try {
-    const doc = await adminDb.collection("products").doc(productId).get();
-
-    if (!doc.exists) {
-      return { success: false, error: "Product not found" };
-    }
-
-    const data = doc.data();
-    if (!data) {
-      return { success: false, error: "No product data found" };
-    }
-
-    const product: Product = {
-      id: doc.id,
-      name: data.name,
-      description: data.description,
-      image: data.image,
-      price: data.price,
-      inStock: data.inStock,
-      badge: data.badge,
-      createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt
-    };
-
-    return { success: true, product };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error occurred while fetching product";
-
-    console.error("Error fetching product by ID:", message);
-    return { success: false, error: message };
-  }
-}
-
-export async function updateProductInFirestore(
-  productId: string,
-  data: UpdateProductInput
-): Promise<UpdateProductResult> {
-  try {
-    const docRef = adminDb.collection("products").doc(productId);
+    const docRef = adminDb.collection("products").doc(id);
     const doc = await docRef.get();
 
     if (!doc.exists) {
       return { success: false, error: "Product not found" };
     }
 
-    await docRef.update({
-      ...data,
-      updatedAt: Timestamp.now()
-    });
+    const data = doc.data();
 
-    return { success: true };
-  } catch (error: unknown) {
+    const product: Product = {
+      id: doc.id,
+      name: data?.name,
+      description: data?.description || "",
+      image: data?.image,
+      price: data?.price,
+      inStock: data?.inStock,
+      badge: data?.badge || "",
+      isFeatured: data?.isFeatured === true,
+      createdAt: data?.createdAt,
+      updatedAt: data?.updatedAt
+    };
+
+    return { success: true, product: serializeProduct(product) };
+  } catch (error) {
     const message = isFirebaseError(error)
       ? firebaseError(error)
       : error instanceof Error
       ? error.message
-      : "Unknown error occurred while updating product";
+      : "Unknown error fetching product by ID";
+    return { success: false, error: message };
+  }
+}
 
-    console.error("Error updating product:", message);
+/**
+ * Update a product document in Firestore
+ */
+type SafeUpdateProductInput = Omit<UpdateProductInput, "id" | "createdAt">;
+
+export async function updateProductInFirestore(
+  id: string,
+  updatedData: SafeUpdateProductInput
+): Promise<UpdateProductResult> {
+  try {
+    const docRef = adminDb.collection("products").doc(id);
+
+    await docRef.update({
+      ...updatedData,
+      updatedAt: Timestamp.now()
+    });
+
+    const updatedDoc = await docRef.get();
+    if (!updatedDoc.exists) {
+      return { success: false, error: "Product not found after update" };
+    }
+
+    const data = updatedDoc.data()!;
+    const fullProduct: Product = {
+      id: updatedDoc.id,
+      name: data.name,
+      description: data.description || "",
+      image: data.image,
+      price: data.price,
+      inStock: data.inStock,
+      badge: data.badge || "",
+      isFeatured: data.isFeatured === true,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    };
+
+    return {
+      success: true,
+      product: serializeProduct(fullProduct)
+    };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error updating product";
     return { success: false, error: message };
   }
 }
@@ -671,6 +713,37 @@ export async function deleteProductFromFirestore(
       : "Unknown error deleting product";
 
     console.error("Error deleting product:", message);
+    return { success: false, error: message };
+  }
+}
+
+export async function getFeaturedProductsFromFirestore(): Promise<
+  { success: true; data: Product[] } | { success: false; error: string }
+> {
+  try {
+    const snapshot = await adminDb.collection("products").where("isFeatured", "==", true).get();
+
+    const products: Product[] = snapshot.docs.map(doc => {
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        name: data.name,
+        description: data.description || "",
+        image: data.image,
+        price: data.price,
+        inStock: data.inStock,
+        badge: data.badge || "",
+        isFeatured: data.isFeatured === true,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
+      };
+    });
+
+    return { success: true, data: serializeProductArray(products) };
+  } catch (error) {
+    const message =
+      isFirebaseError(error) || error instanceof Error ? error.message : "Unknown error fetching featured products";
     return { success: false, error: message };
   }
 }

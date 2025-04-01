@@ -1,4 +1,3 @@
-// //src/components/dashboard/admin/ProductForm.tsx
 // "use client";
 
 // import type React from "react";
@@ -13,6 +12,7 @@
 // import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 // import { Loader2, Check } from "lucide-react";
 // import { Switch } from "@/components/ui/switch";
+// import Image from "next/image";
 
 // interface ProductFormProps {
 //   onSuccess?: () => void;
@@ -27,8 +27,9 @@
 //   const uploadFile = async (file: File): Promise<string> => {
 //     setIsUploading(true);
 //     try {
+//       const renamedFile = new File([file], `product-${file.name}`, { type: file.type });
 //       const formData = new FormData();
-//       formData.append("file", file);
+//       formData.append("file", renamedFile);
 
 //       const response = await fetch("/api/upload", {
 //         method: "POST",
@@ -74,7 +75,6 @@
 //         if (result.success) {
 //           toast.success("Product added successfully!");
 //           onSuccess?.();
-//           // Reset form
 //           const form = document.getElementById("product-form") as HTMLFormElement;
 //           if (form) {
 //             form.reset();
@@ -146,11 +146,12 @@
 //             <div className="flex items-center justify-center border rounded-md h-[150px] bg-muted/30">
 //               {previewUrl ? (
 //                 <div className="relative w-full h-full">
-//                   {/* eslint-disable-next-line @next/next/no-img-element */}
-//                   <img
+//                   <Image
 //                     src={previewUrl || "/placeholder.svg"}
 //                     alt="Preview"
-//                     className="object-contain w-full h-full p-2"
+//                     fill
+//                     className="object-contain p-2"
+//                     sizes="100vw"
 //                   />
 //                 </div>
 //               ) : (
@@ -208,6 +209,7 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
   const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = useState(false);
   const [inStock, setInStock] = useState(true);
+  const [isFeatured, setIsFeatured] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const uploadFile = async (file: File): Promise<string> => {
@@ -255,7 +257,8 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
           description: formData.get("description") as string,
           inStock: formData.get("inStock") === "on",
           badge: formData.get("badge") as string,
-          image: imageUrl
+          image: imageUrl,
+          isFeatured: isFeatured
         });
 
         if (result.success) {
@@ -266,6 +269,7 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
             form.reset();
             setPreviewUrl(null);
             setInStock(true);
+            setIsFeatured(false);
           }
         } else {
           toast.error(result.error);
@@ -306,6 +310,13 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
             In Stock
           </Label>
           <Switch name="inStock" id="inStock" checked={inStock} onCheckedChange={setInStock} />
+        </div>
+
+        <div className="flex items-center justify-between space-x-2">
+          <Label htmlFor="isFeatured" className="cursor-pointer">
+            Feature this product
+          </Label>
+          <Switch name="isFeatured" id="isFeatured" checked={isFeatured} onCheckedChange={setIsFeatured} />
         </div>
 
         <div className="md:col-span-2 space-y-2">

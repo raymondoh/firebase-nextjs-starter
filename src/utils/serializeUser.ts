@@ -1,3 +1,4 @@
+// src/utils/serializeUser
 import type { User, SerializedUser } from "@/types/user/common";
 import { parseServerDate } from "@/utils/date-server";
 

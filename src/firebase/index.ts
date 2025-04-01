@@ -83,7 +83,8 @@ export {
   addProductToFirestore,
   getProductByIdFromFirestore,
   updateProductInFirestore,
-  deleteProductFromFirestore
+  deleteProductFromFirestore,
+  getFeaturedProductsFromFirestore
 } from "./actions";
 
 // Helper functions to avoid naming conflicts

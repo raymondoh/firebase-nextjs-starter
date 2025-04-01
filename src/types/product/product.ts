@@ -1,4 +1,5 @@
 // types/product.ts
+import { Timestamp } from "firebase-admin/firestore";
 export interface Product {
   id: string;
   name: string;
@@ -7,7 +8,22 @@ export interface Product {
   price: number;
   inStock: boolean;
   badge?: string;
-  createdAt: string; // ISO string if serialized
+  isFeatured?: boolean;
+  createdAt: Timestamp | string;
+  updatedAt?: Timestamp | string;
+}
+
+export interface SerializedProduct {
+  id: string;
+  name: string;
+  description?: string;
+  image: string;
+  price: number;
+  inStock: boolean;
+  badge?: string;
+  isFeatured?: boolean;
+  createdAt: Timestamp | string;
+  updatedAt?: Timestamp | string;
 }
 
 // get product by ID
@@ -19,8 +35,9 @@ export interface GetProductByIdError {
   success: false;
   error: string;
 }
-export type GetProductByIdResult = GetProductByIdSuccess | GetProductByIdError;
-export type GetProductByIdResponse = GetProductByIdResult;
+
+export type GetProductByIdFromFirestoreResult = GetProductByIdSuccess | GetProductByIdError;
+export type GetProductByIdResponse = GetProductByIdFromFirestoreResult;
 
 // Update product input (only allow partial updates, excluding id/createdAt)
 export type UpdateProductInput = Partial<Omit<Product, "id" | "createdAt">>;
@@ -28,6 +45,7 @@ export type UpdateProductInput = Partial<Omit<Product, "id" | "createdAt">>;
 // Update result types
 export interface UpdateProductSuccess {
   success: true;
+  product: SerializedProduct;
 }
 
 export interface UpdateProductError {
