@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description: "Get in touch with us"
+};
+
 export default function ContactPage() {
   return (
     <div className="container mx-auto p-8">

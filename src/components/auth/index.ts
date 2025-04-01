@@ -8,3 +8,4 @@ export { ResetPasswordForm } from "./ResetPasswordForm";
 export { ResendVerificationForm } from "./ResendVerificationForm";
 export { VerifyEmailForm } from "./VerifyEmailForm";
 export { VerificationSuccessForm } from "./VerifyificationSuccessForm";
+export { UserProfileForm } from "./UserProfileForm";

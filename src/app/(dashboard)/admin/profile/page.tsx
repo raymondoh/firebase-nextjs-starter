@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { AdminProfileForm } from "@/components/dashboard/admin";
+//import { AdminProfileForm } from "@/components/dashboard/admin";
+import { UserProfileForm } from "@/components/auth/UserProfileForm";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
@@ -42,24 +43,6 @@ export default async function AdminProfilePage() {
     redirect("/user/dashboard");
   }
 
-  //   return (
-  //     <DashboardShell>
-  //       <DashboardHeader heading="Admin Profile" text="Manage your admin account settings and profile information" />
-  //       <Separator className="mb-8" />
-
-  //       <div className="max-w-4xl">
-  //         <div className="space-y-6">
-  //           <div>
-  //             <h2 className="text-xl font-semibold">Personal Information</h2>
-  //             <p className="text-muted-foreground">Update your personal details and profile picture.</p>
-  //           </div>
-
-  //           <AdminProfileForm redirectAfterSuccess="/admin" />
-  //         </div>
-  //       </div>
-  //     </DashboardShell>
-  //   );
-  // }
   return (
     <DashboardShell>
       <DashboardHeader heading="Admin Profile" text="Manage your admin account settings and profile information" />
@@ -73,7 +56,7 @@ export default async function AdminProfilePage() {
             <p className="text-muted-foreground">Update your personal details and profile picture.</p>
           </div>
 
-          <AdminProfileForm redirectAfterSuccess="/admin" />
+          <UserProfileForm isAdmin />
         </div>
       </div>
     </DashboardShell>

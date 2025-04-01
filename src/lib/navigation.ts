@@ -111,7 +111,7 @@ export const adminNavItems: NavItem[] = [
   {
     title: "Activity",
     href: "/admin/activity",
-    icon: Users
+    icon: Activity
   },
   {
     title: "Admin Profile",

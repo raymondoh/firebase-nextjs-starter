@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Metadata } from "next";
+import { Metadata } from "next";
 import { siteConfig } from "@/config/siteConfig";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
@@ -25,10 +25,13 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
+  authors: [{ name: siteConfig.author }],
   openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
     title: siteConfig.name,
     description: siteConfig.description,
-    url: siteConfig.url,
     siteName: siteConfig.name,
     images: [
       {
@@ -37,11 +40,14 @@ export const metadata: Metadata = {
         height: 630,
         alt: siteConfig.name
       }
-    ],
-    type: "website"
+    ]
   },
-  authors: [{ name: siteConfig.author }],
-  metadataBase: new URL(siteConfig.url)
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage]
+  }
 };
 //export const metadata: Metadata = {
 // title: "Firebase Boilerplate",

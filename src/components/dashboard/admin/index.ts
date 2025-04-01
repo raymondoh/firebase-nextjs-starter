@@ -14,7 +14,7 @@ export { AdminUsersDataTable } from "./manage-users/AdminUsersDataTable";
 export { AdminUserDetailCard } from "./manage-users/AdminUserDetailCard";
 
 // Admin Profile page
-export { AdminProfileForm } from "./admin-profile/AdminProfileForm";
+//export { AdminProfileForm } from "./admin-profile/AdminProfileForm";
 //
 export { columns } from "./columns";
 //export { UsersClient } from "./UsersClient.tsx";

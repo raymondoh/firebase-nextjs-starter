@@ -75,3 +75,79 @@ A practical checklist to help you turn your app into a polished, reusable boiler
 ---
 
 Once all of the above is ✅, you've got yourself a scalable, production-ready boilerplate! 🚀
+
+Product Admin Dashboard – TODO Checklist
+🔧 Setup & Integration
+Connect ProductCarousel to Firestore using getAllProducts
+
+Create Firebase addProduct function
+
+Build ProductForm.tsx with image upload support (/api/upload)
+
+Create actions/products/add-product.ts to call Firebase logic
+
+Fix carousel + build errors (Embla, headers, type issues)
+
+Successfully deployed to Vercel
+
+📦 Product CRUD
+➕ Add Product
+Create /admin/products/new page
+
+Render <ProductForm /> on this page
+
+Add admin-only access using auth() and role check
+
+🧾 Manage Products
+Build AdminProductTable with columns:
+
+Name
+
+Price
+
+In Stock
+
+Created At
+
+View / Edit / Delete actions
+
+Load data via getAllProducts()
+
+Add this table to /admin/products
+
+🖊 Edit Product
+Create /admin/products/[id]/page.tsx
+
+Load product by ID using getProductById(id)
+
+Reuse <ProductForm /> with pre-filled values
+
+Create updateProduct() action in /actions/products/update-product.ts
+
+🗑 Delete Product
+Create deleteProduct() Firebase function
+
+Add delete button with confirm modal in AdminProductTable
+
+🧼 Dev & UI Cleanup
+Move /products and /carousel into (dev) folder if not already
+
+Add if (process.env.NODE_ENV === "production") notFound() to block dev pages
+
+Clean up EmblaOptionsType references
+
+🔐 Route Protection
+Add auth() and redirect() to all admin/user pages
+
+Mark routes using headers() with export const dynamic = "force-dynamic"
+
+🧪 Bonus Improvements
+Add form validation (required fields, number check)
+
+Add toast or alert feedback on form success/error
+
+Add badge color selector (e.g. New, Sale, Limited)
+
+Add optional category or tag system (filtering later)
+
+Add loading indicator while submitting or fetching data

@@ -2,10 +2,10 @@ import { getAllProductsFromFirestore } from "@/firebase/admin/products";
 import { ProductCarousel } from "@/components/product-carousel";
 
 import type { Metadata } from "next";
-
 export const metadata: Metadata = {
-  title: "Login",
-  description: "Login to your account"
+  title: "Our Products",
+  description: "Browse our collection of high-quality products with free shipping on all orders.",
+  keywords: ["products", "shop", "collection", "featured items"]
 };
 
 export default async function ProductPage() {

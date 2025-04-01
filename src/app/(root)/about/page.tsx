@@ -1,32 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us | Your App Name",
-  description:
-    "Learn about our mission, team, and the story behind Your App Name. Discover how we're helping users achieve their goals.",
-  openGraph: {
-    title: "About Us | Your App Name",
-    description: "Learn about our mission, team, and the story behind Your App Name.",
-    type: "website",
-    images: [
-      {
-        url: "/images/about-og-image.jpg", // Replace with your actual image path
-        width: 1200,
-        height: 630,
-        alt: "About Your App Name"
-      }
-    ]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "About Us | Your App Name",
-    description: "Learn about our mission, team, and the story behind Your App Name.",
-    images: ["/images/about-twitter-image.jpg"] // Replace with your actual image path
-  },
-  keywords: ["about us", "company", "team", "mission", "your app name", "app story"],
-  alternates: {
-    canonical: "https://yourapp.com/about"
-  }
+  title: "About Us",
+  description: "Learn more about our team and mission"
 };
 
 export default function AboutPage() {
