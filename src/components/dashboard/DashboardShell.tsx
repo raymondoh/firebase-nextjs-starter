@@ -1,9 +1,14 @@
 import type React from "react";
+import { cn } from "@/lib/utils";
 interface DashboardShellProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export function DashboardShell({ children, className }: DashboardShellProps) {
-  return <div className="flex-1 space-y-8 p-6 max-w-8xl mx-auto w-full">{children}</div>;
+export function DashboardShell({ children, className, ...props }: DashboardShellProps) {
+  return (
+    <div className={cn("flex flex-col w-full space-y-4 pb-8 px-1 sm:px-0", className)} {...props}>
+      {children}
+    </div>
+  );
 }

@@ -76,7 +76,14 @@ export {
   // Activity functions
   logActivity,
   getUserActivityLogs,
-  getAllActivityLogs
+  getAllActivityLogs,
+
+  // product functions
+  getAllProductsFromFirestore,
+  addProductToFirestore,
+  getProductByIdFromFirestore,
+  updateProductInFirestore,
+  deleteProductFromFirestore
 } from "./actions";
 
 // Helper functions to avoid naming conflicts

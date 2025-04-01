@@ -1,5 +1,6 @@
 // ActivityPage
 export { ActivityPageClient } from "./activity/ActivityPageClient";
+//export { ActivityLogClient as ActivityLog } from "./activity/ActivityLogClient";
 
 // Data Page
 export { AccountDeletion } from "./data-privacy/AccountDeletion";

@@ -117,5 +117,10 @@ export const adminNavItems: NavItem[] = [
     title: "Admin Profile",
     href: "/admin/profile",
     icon: UserCircle
+  },
+  {
+    title: "Products",
+    href: "/admin/products",
+    icon: UserCircle
   }
 ];

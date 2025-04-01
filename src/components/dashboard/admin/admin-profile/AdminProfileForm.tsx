@@ -167,8 +167,105 @@ export function AdminProfileForm({ id, onCancel, redirectAfterSuccess = "/admin"
     );
   }
 
+  //   return (
+  //     <form id={id} onSubmit={handleSubmit} className="grid w-full gap-6">
+  //       {state?.error && (
+  //         <Alert variant="destructive">
+  //           <AlertCircle className="h-4 w-4" />
+  //           <AlertDescription>{state.error}</AlertDescription>
+  //         </Alert>
+  //       )}
+
+  //       <div className="flex flex-col gap-6 md:flex-row md:items-center">
+  //         <Avatar className="h-24 w-24 relative">
+  //           {photoURL ? (
+  //             <div className="absolute inset-0 overflow-hidden rounded-full">
+  //               <Image
+  //                 src={photoURL}
+  //                 alt={session?.user?.name || "Admin"}
+  //                 fill
+  //                 sizes="(max-width: 768px) 96px"
+  //                 className="object-cover"
+  //                 priority
+  //               />
+  //             </div>
+  //           ) : (
+  //             <AvatarFallback className="text-lg">
+  //               <Shield className="h-12 w-12" />
+  //             </AvatarFallback>
+  //           )}
+  //         </Avatar>
+
+  //         <div className="flex flex-col gap-2">
+  //           <div className="flex items-center gap-2">
+  //             <h3 className="text-lg font-medium">Admin Profile</h3>
+  //             <Badge variant="destructive">Admin</Badge>
+  //           </div>
+  //           <p className="text-sm text-muted-foreground">Upload a new profile picture</p>
+  //           <div className="flex items-center gap-2">
+  //             <Input
+  //               id="profile-image"
+  //               type="file"
+  //               accept="image/*"
+  //               className="hidden"
+  //               onChange={handleFileChange}
+  //               disabled={isPending || isUploading}
+  //             />
+  //             <Button
+  //               type="button"
+  //               variant="outline"
+  //               onClick={() => document.getElementById("profile-image")?.click()}
+  //               disabled={isPending || isUploading}>
+  //               <Upload className="mr-2 h-4 w-4" />
+  //               Upload
+  //             </Button>
+  //           </div>
+  //         </div>
+  //       </div>
+
+  //       <div className="space-y-2">
+  //         <Label htmlFor="name">Admin Name</Label>
+  //         <Input id="name" value={name} onChange={e => setName(e.target.value)} required />
+  //       </div>
+
+  //       <div className="space-y-2">
+  //         <Label htmlFor="email">Email</Label>
+  //         <Input id="email" value={session?.user?.email || ""} disabled className="bg-muted" />
+  //       </div>
+
+  //       <div className="space-y-2">
+  //         <Label htmlFor="bio">Bio</Label>
+  //         <Textarea
+  //           id="bio"
+  //           value={bio}
+  //           onChange={e => setBio(e.target.value)}
+  //           placeholder="Tell us a bit about yourself"
+  //           className="resize-none min-h-[100px]"
+  //         />
+  //       </div>
+
+  //       <div className="mt-6 flex items-center justify-start gap-4">
+  //         <Button type="submit" disabled={isPending || isUploading}>
+  //           {isPending || isUploading ? (
+  //             <>
+  //               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+  //               {isUploading ? "Uploading..." : "Saving..."}
+  //             </>
+  //           ) : (
+  //             "Save changes"
+  //           )}
+  //         </Button>
+  //         <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending || isUploading}>
+  //           Cancel
+  //         </Button>
+  //       </div>
+
+  //       {isSuccess && <p className="mt-4 text-sm text-green-600">Profile updated successfully.</p>}
+  //     </form>
+  //   );
+  // }
   return (
-    <form id={id} onSubmit={handleSubmit} className="grid w-full gap-6">
+    <form id={id} onSubmit={handleSubmit} className="grid w-full gap-6 max-w-full">
       {state?.error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -181,7 +278,7 @@ export function AdminProfileForm({ id, onCancel, redirectAfterSuccess = "/admin"
           {photoURL ? (
             <div className="absolute inset-0 overflow-hidden rounded-full">
               <Image
-                src={photoURL}
+                src={photoURL || "/placeholder.svg"}
                 alt={session?.user?.name || "Admin"}
                 fill
                 sizes="(max-width: 768px) 96px"
@@ -197,7 +294,7 @@ export function AdminProfileForm({ id, onCancel, redirectAfterSuccess = "/admin"
         </Avatar>
 
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-lg font-medium">Admin Profile</h3>
             <Badge variant="destructive">Admin</Badge>
           </div>
@@ -244,7 +341,7 @@ export function AdminProfileForm({ id, onCancel, redirectAfterSuccess = "/admin"
         />
       </div>
 
-      <div className="mt-6 flex items-center justify-start gap-4">
+      <div className="mt-6 flex flex-wrap items-center justify-start gap-4">
         <Button type="submit" disabled={isPending || isUploading}>
           {isPending || isUploading ? (
             <>

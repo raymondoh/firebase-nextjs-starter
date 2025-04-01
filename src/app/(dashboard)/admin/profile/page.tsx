@@ -42,12 +42,31 @@ export default async function AdminProfilePage() {
     redirect("/user/dashboard");
   }
 
+  //   return (
+  //     <DashboardShell>
+  //       <DashboardHeader heading="Admin Profile" text="Manage your admin account settings and profile information" />
+  //       <Separator className="mb-8" />
+
+  //       <div className="max-w-4xl">
+  //         <div className="space-y-6">
+  //           <div>
+  //             <h2 className="text-xl font-semibold">Personal Information</h2>
+  //             <p className="text-muted-foreground">Update your personal details and profile picture.</p>
+  //           </div>
+
+  //           <AdminProfileForm redirectAfterSuccess="/admin" />
+  //         </div>
+  //       </div>
+  //     </DashboardShell>
+  //   );
+  // }
   return (
     <DashboardShell>
       <DashboardHeader heading="Admin Profile" text="Manage your admin account settings and profile information" />
       <Separator className="mb-8" />
 
-      <div className="max-w-4xl">
+      {/* Added w-full and overflow-hidden */}
+      <div className="w-full max-w-4xl overflow-hidden">
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold">Personal Information</h2>

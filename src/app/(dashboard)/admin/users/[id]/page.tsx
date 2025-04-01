@@ -4,18 +4,12 @@ import { Separator } from "@/components/ui/separator";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { serializeData } from "@/utils/serializeData";
 import type { Timestamp } from "firebase-admin/firestore";
 
-// export default async function UserDetailPage({ params }: { params: { id: string } }) {
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const userId = resolvedParams.id;
-  //const userId = params.id;
-  //console.log("THE PARAMS", userId);
 
   const session = await auth();
   if (!session?.user) {
@@ -82,20 +76,16 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <DashboardShell>
-      <div className="flex items-center">
-        <Button variant="ghost" size="sm" className="mr-4" asChild>
-          <Link href="/admin/users">
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Users
-          </Link>
-        </Button>
-        <DashboardHeader
-          heading={`User: ${user.name || user.email || "Unknown"}`}
-          text="View and manage user details."
-        />
-      </div>
+      <DashboardHeader
+        heading="User Details"
+        text={`View and manage details for ${serializedUser.name || serializedUser.email || "user"}.`}
+      />
       <Separator className="mb-8" />
-      <AdminUserDetailCard user={serializedUser} />
+
+      {/* Added a container with overflow handling */}
+      <div className="w-full max-w-full overflow-hidden">
+        <AdminUserDetailCard user={serializedUser} />
+      </div>
     </DashboardShell>
   );
 }

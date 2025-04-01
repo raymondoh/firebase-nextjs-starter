@@ -2,9 +2,9 @@
 
 import type React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
-import { auth } from "@/firebase/client";
+//import { auth } from "@/firebase/client";
 import type { User } from "@/types/user";
-import { getCurrentUser } from "@/firebase/actions";
+//import { getCurrentUser } from "@/firebase/actions";
 
 //console.log(auth);
 
@@ -23,8 +23,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const currentUser = await getCurrentUser();
-        setUser(currentUser);
+        //const currentUser = await getCurrentUser();
+        setUser(null);
       } catch (error) {
         console.error("Error fetching current user:", error);
         setUser(null);

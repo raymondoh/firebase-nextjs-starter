@@ -128,34 +128,35 @@ export function AccountSummary({ user, profileUrl = "/user/profile", className }
   const securityInfo = getSecurityStatus();
 
   return (
-    <Card className={className}>
+    <Card className={`w-full overflow-hidden mr-0 ${className}`}>
       <CardHeader>
         <CardTitle>Account Summary</CardTitle>
         <CardDescription>Your account status and information</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
+          {/* Improved grid with better responsive handling */}
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
+            <div className="space-y-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Account Type</p>
-              <p className="capitalize">{user.role || "Free Plan"}</p>
+              <p className="capitalize truncate">{user.role || "Free Plan"}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Member Since</p>
-              <p>{formatCreationDate()}</p>
+              <p className="truncate">{formatCreationDate()}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Last Login</p>
-              <p>{formatLastLogin()}</p>
+              <p className="truncate">{formatLastLogin()}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground">Security Status</p>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <p className={`flex items-center gap-1 ${securityInfo.color}`}>
-                      <securityInfo.icon className="h-4 w-4" />
-                      {securityInfo.status}
+                    <p className={`flex items-center gap-1 ${securityInfo.color} truncate`}>
+                      <securityInfo.icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{securityInfo.status}</span>
                     </p>
                   </TooltipTrigger>
                   <TooltipContent>

@@ -35,15 +35,55 @@ export function NotificationForm() {
     });
   }
 
+  //   return (
+  //     <Form {...form}>
+  //       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" style={{ border: "none" }}>
+  //         <div className="space-y-4">
+  //           <FormField
+  //             control={form.control}
+  //             name="marketing_emails"
+  //             render={({ field }) => (
+  //               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+  //                 <div className="space-y-0.5">
+  //                   <FormLabel className="text-base">Marketing emails</FormLabel>
+  //                   <FormDescription>Receive emails about new products, features, and more.</FormDescription>
+  //                 </div>
+  //                 <FormControl>
+  //                   <Switch checked={field.value} onCheckedChange={field.onChange} />
+  //                 </FormControl>
+  //               </FormItem>
+  //             )}
+  //           />
+  //           <FormField
+  //             control={form.control}
+  //             name="security_emails"
+  //             render={({ field }) => (
+  //               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+  //                 <div className="space-y-0.5">
+  //                   <FormLabel className="text-base">Security emails</FormLabel>
+  //                   <FormDescription>Receive emails about your account security.</FormDescription>
+  //                 </div>
+  //                 <FormControl>
+  //                   <Switch checked={field.value} onCheckedChange={field.onChange} disabled aria-readonly />
+  //                 </FormControl>
+  //               </FormItem>
+  //             )}
+  //           />
+  //         </div>
+  //         <Button type="submit">Save Preferences</Button>
+  //       </form>
+  //     </Form>
+  //   );
+  // }
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" style={{ border: "none" }}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full" style={{ border: "none" }}>
         <div className="space-y-4">
           <FormField
             control={form.control}
             name="marketing_emails"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+              <FormItem className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border p-4 shadow-sm gap-4">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">Marketing emails</FormLabel>
                   <FormDescription>Receive emails about new products, features, and more.</FormDescription>
@@ -58,7 +98,7 @@ export function NotificationForm() {
             control={form.control}
             name="security_emails"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+              <FormItem className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border p-4 shadow-sm gap-4">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">Security emails</FormLabel>
                   <FormDescription>Receive emails about your account security.</FormDescription>
@@ -70,7 +110,10 @@ export function NotificationForm() {
             )}
           />
         </div>
-        <Button type="submit">Save Preferences</Button>
+        {/* Made button full width on mobile */}
+        <Button type="submit" className="w-full sm:w-auto">
+          Save Preferences
+        </Button>
       </form>
     </Form>
   );

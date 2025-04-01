@@ -5,5 +5,6 @@ export { GoogleAuthButton } from "./GoogleAuthButton";
 export { LoginForm } from "./LoginForm";
 export { RegisterForm } from "./RegisterForm";
 export { ResetPasswordForm } from "./ResetPasswordForm";
+export { ResendVerificationForm } from "./ResendVerificationForm";
 export { VerifyEmailForm } from "./VerifyEmailForm";
 export { VerificationSuccessForm } from "./VerifyificationSuccessForm";

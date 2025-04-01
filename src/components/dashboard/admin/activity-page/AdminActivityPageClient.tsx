@@ -94,8 +94,71 @@ export function AdminActivityPageClient({ initialData = [] }: ActivityPageClient
     { label: "Deletions", value: "deletion_completed" }
   ];
 
+  //   return (
+  //     <div className="space-y-6">
+  //       <div className="flex flex-col sm:flex-row justify-between gap-4">
+  //         <div className="flex flex-col sm:flex-row gap-4">
+  //           <div className="w-full sm:w-48">
+  //             <Select value={activeType || "all"} onValueChange={handleTypeChange}>
+  //               <SelectTrigger>
+  //                 <SelectValue placeholder="Filter by type" />
+  //               </SelectTrigger>
+  //               <SelectContent>
+  //                 {activityTypes.map(type => (
+  //                   <SelectItem key={type.value} value={type.value}>
+  //                     {type.label}
+  //                   </SelectItem>
+  //                 ))}
+  //               </SelectContent>
+  //             </Select>
+  //           </div>
+
+  //           <div className="w-full sm:w-32">
+  //             <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+  //               <SelectTrigger>
+  //                 <SelectValue placeholder="Page size" />
+  //               </SelectTrigger>
+  //               <SelectContent>
+  //                 {[5, 10, 25, 50].map(size => (
+  //                   <SelectItem key={size} value={size.toString()}>
+  //                     {size} per page
+  //                   </SelectItem>
+  //                 ))}
+  //               </SelectContent>
+  //             </Select>
+  //           </div>
+  //         </div>
+
+  //         <Button variant="outline" onClick={() => loadActivities(true)} disabled={isRefreshing} className="h-10">
+  //           {isRefreshing ? "Refreshing..." : "Refresh"}
+  //         </Button>
+  //       </div>
+
+  //       <Card className="p-6">
+  //         {loading && !isRefreshing ? (
+  //           <p className="text-muted-foreground text-sm">Loading activity logs...</p>
+  //         ) : error ? (
+  //           <p className="text-red-500 text-sm">{error}</p>
+  //         ) : activities.length === 0 ? (
+  //           <p className="text-muted-foreground text-sm">No activity found.</p>
+  //         ) : (
+  //           <>
+  //             <AdminActivityLogClient activities={activities} showFilters={false} isRefreshing={isRefreshing} />
+  //             {hasMore && (
+  //               <div className="mt-6 text-center">
+  //                 <Button variant="outline" onClick={loadMore} disabled={isRefreshing}>
+  //                   {isRefreshing ? "Loading..." : "Load More"}
+  //                 </Button>
+  //               </div>
+  //             )}
+  //           </>
+  //         )}
+  //       </Card>
+  //     </div>
+  //   );
+  // }
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="w-full sm:w-48">
@@ -134,7 +197,7 @@ export function AdminActivityPageClient({ initialData = [] }: ActivityPageClient
         </Button>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6 w-full overflow-hidden">
         {loading && !isRefreshing ? (
           <p className="text-muted-foreground text-sm">Loading activity logs...</p>
         ) : error ? (
@@ -142,7 +205,7 @@ export function AdminActivityPageClient({ initialData = [] }: ActivityPageClient
         ) : activities.length === 0 ? (
           <p className="text-muted-foreground text-sm">No activity found.</p>
         ) : (
-          <>
+          <div className="w-full overflow-hidden">
             <AdminActivityLogClient activities={activities} showFilters={false} isRefreshing={isRefreshing} />
             {hasMore && (
               <div className="mt-6 text-center">
@@ -151,7 +214,7 @@ export function AdminActivityPageClient({ initialData = [] }: ActivityPageClient
                 </Button>
               </div>
             )}
-          </>
+          </div>
         )}
       </Card>
     </div>

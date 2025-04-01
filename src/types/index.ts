@@ -58,5 +58,8 @@ export type {
   SetCustomClaimsResult
 } from "./firebase";
 
+// Product types
+export type { Product } from "./product/product";
+
 // Common types (once you've created the common folder)
 export type { ActionResponse } from "./common/response";

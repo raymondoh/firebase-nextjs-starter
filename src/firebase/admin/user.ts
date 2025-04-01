@@ -1,3 +1,4 @@
+//src/firebase/admin/users
 "use server";
 
 import { adminDb, adminAuth } from "./index";
@@ -11,6 +12,7 @@ import type {
   GetUserProfileResult,
   SetUserRoleResult
 } from "@/types/firebase/firestore";
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
 /**
  * Get users with pagination
@@ -32,6 +34,7 @@ export async function getUsers(limit = 10, startAfter?: string): Promise<GetUser
 
     const users: User[] = snapshot.docs.map(doc => {
       const data = doc.data();
+
       return {
         id: doc.id,
         ...data,
@@ -45,11 +48,17 @@ export async function getUsers(limit = 10, startAfter?: string): Promise<GetUser
     return {
       success: true,
       users,
-      lastVisible: lastVisible ? lastVisible.id : undefined
+      lastVisible: lastVisible?.id
     };
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    return { success: false, error: "Failed to fetch users" };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error occurred while fetching users";
+
+    console.error("Error fetching users:", message);
+    return { success: false, error: message };
   }
 }
 
@@ -67,10 +76,17 @@ export async function createUserDocument(userId: string, userData: Partial<User>
     } as UserDocumentData;
 
     await adminDb.collection("users").doc(userId).set(userDocData, { merge: true });
+
     return { success: true };
-  } catch (error) {
-    console.error("Error creating user document:", error);
-    return { success: false, error: "Failed to create user document" };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error occurred while creating user document";
+
+    console.error("Error creating user document:", message);
+    return { success: false, error: message };
   }
 }
 
@@ -80,12 +96,18 @@ export async function createUserDocument(userId: string, userData: Partial<User>
  */
 export async function getUserRole(userId: string): Promise<UserRole> {
   try {
-    const userDoc: DocumentSnapshot = await adminDb.collection("users").doc(userId).get(); // Typed DocumentSnapshot
+    const userDoc: DocumentSnapshot = await adminDb.collection("users").doc(userId).get();
     const userData = userDoc.data() as UserDocumentData | undefined;
     return (userData?.role as UserRole) || "user";
-  } catch (error) {
-    console.error("Error getting user role:", error);
-    return "user";
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error getting user role";
+
+    console.error("Error getting user role:", message);
+    return "user"; // fallback default
   }
 }
 
@@ -101,9 +123,15 @@ export async function setUserRole(userId: string, role: UserRole): Promise<SetUs
       updatedAt: new Date()
     });
     return { success: true };
-  } catch (error) {
-    console.error("Error setting user role:", error);
-    return { success: false, error: "Failed to set user role" };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error setting user role";
+
+    console.error("Error setting user role:", message);
+    return { success: false, error: message };
   }
 }
 
@@ -118,7 +146,7 @@ export async function updateUserProfile(
 ): Promise<UpdateUserProfileResult> {
   try {
     const userDocRef = adminDb.collection("users").doc(userId);
-    const userDoc: DocumentSnapshot = await userDocRef.get(); // Typed DocumentSnapshot
+    const userDoc: DocumentSnapshot = await userDocRef.get();
 
     if (!userDoc.exists) {
       return { success: false, error: "User not found" };
@@ -127,19 +155,25 @@ export async function updateUserProfile(
     const updates: Partial<UserDocumentData> = {
       ...updateData,
       updatedAt: new Date()
-    } as Partial<UserDocumentData>;
+    };
 
     await userDocRef.update(updates);
 
-    // Update the user's display name in Firebase Auth
+    // Also update Firebase Auth profile if name is provided
     if (updateData.name) {
       await adminAuth.updateUser(userId, { displayName: updateData.name });
     }
 
     return { success: true };
-  } catch (error) {
-    console.error("Error updating user profile:", error);
-    return { success: false, error: "Failed to update user profile" };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error updating user profile";
+
+    console.error("Error updating user profile:", message);
+    return { success: false, error: message };
   }
 }
 
@@ -149,7 +183,7 @@ export async function updateUserProfile(
  */
 export async function getUserProfile(userId: string): Promise<GetUserProfileResult> {
   try {
-    const userDoc: DocumentSnapshot = await adminDb.collection("users").doc(userId).get(); // Typed DocumentSnapshot
+    const userDoc: DocumentSnapshot = await adminDb.collection("users").doc(userId).get();
 
     if (!userDoc.exists) {
       return { success: false, error: "User not found" };
@@ -163,11 +197,17 @@ export async function getUserProfile(userId: string): Promise<GetUserProfileResu
         userData.createdAt instanceof Timestamp ? userData.createdAt.toDate().toISOString() : userData.createdAt,
       updatedAt:
         userData.updatedAt instanceof Timestamp ? userData.updatedAt.toDate().toISOString() : userData.updatedAt
-    } as User;
+    };
 
     return { success: true, user };
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    return { success: false, error: "Failed to fetch user profile" };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error fetching user profile";
+
+    console.error("Error fetching user profile:", message);
+    return { success: false, error: message };
   }
 }

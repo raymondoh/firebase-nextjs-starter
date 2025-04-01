@@ -1,5 +1,3 @@
-// app/(dashboard)/user/page.tsx
-
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
 import { UserActivityPreview } from "@/components/dashboard/user/overview/UserActivityPreview";
@@ -28,7 +26,7 @@ export default async function UserDashboardOverviewPage() {
     email: sessionUser.email ?? "",
     image: sessionUser.image ?? "",
     role: sessionUser.role,
-    emailVerified: sessionUser.emailVerified ?? false, // ✅ no error now
+    emailVerified: sessionUser.emailVerified ?? false,
     hasPassword: false,
     has2FA: false,
     createdAt: new Date(),
@@ -65,15 +63,23 @@ export default async function UserDashboardOverviewPage() {
       <DashboardHeader heading="Dashboard" text={`Welcome back, ${userName}! Here's an overview of your account.`} />
       <Separator className="mb-8" />
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <UserAccountPreview userData={serializedUserData} />
-        <UserActivityPreview
-          limit={5}
-          showFilters={false}
-          showHeader={true}
-          showViewAll={true}
-          viewAllUrl="/user/activity"
-        />
+      {/* Changed to flex column on small screens, row on larger screens */}
+      <div className="w-full mx-auto max-w-6xl flex flex-col lg:grid lg:grid-cols-2 gap-4 md:gap-8">
+        {/* Account summary in its own container */}
+        <div className="w-full min-w-0 overflow-hidden">
+          <UserAccountPreview userData={serializedUserData} />
+        </div>
+
+        {/* Activity preview in its own scrollable container */}
+        <div className="w-full min-w-0 overflow-x-auto">
+          <UserActivityPreview
+            limit={5}
+            showFilters={false}
+            showHeader={true}
+            showViewAll={true}
+            viewAllUrl="/user/activity"
+          />
+        </div>
       </div>
     </DashboardShell>
   );

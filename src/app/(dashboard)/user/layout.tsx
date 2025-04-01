@@ -34,7 +34,8 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
           <SidebarTrigger className="-ml-1" />
           <h1 className="font-semibold">User Dashboard</h1>
         </header>
-        <div className="w-full mx-auto px-6 py-4">{children}</div>
+        {/* Reduced padding on mobile */}
+        <div className="w-full mx-auto px-4 sm:px-6 py-4 overflow-x-hidden">{children}</div>
       </SidebarInset>
     );
   } catch (error) {

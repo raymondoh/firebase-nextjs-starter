@@ -13,12 +13,24 @@ export default async function ActivityPage() {
     redirect("/login");
   }
 
+  //   return (
+  //     <DashboardShell>
+  //       <DashboardHeader heading="Activity Log" text="View your recent account activity and security events." />
+  //       <Separator className="mb-8" />
+
+  //       <ActivityPageClient />
+  //     </DashboardShell>
+  //   );
+  // }
   return (
     <DashboardShell>
       <DashboardHeader heading="Activity Log" text="View your recent account activity and security events." />
       <Separator className="mb-8" />
 
-      <ActivityPageClient />
+      {/* Added a container with overflow handling */}
+      <div className="w-full max-w-full overflow-hidden">
+        <ActivityPageClient />
+      </div>
     </DashboardShell>
   );
 }

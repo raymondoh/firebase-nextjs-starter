@@ -39,10 +39,83 @@ export function AdminActivityLogClient({
     return "secondary";
   };
 
+  //   return (
+  //     <div className="space-y-4">
+  //       {showFilters && (
+  //         <div className="flex flex-col sm:flex-row gap-4">
+  //           <div className="relative flex-1">
+  //             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+  //             <Input
+  //               type="search"
+  //               placeholder="Search activities..."
+  //               className="pl-8"
+  //               value={searchTerm}
+  //               onChange={e => setSearchTerm(e.target.value)}
+  //             />
+  //           </div>
+
+  //           <Select value={filterType || ""} onValueChange={value => setFilterType(value === "all" ? null : value)}>
+  //             <SelectTrigger className="w-full sm:w-[180px]">
+  //               <SelectValue placeholder="Filter by type" />
+  //             </SelectTrigger>
+  //             <SelectContent>
+  //               <SelectItem value="all">All types</SelectItem>
+  //               {activityTypes.map(type => (
+  //                 <SelectItem key={type} value={type}>
+  //                   {type.replace(/_/g, " ")}
+  //                 </SelectItem>
+  //               ))}
+  //             </SelectContent>
+  //           </Select>
+
+  //           <Button variant="outline" className="sm:w-[100px]" onClick={() => setSearchTerm("")}>
+  //             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+  //             Reset
+  //           </Button>
+  //         </div>
+  //       )}
+
+  //       <div className="rounded-md border">
+  //         <Table>
+  //           <TableHeader>
+  //             <TableRow>
+  //               <TableHead>User</TableHead>
+  //               <TableHead>Activity</TableHead>
+  //               <TableHead>Type</TableHead>
+  //               <TableHead>Status</TableHead>
+  //               <TableHead>Time</TableHead>
+  //             </TableRow>
+  //           </TableHeader>
+  //           <TableBody>
+  //             {filteredActivities.length === 0 ? (
+  //               <TableRow>
+  //                 <TableCell colSpan={5} className="text-center text-muted-foreground">
+  //                   No activities found.
+  //                 </TableCell>
+  //               </TableRow>
+  //             ) : (
+  //               filteredActivities.map(activity => (
+  //                 <TableRow key={activity.id}>
+  //                   <TableCell>{activity.userEmail || "Unknown"}</TableCell>
+  //                   <TableCell className="font-medium">{activity.description}</TableCell>
+  //                   <TableCell>{activity.type.replace(/_/g, " ")}</TableCell>
+  //                   <TableCell>
+  //                     <Badge variant={getBadgeVariant(activity.status)}>{activity.status}</Badge>
+  //                   </TableCell>
+  //                   <TableCell>{formatDate(activity.timestamp)}</TableCell>
+  //                 </TableRow>
+  //               ))
+  //             )}
+  //           </TableBody>
+  //         </Table>
+  //       </div>
+  //     </div>
+  //   );
+  // }
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full">
       {showFilters && (
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -75,15 +148,15 @@ export function AdminActivityLogClient({
         </div>
       )}
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Activity</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Time</TableHead>
+              <TableHead className="whitespace-nowrap">User</TableHead>
+              <TableHead className="min-w-[200px]">Activity</TableHead>
+              <TableHead className="whitespace-nowrap">Type</TableHead>
+              <TableHead className="whitespace-nowrap">Status</TableHead>
+              <TableHead className="whitespace-nowrap">Time</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,13 +169,13 @@ export function AdminActivityLogClient({
             ) : (
               filteredActivities.map(activity => (
                 <TableRow key={activity.id}>
-                  <TableCell>{activity.userEmail || "Unknown"}</TableCell>
+                  <TableCell className="whitespace-nowrap">{activity.userEmail || "Unknown"}</TableCell>
                   <TableCell className="font-medium">{activity.description}</TableCell>
-                  <TableCell>{activity.type.replace(/_/g, " ")}</TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">{activity.type.replace(/_/g, " ")}</TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <Badge variant={getBadgeVariant(activity.status)}>{activity.status}</Badge>
                   </TableCell>
-                  <TableCell>{formatDate(activity.timestamp)}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDate(activity.timestamp)}</TableCell>
                 </TableRow>
               ))
             )}

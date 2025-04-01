@@ -1,27 +1,42 @@
 import type { NextConfig } from "next";
+import type { Configuration } from "webpack";
+
+const isDev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true
   },
-  /* config options here */
   reactStrictMode: true,
-  webpack: config => {
-    // Add fallbacks for Node.js core modules
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      net: false,
-      tls: false,
-      fs: false,
-      http2: false,
-      http: false,
-      https: false,
-      zlib: false,
-      child_process: false
+  webpack: (config: Configuration) => {
+    config.resolve = {
+      ...config.resolve,
+      fallback: {
+        ...config.resolve?.fallback,
+        net: false,
+        tls: false,
+        fs: false,
+        http2: false,
+        http: false,
+        https: false,
+        zlib: false,
+        child_process: false
+      }
     };
+
+    // ✅ Exclude src/dev from production builds
+    if (!isDev) {
+      config.module?.rules?.push({
+        test: /\.(js|ts|tsx)$/,
+        include: /src\/dev/,
+        use: {
+          loader: "null-loader"
+        }
+      });
+    }
+
     return config;
   },
-  // Updated property name
   serverExternalPackages: ["firebase-admin"],
   images: {
     domains: [
@@ -31,7 +46,6 @@ const nextConfig: NextConfig = {
       "lh5.googleusercontent.com",
       "lh6.googleusercontent.com"
     ],
-    // You can also use remotePatterns for more specific control
     remotePatterns: [
       {
         protocol: "https",

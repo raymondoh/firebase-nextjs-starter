@@ -99,28 +99,36 @@ export default async function AdminDashboardPage() {
       <DashboardHeader heading="Admin Dashboard" text={`Welcome, ${adminName}! Here's an overview of your system.`} />
       <Separator className="mb-8" />
 
-      {/* Top row - 2 columns */}
-      <div className="grid gap-8 md:grid-cols-2 mb-8">
+      {/* Top row - 2 columns with reduced gap on mobile */}
+      <div className="w-full grid gap-4 md:gap-8 md:grid-cols-2 mb-4 md:mb-8">
         {/* System Overview Card */}
-        <AdminSystemPreview systemStats={serializedSystemStats} />
+        <div className="w-full min-w-0 overflow-hidden">
+          <AdminSystemPreview systemStats={serializedSystemStats} />
+        </div>
 
         {/* System Alerts */}
-        <AdminAlertsPreview />
+        <div className="w-full min-w-0 overflow-hidden">
+          <AdminAlertsPreview />
+        </div>
       </div>
 
-      {/* Bottom row - 2 columns */}
-      <div className="grid gap-8 md:grid-cols-2">
+      {/* Bottom row - 2 columns with reduced gap on mobile */}
+      <div className="w-full grid gap-4 md:gap-8 md:grid-cols-2">
         {/* User Management Preview */}
-        <AdminUserPreview limit={5} />
+        <div className="w-full min-w-0 overflow-hidden">
+          <AdminUserPreview limit={5} />
+        </div>
 
         {/* Admin Activity Log */}
-        <AdminRecentActivityPreview
-          limit={5}
-          showFilters={false}
-          showHeader={true}
-          showViewAll={true}
-          viewAllUrl="/admin/activity"
-        />
+        <div className="w-full min-w-0 overflow-hidden">
+          <AdminRecentActivityPreview
+            limit={5}
+            showFilters={false}
+            showHeader={true}
+            showViewAll={true}
+            viewAllUrl="/admin/activity"
+          />
+        </div>
       </div>
     </DashboardShell>
   );

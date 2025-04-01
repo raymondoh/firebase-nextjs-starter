@@ -25,7 +25,11 @@ export default async function AdminActivityPage() {
     <DashboardShell>
       <DashboardHeader heading="Activity Log" text="View all recent activity across the platform." />
       <Separator className="mb-8" />
-      <AdminActivityPageClient />
+
+      {/* Added a container with overflow handling */}
+      <div className="w-full max-w-full overflow-hidden">
+        <AdminActivityPageClient />
+      </div>
     </DashboardShell>
   );
 }

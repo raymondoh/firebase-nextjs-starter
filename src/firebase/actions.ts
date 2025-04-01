@@ -1,17 +1,26 @@
 // src/firebase/actions.ts
 "use server";
-
-import { adminAuth, adminDb } from "./admin/index";
-import { Query, DocumentData } from "firebase-admin/firestore";
-import { auth } from "@/auth";
 import { Timestamp } from "firebase-admin/firestore";
-import type { User, UserRole } from "@/types/user";
+import { adminDb, adminAuth } from "./admin/index";
+import { Query, DocumentData } from "firebase-admin/firestore";
+import * as adminUsers from "./admin/user";
+import { auth } from "@/auth";
+//import { getHeroSlides as getHeroSlidesAdmin } from "./admin/hero-slides";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type {
-  ActivityLogData,
+  GetUsersResult,
+  CreateUserDocumentResult,
+  GetUserProfileResult,
+  UpdateUserProfileResult,
+  SetUserRoleResult
+} from "@/types/firebase/firestore";
+import type { GetProductByIdResult, UpdateProductInput, UpdateProductResult, Product } from "@/types/product";
+
+import type {
   GetUserActivityLogsResult,
-  LogActivityResult,
-  ActivityLogWithId
+  ActivityLogWithId,
+  ActivityLogData,
+  LogActivityResult
 } from "@/types/firebase/activity";
 import type {
   SetCustomClaimsResult,
@@ -20,110 +29,27 @@ import type {
   SendResetPasswordEmailResult,
   CustomClaims
 } from "@/types/firebase/auth";
-import type {
-  UserDocumentData,
-  GetUsersResult,
-  CreateUserDocumentResult,
-  UpdateUserProfileResult,
-  GetUserProfileResult,
-  SetUserRoleResult
-} from "@/types/firebase/firestore";
+import type { SerializedHeroSlide, GetHeroSlidesResult, GetHeroSlidesError } from "@/types/carousel/hero";
 
-// ===== Auth Functions =====
+import type { User, UserRole } from "@/types/user";
 
-/**
- * Set custom claims for a user
- */
+// ================= User CRUD =================
 
-export async function setCustomClaims(uid: string, claims: CustomClaims): Promise<SetCustomClaimsResult> {
-  try {
-    await adminAuth.setCustomUserClaims(uid, claims);
-    console.log("Custom claims set successfully");
-    return { success: true };
-  } catch (error: unknown) {
-    console.error("Error setting custom claims:", error);
-    return { success: false, error };
-  }
-}
-
-/**
- * Get a user by email
- */
-export async function getUserByEmail(email: string) {
-  try {
-    return await adminAuth.getUserByEmail(email);
-  } catch (error) {
-    console.error("Error getting user by email:", error);
-    throw error;
-  }
-}
-
-/**
- * Get a user by ID
- */
-export async function getUser(uid: string) {
-  try {
-    return await adminAuth.getUser(uid);
-  } catch (error) {
-    console.error("Error getting user:", error);
-    throw error;
-  }
-}
-
-/**
- * Update a user
- */
-export async function updateUser(
-  uid: string,
-  properties: { displayName?: string; photoURL?: string; password?: string }
-) {
-  try {
-    return await adminAuth.updateUser(uid, properties);
-  } catch (error) {
-    console.error("Error updating user:", error);
-    throw error;
-  }
-}
-
-/**
- * Create a new user
- */
 export async function createUser(properties: { email: string; password: string; displayName?: string }) {
   try {
-    return await adminAuth.createUser(properties);
+    const user = await adminAuth.createUser(properties);
+    return { success: true, data: user };
   } catch (error) {
-    console.error("Error creating user:", error);
-    throw error;
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error creating user";
+
+    return { success: false, error: message };
   }
 }
 
-/**
- * Delete a user
- */
-export async function deleteUser(uid: string) {
-  try {
-    return await adminAuth.deleteUser(uid);
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    throw error;
-  }
-}
-
-/**
- * Verify an ID token
- */
-export async function verifyIdToken(token: string) {
-  try {
-    return await adminAuth.verifyIdToken(token);
-  } catch (error) {
-    console.error("Error verifying ID token:", error);
-    throw error;
-  }
-}
-
-/**
- * Verify a token and create a user document
- */
 export async function verifyAndCreateUser(token: string): Promise<VerifyAndCreateUserResult> {
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
@@ -138,238 +64,253 @@ export async function verifyAndCreateUser(token: string): Promise<VerifyAndCreat
 
     return { success: true, uid: decodedToken.uid };
   } catch (error) {
-    console.error("Error verifying token:", error);
-    return { success: false, error: "Invalid token" };
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Invalid token";
+
+    return { success: false, error: message };
   }
 }
 
-/**
- * Get user information from a token
- */
+export async function deleteUser(uid: string) {
+  try {
+    await adminAuth.deleteUser(uid);
+    return { success: true };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error deleting user";
+
+    return { success: false, error: message };
+  }
+}
+
+export async function updateUser(
+  uid: string,
+  properties: { displayName?: string; photoURL?: string; password?: string }
+) {
+  try {
+    const user = await adminAuth.updateUser(uid, properties);
+    return { success: true, data: user };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error updating user";
+
+    return { success: false, error: message };
+  }
+}
+
+// ===== User Functions =====
+export async function getCurrentUser(): Promise<{ success: true; data: User } | { success: false; error: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, error: "No authenticated user found" };
+    }
+
+    const role = await getUserRole(session.user.id);
+
+    return {
+      success: true,
+      data: {
+        id: session.user.id,
+        name: session.user.name || "",
+        email: session.user.email || "",
+        image: session.user.image || "",
+        role: role as UserRole
+      }
+    };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error getting current user";
+
+    return { success: false, error: message };
+  }
+}
+
+export async function getUser(uid: string) {
+  try {
+    const user = await adminAuth.getUser(uid);
+    return { success: true, data: user };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error getting user";
+
+    return { success: false, error: message };
+  }
+}
+
+export async function getUserByEmail(email: string) {
+  try {
+    const user = await adminAuth.getUserByEmail(email);
+    return { success: true, data: user };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error getting user by email";
+
+    return { success: false, error: message };
+  }
+}
+
 export async function getUserFromToken(token: string): Promise<GetUserFromTokenResult> {
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
     return { success: true, user: decodedToken };
   } catch (error) {
-    console.error("Error getting user from token:", error);
-    return { success: false, error: "Invalid token" };
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Invalid token";
+
+    return { success: false, error: message };
   }
 }
 
-/**
- * Send a password reset email
- */
-export async function sendResetPasswordEmail(email: string): Promise<SendResetPasswordEmailResult> {
+export async function getUsers(limit = 10, startAfter?: string): Promise<GetUsersResult> {
   try {
-    const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
-      handleCodeInApp: true
-    };
-
-    await adminAuth.generatePasswordResetLink(email, actionCodeSettings);
-    return { success: true };
+    return await adminUsers.getUsers(limit, startAfter);
   } catch (error: unknown) {
-    console.error("Error sending password reset email:", error);
-    // For security reasons, don't reveal if the email exists or not
-    if (error && typeof error === "object" && "code" in error && error.code === "auth/user-not-found") {
-      return { success: true };
-    }
-    return { success: false, error: "Failed to send reset email" };
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error fetching users";
+
+    return { success: false, error: message };
   }
 }
 
-// ===== User Functions =====
-
-/**
- * Get the current authenticated user
- */
-export async function getCurrentUser(): Promise<User | null> {
-  const session = await auth();
-  if (!session?.user) {
-    return null;
-  }
-
-  const role = await getUserRole(session.user.id);
-  return {
-    id: session.user.id,
-    name: session.user.name || "",
-    email: session.user.email || "",
-    image: session.user.image || "",
-    role: role as UserRole
-  };
-}
-
-/**
- * Get users with pagination
- */
-export async function getUsers(limit: number = 10, startAfter?: string): Promise<GetUsersResult> {
-  try {
-    let query = adminDb.collection("users").orderBy("createdAt", "desc").limit(limit);
-
-    if (startAfter) {
-      const lastDoc = await adminDb.collection("users").doc(startAfter).get();
-      if (lastDoc.exists) {
-        query = query.startAfter(lastDoc);
-      }
-    }
-
-    const snapshot = await query.get();
-
-    const users: User[] = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
-        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt
-      } as User;
-    });
-
-    const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-
-    return {
-      success: true,
-      users,
-      lastVisible: lastVisible ? lastVisible.id : undefined
-    };
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    return { success: false, error: "Failed to fetch users" };
-  }
-}
-
-/**
- * Create a user document in Firestore
- */
 export async function createUserDocument(userId: string, userData: Partial<User>): Promise<CreateUserDocumentResult> {
   try {
-    const userDocData: UserDocumentData = {
-      ...userData,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    } as UserDocumentData;
+    return await adminUsers.createUserDocument(userId, userData);
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error creating user document";
 
-    await adminDb.collection("users").doc(userId).set(userDocData, { merge: true });
-    return { success: true };
-  } catch (error) {
-    console.error("Error creating user document:", error);
-    return { success: false, error: "Failed to create user document" };
+    return { success: false, error: message };
   }
 }
 
-/**
- * Get a user's role
- */
-export async function getUserRole(userId: string): Promise<UserRole> {
+export async function getUserProfile(userId: string): Promise<GetUserProfileResult> {
   try {
-    const userDoc = await adminDb.collection("users").doc(userId).get();
-    const userData = userDoc.data() as UserDocumentData | undefined;
-    return (userData?.role as UserRole) || "user";
-  } catch (error) {
-    console.error("Error getting user role:", error);
-    return "user";
+    return await adminUsers.getUserProfile(userId);
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error getting user profile";
+
+    return { success: false, error: message };
   }
 }
 
-/**
- * Set a user's role
- */
-export async function setUserRole(userId: string, role: UserRole): Promise<SetUserRoleResult> {
-  try {
-    await adminDb.collection("users").doc(userId).update({
-      role,
-      updatedAt: new Date()
-    });
-    return { success: true };
-  } catch (error) {
-    console.error("Error setting user role:", error);
-    return { success: false, error: "Failed to set user role" };
-  }
-}
-
-/**
- * Update a user's profile
- */
 export async function updateUserProfile(
   userId: string,
   updateData: { name?: string; picture?: string }
 ): Promise<UpdateUserProfileResult> {
   try {
-    const userDocRef = adminDb.collection("users").doc(userId);
-    const userDoc = await userDocRef.get();
+    return await adminUsers.updateUserProfile(userId, updateData);
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error updating profile";
 
-    if (!userDoc.exists) {
-      return { success: false, error: "User not found" };
-    }
-
-    const updates: Partial<UserDocumentData> = {
-      ...updateData,
-      updatedAt: new Date()
-    } as Partial<UserDocumentData>;
-
-    await userDocRef.update(updates);
-
-    // Update the user's display name in Firebase Auth
-    if (updateData.name) {
-      await adminAuth.updateUser(userId, { displayName: updateData.name });
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error updating user profile:", error);
-    return { success: false, error: "Failed to update user profile" };
+    return { success: false, error: message };
   }
 }
 
-/**
- * Get a user's profile
- */
-export async function getUserProfile(userId: string): Promise<GetUserProfileResult> {
+export async function getUserRole(userId: string): Promise<UserRole> {
   try {
-    const userDoc = await adminDb.collection("users").doc(userId).get();
+    return await adminUsers.getUserRole(userId);
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error getting user role";
 
-    if (!userDoc.exists) {
-      return { success: false, error: "User not found" };
-    }
-
-    const userData = userDoc.data() as UserDocumentData;
-    const user: User = {
-      id: userDoc.id,
-      ...userData,
-      createdAt:
-        userData.createdAt instanceof Timestamp ? userData.createdAt.toDate().toISOString() : userData.createdAt,
-      updatedAt:
-        userData.updatedAt instanceof Timestamp ? userData.updatedAt.toDate().toISOString() : userData.updatedAt
-    } as User;
-
-    return { success: true, user };
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    return { success: false, error: "Failed to fetch user profile" };
+    console.error("Error getting user role:", message);
+    return "user";
   }
 }
 
-// ===== Activity Functions =====
-
-/**
- * Log user activity
- */
-export async function logActivity(data: Omit<ActivityLogData, "timestamp">): Promise<LogActivityResult> {
+export async function setUserRole(userId: string, role: UserRole): Promise<SetUserRoleResult> {
   try {
-    const docRef = await adminDb.collection("activityLogs").add({
-      ...data,
-      timestamp: Timestamp.now()
+    return await adminUsers.setUserRole(userId, role);
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error setting user role";
+
+    return { success: false, error: message };
+  }
+}
+
+// ================= Hero Slides =================
+
+export type GetHeroSlidesResponse = GetHeroSlidesResult | GetHeroSlidesError;
+
+export async function getHeroSlides(): Promise<GetHeroSlidesResponse> {
+  try {
+    const snapshot = await adminDb.collection("heroSlides").orderBy("order").where("active", "==", true).get();
+
+    const slides: SerializedHeroSlide[] = snapshot.docs.map(doc => {
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        backgroundImage: data.backgroundImage,
+        cta: data.cta,
+        ctaHref: data.ctaHref,
+        order: data.order,
+        active: data.active,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
+        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt
+      };
     });
-    return { success: true, activityId: docRef.id }; // Return the correct object
-  } catch (error) {
-    console.error("Error logging activity:", error instanceof Error ? error.message : String(error));
-    return { success: false, error: error instanceof Error ? error.message : String(error) }; // Return the correct object
+
+    return { success: true, slides };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error fetching hero slides";
+
+    console.error("Error fetching hero slides:", message);
+    return { success: false, error: message };
   }
 }
 
-/**
- * Get user activity logs with pagination support
- */
+// ================= Activity Logs =================
+
 export async function getUserActivityLogs(
   limit = 100,
   startAfter?: string,
@@ -382,7 +323,8 @@ export async function getUserActivityLogs(
   }
 
   try {
-    let query = adminDb.collection("activityLogs").where("userId", "==", session.user.id);
+    const collectionRef = adminDb.collection("activityLogs");
+    let query: Query<DocumentData> = collectionRef.where("userId", "==", session.user.id);
 
     if (type) {
       query = query.where("type", "==", type);
@@ -391,7 +333,7 @@ export async function getUserActivityLogs(
     query = query.orderBy("timestamp", "desc");
 
     if (startAfter) {
-      const startAfterDoc = await adminDb.collection("activityLogs").doc(startAfter).get();
+      const startAfterDoc = await collectionRef.doc(startAfter).get();
       if (startAfterDoc.exists) {
         query = query.startAfter(startAfterDoc);
       }
@@ -431,15 +373,18 @@ export async function getUserActivityLogs(
     );
 
     return { success: true, activities };
-  } catch (error) {
-    console.error("Error getting activity logs:", error instanceof Error ? error.message : String(error));
-    return { success: false, error: "Error getting activity logs" };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error";
+
+    console.error("Error getting user activity logs:", message);
+    return { success: false, error: message };
   }
 }
 
-/**
- * Get all activity logs for admin view
- */
 export async function getAllActivityLogs(
   limit = 100,
   startAfter?: string,
@@ -498,12 +443,12 @@ export async function getAllActivityLogs(
           deviceType: data.deviceType,
           metadata: data.metadata,
           userEmail
-        } as ActivityLogWithId;
+        };
       })
     );
 
     return { success: true, activities };
-  } catch (error) {
+  } catch (error: unknown) {
     const message = isFirebaseError(error)
       ? firebaseError(error)
       : error instanceof Error
@@ -511,6 +456,221 @@ export async function getAllActivityLogs(
       : "Unknown error";
 
     console.error("Error getting all activity logs:", message);
+    return { success: false, error: message };
+  }
+}
+
+export async function logActivity(data: Omit<ActivityLogData, "timestamp">): Promise<LogActivityResult> {
+  try {
+    const docRef = await adminDb.collection("activityLogs").add({
+      ...data,
+      timestamp: Timestamp.now()
+    });
+
+    return { success: true, activityId: docRef.id };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error logging activity";
+
+    return { success: false, error: message };
+  }
+}
+
+export async function sendResetPasswordEmail(email: string): Promise<SendResetPasswordEmailResult> {
+  try {
+    const actionCodeSettings = {
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+      handleCodeInApp: true
+    };
+
+    await adminAuth.generatePasswordResetLink(email, actionCodeSettings);
+    return { success: true };
+  } catch (error: unknown) {
+    if (isFirebaseError(error) && error.code === "auth/user-not-found") {
+      return { success: true }; // Silent success for security reasons
+    }
+
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Failed to send reset email";
+
+    return { success: false, error: message };
+  }
+}
+
+export async function setCustomClaims(uid: string, claims: CustomClaims): Promise<SetCustomClaimsResult> {
+  try {
+    await adminAuth.setCustomUserClaims(uid, claims);
+    return { success: true };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error setting custom claims";
+
+    return { success: false, error: message };
+  }
+}
+
+export async function verifyIdToken(token: string) {
+  try {
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    return { success: true, data: decodedToken };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Invalid ID token";
+
+    return { success: false, error: message };
+  }
+}
+
+// ================= Products =================
+
+export async function getAllProductsFromFirestore(): Promise<
+  { success: true; data: Product[] } | { success: false; error: string }
+> {
+  try {
+    const snapshot = await adminDb.collection("products").orderBy("createdAt", "desc").get();
+
+    const products: Product[] = snapshot.docs.map(doc => {
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        price: data.price,
+        inStock: data.inStock,
+        badge: data.badge,
+        createdAt:
+          data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : new Date().toISOString()
+      };
+    });
+
+    return { success: true, data: products };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error fetching products";
+    return { success: false, error: message };
+  }
+}
+
+export async function addProductToFirestore(
+  data: Omit<Product, "id" | "createdAt">
+): Promise<{ success: true; id: string } | { success: false; error: string }> {
+  try {
+    const docRef = await adminDb.collection("products").add({
+      ...data,
+      createdAt: Timestamp.now()
+    });
+
+    return { success: true, id: docRef.id };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error occurred while adding product";
+
+    console.error("Error adding product:", message);
+    return { success: false, error: message };
+  }
+}
+
+export async function getProductByIdFromFirestore(productId: string): Promise<GetProductByIdResult> {
+  try {
+    const doc = await adminDb.collection("products").doc(productId).get();
+
+    if (!doc.exists) {
+      return { success: false, error: "Product not found" };
+    }
+
+    const data = doc.data();
+    if (!data) {
+      return { success: false, error: "No product data found" };
+    }
+
+    const product: Product = {
+      id: doc.id,
+      name: data.name,
+      description: data.description,
+      image: data.image,
+      price: data.price,
+      inStock: data.inStock,
+      badge: data.badge,
+      createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt
+    };
+
+    return { success: true, product };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error occurred while fetching product";
+
+    console.error("Error fetching product by ID:", message);
+    return { success: false, error: message };
+  }
+}
+
+export async function updateProductInFirestore(
+  productId: string,
+  data: UpdateProductInput
+): Promise<UpdateProductResult> {
+  try {
+    const docRef = adminDb.collection("products").doc(productId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return { success: false, error: "Product not found" };
+    }
+
+    await docRef.update({
+      ...data,
+      updatedAt: Timestamp.now()
+    });
+
+    return { success: true };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error occurred while updating product";
+
+    console.error("Error updating product:", message);
+    return { success: false, error: message };
+  }
+}
+
+export async function deleteProductFromFirestore(
+  productId: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    await adminDb.collection("products").doc(productId).delete();
+    return { success: true };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error deleting product";
+
+    console.error("Error deleting product:", message);
     return { success: false, error: message };
   }
 }

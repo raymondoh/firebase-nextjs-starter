@@ -77,8 +77,111 @@ export function ChangePasswordForm() {
     }
   };
 
+  //   return (
+  //     <div>
+  //       {state?.error && typeof state.error === "string" && (
+  //         <Alert variant="destructive" className="mb-4">
+  //           <AlertCircle className="h-4 w-4" />
+  //           <AlertDescription>{state.error}</AlertDescription>
+  //         </Alert>
+  //       )}
+
+  //       {showSuccess && (
+  //         <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+  //           <CheckCircle className="h-4 w-4 text-green-600" />
+  //           <AlertDescription>Your password has been updated successfully.</AlertDescription>
+  //         </Alert>
+  //       )}
+
+  //       <form action={action} onSubmit={handleSubmit} className="space-y-4">
+  //         <PasswordInput
+  //           id="currentPassword"
+  //           label="Current Password"
+  //           value={currentPassword}
+  //           onChange={setCurrentPassword}
+  //           show={showCurrentPassword}
+  //           setShow={setShowCurrentPassword}
+  //         />
+
+  //         <PasswordInput
+  //           id="newPassword"
+  //           label="New Password"
+  //           value={newPassword}
+  //           onChange={setNewPassword}
+  //           show={showNewPassword}
+  //           setShow={setShowNewPassword}
+  //         />
+  //         <p className="text-sm text-muted-foreground -mt-2">
+  //           Password must be 8-72 characters long and contain at least one uppercase letter, one lowercase letter, one
+  //           number, and one special character.
+  //         </p>
+
+  //         <PasswordInput
+  //           id="confirmPassword"
+  //           label="Confirm New Password"
+  //           value={confirmPassword}
+  //           onChange={setConfirmPassword}
+  //           show={showConfirmPassword}
+  //           setShow={setShowConfirmPassword}
+  //         />
+
+  //         <Button type="submit" disabled={isPending}>
+  //           {isPending ? (
+  //             <>
+  //               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+  //               Updating Password...
+  //             </>
+  //           ) : (
+  //             "Update Password"
+  //           )}
+  //         </Button>
+  //       </form>
+  //     </div>
+  //   );
+  // }
+
+  // function PasswordInput({
+  //   id,
+  //   label,
+  //   value,
+  //   onChange,
+  //   show,
+  //   setShow
+  // }: {
+  //   id: string;
+  //   label: string;
+  //   value: string;
+  //   onChange: (val: string) => void;
+  //   show: boolean;
+  //   setShow: (val: boolean) => void;
+  // }) {
+  //   return (
+  //     <div className="space-y-2">
+  //       <Label htmlFor={id}>{label}</Label>
+  //       <div className="relative">
+  //         <Input
+  //           id={id}
+  //           name={id}
+  //           type={show ? "text" : "password"}
+  //           placeholder={label}
+  //           required
+  //           value={value}
+  //           onChange={e => onChange(e.target.value)}
+  //         />
+  //         <Button
+  //           type="button"
+  //           variant="ghost"
+  //           size="sm"
+  //           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+  //           onClick={() => setShow(!show)}>
+  //           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+  //         </Button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
   return (
-    <div>
+    <div className="w-full">
       {state?.error && typeof state.error === "string" && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
@@ -125,7 +228,8 @@ export function ChangePasswordForm() {
           setShow={setShowConfirmPassword}
         />
 
-        <Button type="submit" disabled={isPending}>
+        {/* Made button full width on mobile */}
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
           {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -167,6 +271,7 @@ function PasswordInput({
           required
           value={value}
           onChange={e => onChange(e.target.value)}
+          className="pr-10" // Added padding to prevent text from going under the button
         />
         <Button
           type="button"

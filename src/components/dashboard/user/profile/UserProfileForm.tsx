@@ -168,8 +168,119 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/user" }
     );
   }
 
+  //   return (
+  //     <div>
+  //       <form id={id} onSubmit={handleSubmit} className="grid w-full gap-6">
+  //         {state?.error && (
+  //           <Alert variant="destructive">
+  //             <AlertCircle className="h-4 w-4" />
+  //             <AlertDescription>
+  //               {isFirebaseError(state.error) ? firebaseError(state.error) : state.error}
+  //             </AlertDescription>
+  //           </Alert>
+  //         )}
+
+  //         <div className="flex flex-col gap-6 md:flex-row md:items-center">
+  //           <Avatar className="h-24 w-24 relative">
+  //             {photoURL ? (
+  //               <div className="absolute inset-0 rounded-full overflow-hidden">
+  //                 <Image
+  //                   src={photoURL || "/placeholder.svg"}
+  //                   alt={session?.user?.name || "User"}
+  //                   fill
+  //                   sizes="(max-width: 768px) 96px, 96px"
+  //                   className="object-cover"
+  //                   priority
+  //                 />
+  //               </div>
+  //             ) : (
+  //               <AvatarFallback className="text-lg">
+  //                 <User className="h-12 w-12" />
+  //               </AvatarFallback>
+  //             )}
+  //           </Avatar>
+
+  //           <div className="flex flex-col gap-2">
+  //             <h3 className="text-lg font-medium">Profile Pictures</h3>
+  //             <p className="text-sm text-muted-foreground">Click to upload a new profile picture.</p>
+  //             <div className="flex items-center gap-2">
+  //               <Input
+  //                 id="profile-image"
+  //                 type="file"
+  //                 accept="image/*"
+  //                 className="hidden"
+  //                 onChange={handleFileChange}
+  //                 disabled={isPending || isUploading}
+  //               />
+  //               <Button
+  //                 type="button"
+  //                 variant="outline"
+  //                 onClick={() => document.getElementById("profile-image")?.click()}
+  //                 disabled={isPending || isUploading}>
+  //                 <Upload className="mr-2 h-4 w-4" />
+  //                 Upload
+  //               </Button>
+  //             </div>
+  //           </div>
+  //         </div>
+
+  //         <div className="space-y-2">
+  //           <Label htmlFor="name">Username</Label>
+  //           <Input
+  //             id="name"
+  //             name="name"
+  //             value={name}
+  //             onChange={e => setName(e.target.value)}
+  //             placeholder="Your display name"
+  //             required
+  //           />
+  //           <p className="text-sm text-muted-foreground">This is your public display name.</p>
+  //         </div>
+
+  //         <div className="space-y-2">
+  //           <Label htmlFor="email">Email</Label>
+  //           <Input id="email" value={session?.user?.email || ""} disabled className="bg-muted" />
+  //           <p className="text-sm text-muted-foreground">
+  //             Your email address is managed by your authentication provider and cannot be changed here.
+  //           </p>
+  //         </div>
+
+  //         <div className="space-y-2">
+  //           <Label htmlFor="bio">Bio</Label>
+  //           <Textarea
+  //             id="bio"
+  //             name="bio"
+  //             value={bio}
+  //             onChange={e => setBio(e.target.value)}
+  //             placeholder="Tell us a little bit about yourself"
+  //             className="resize-none min-h-[100px]"
+  //           />
+  //           <p className="text-sm text-muted-foreground">You can @mention other users and organizations.</p>
+  //         </div>
+
+  //         <div className="mt-6 flex items-center justify-start gap-4">
+  //           <Button type="submit" disabled={isPending || isUploading}>
+  //             {isPending || isUploading ? (
+  //               <>
+  //                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+  //                 {isUploading ? "Uploading..." : "Saving..."}
+  //               </>
+  //             ) : (
+  //               "Save changes"
+  //             )}
+  //           </Button>
+  //           <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending || isUploading}>
+  //             Cancel
+  //           </Button>
+  //         </div>
+  //       </form>
+
+  //       {isSuccess && <p className="mt-4 text-sm text-green-600">Your profile has been updated successfully.</p>}
+  //     </div>
+  //   );
+  // }
   return (
-    <div>
+    <div className="w-full max-w-full overflow-hidden">
       <form id={id} onSubmit={handleSubmit} className="grid w-full gap-6">
         {state?.error && (
           <Alert variant="destructive">
@@ -240,7 +351,7 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/user" }
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input id="email" value={session?.user?.email || ""} disabled className="bg-muted" />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground break-words">
             Your email address is managed by your authentication provider and cannot be changed here.
           </p>
         </div>
@@ -258,8 +369,8 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/user" }
           <p className="text-sm text-muted-foreground">You can @mention other users and organizations.</p>
         </div>
 
-        <div className="mt-6 flex items-center justify-start gap-4">
-          <Button type="submit" disabled={isPending || isUploading}>
+        <div className="mt-6 flex flex-wrap items-center justify-start gap-4">
+          <Button type="submit" disabled={isPending || isUploading} className="w-full sm:w-auto">
             {isPending || isUploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -269,7 +380,12 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess = "/user" }
               "Save changes"
             )}
           </Button>
-          <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending || isUploading}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isPending || isUploading}
+            className="w-full sm:w-auto">
             Cancel
           </Button>
         </div>

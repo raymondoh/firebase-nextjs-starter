@@ -11,7 +11,7 @@ export default function AuthActionHandler() {
 
   useEffect(() => {
     const mode = searchParams.get("mode");
-    const oobCode = searchParams.get("oobCode");
+    //const oobCode = searchParams.get("oobCode");
 
     // Just pass the original query string without adding serverProcessed flag
     const queryString = window.location.search;

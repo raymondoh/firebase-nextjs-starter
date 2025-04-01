@@ -60,9 +60,9 @@ export function UserActivityPreview({
   }, [limit]);
 
   return (
-    <Card className={className}>
+    <Card className="w-full overflow-hidden">
       {showHeader && (
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader>
           <div>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Your recent account activity</CardDescription>
@@ -98,7 +98,9 @@ export function UserActivityPreview({
         ) : activities.length === 0 ? (
           <p className="text-muted-foreground text-sm">No recent activity found.</p>
         ) : (
-          <ActivityLogClient activities={activities} showFilters={showFilters} isRefreshing={isRefreshing} />
+          <div className="overflow-x-auto">
+            <ActivityLogClient activities={activities} showFilters={showFilters} isRefreshing={isRefreshing} />
+          </div>
         )}
       </CardContent>
 
