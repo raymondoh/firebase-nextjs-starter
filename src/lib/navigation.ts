@@ -121,6 +121,6 @@ export const adminNavItems: NavItem[] = [
   {
     title: "Products",
     href: "/admin/products",
-    icon: UserCircle
+    icon: ShoppingBag
   }
 ];
