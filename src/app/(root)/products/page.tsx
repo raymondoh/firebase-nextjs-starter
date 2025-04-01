@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   keywords: ["products", "shop", "collection", "featured items"]
 };
 
+export const dynamic = "force-dynamic"; // 👈 add this
+
 export default async function ProductPage() {
   const result = await getAllProductsFromFirestore();
 
