@@ -1,12 +1,13 @@
 "use client";
 
-import type { Product } from "@/types/product";
 import { ProductCarousel } from "@/components/product-carousel";
+import type { SerializedProduct } from "@/types/product";
 
 interface FeaturedProductsCarouselProps {
-  products: Product[];
+  products: SerializedProduct[];
+  title?: string;
 }
 
-export function FeaturedProductsCarousel({ products }: FeaturedProductsCarouselProps) {
-  return <ProductCarousel products={products} title="Featured Products" showTitle loop className="mb-10" />;
+export function FeaturedProductsCarousel({ products, title = "Featured Products" }: FeaturedProductsCarouselProps) {
+  return <ProductCarousel products={products} title={title} showTitle />;
 }

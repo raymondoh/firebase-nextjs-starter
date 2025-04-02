@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="container mx-auto p-8">
+    <div className="container max-w-6xl mx-auto p-8 space-y-4">
       <h1 className="text-3xl font-bold mb-4">Contact Us</h1>
       <p className="mb-4">We'd love to hear from you. Please use the information below to get in touch with us.</p>
       <div>

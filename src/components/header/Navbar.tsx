@@ -75,7 +75,7 @@ export const Navbar = () => {
   }
 
   return (
-    <nav className="max-w-full mx-auto flex items-center justify-between py-4 px-0">
+    <nav className="container max-w-6xl mx-auto flex items-center justify-between py-4 px-0">
       <div className="flex items-center space-x-2">
         {isMobile ? (
           <>
@@ -274,7 +274,10 @@ const UserMenu = ({ isMobile }: { isMobile?: boolean }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-12 w-12 p-2 rounded-full">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 p-2 rounded-full hover:ring-offset-0 focus:ring-offset-0 hover:outline-offset-1">
           <Avatar className="h-full w-full">
             {session?.user?.image ? (
               <div className="relative aspect-square h-full w-full">
@@ -294,20 +297,6 @@ const UserMenu = ({ isMobile }: { isMobile?: boolean }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="flex items-center gap-3 p-4">
-          {/* <Avatar className="h-10 w-10">
-            {session?.user?.image ? (
-              <div className="relative aspect-square h-full w-full">
-                <Image
-                  src={session.user.image || "/placeholder.svg"}
-                  alt={session.user.name || "User"}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">{userInitials}</AvatarFallback>
-            )}
-          </Avatar> */}
           <div className="flex flex-col">
             <span className="font-medium text-base">{session?.user?.name || session?.user?.email || "Guest"}</span>
             {session?.user?.email && session?.user?.name && (

@@ -7,7 +7,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({ children, className, ...props }: DashboardShellProps) {
   return (
-    <div className={cn("flex flex-col w-full space-y-4 pb-8 px-1 sm:px-0", className)} {...props}>
+    <div className={cn("sm:pt-2 md:pt-4 flex flex-col w-full space-y-4 pb-8 px-1 sm:px-0", className)} {...props}>
       {children}
     </div>
   );

@@ -119,7 +119,7 @@ body {
   align-items: center !important;
   width: 2.5rem !important;
   height: 2.5rem !important;
-  margin-left: auto !important;
+  margin-left: 12px !important;
   margin-right: auto !important;
   padding: 0.5rem !important;
 }

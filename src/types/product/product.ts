@@ -9,6 +9,7 @@ export interface Product {
   inStock: boolean;
   badge?: string;
   isFeatured?: boolean;
+  isHero?: boolean;
   createdAt: Timestamp | string;
   updatedAt?: Timestamp | string;
 }
@@ -16,12 +17,14 @@ export interface Product {
 export interface SerializedProduct {
   id: string;
   name: string;
+  title?: string;
   description?: string;
   image: string;
   price: number;
   inStock: boolean;
   badge?: string;
   isFeatured?: boolean;
+  isHero?: boolean;
   createdAt: Timestamp | string;
   updatedAt?: Timestamp | string;
 }
@@ -54,3 +57,11 @@ export interface UpdateProductError {
 }
 
 export type UpdateProductResult = UpdateProductSuccess | UpdateProductError;
+
+export interface HeroSlide {
+  title: string;
+  description: string;
+  backgroundImage: string;
+  cta?: string;
+  ctaHref?: string;
+}

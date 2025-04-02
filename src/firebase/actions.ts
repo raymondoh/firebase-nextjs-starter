@@ -19,7 +19,8 @@ import type {
   UpdateProductInput,
   UpdateProductResult,
   Product,
-  SerializedProduct
+  SerializedProduct,
+  HeroSlide
 } from "@/types/product";
 
 import type {
@@ -744,6 +745,31 @@ export async function getFeaturedProductsFromFirestore(): Promise<
   } catch (error) {
     const message =
       isFirebaseError(error) || error instanceof Error ? error.message : "Unknown error fetching featured products";
+    return { success: false, error: message };
+  }
+}
+
+export async function getHeroSlidesFromFirestore(): Promise<
+  { success: true; data: HeroSlide[] } | { success: false; error: string }
+> {
+  try {
+    const snapshot = await adminDb.collection("products").where("isHero", "==", true).get();
+
+    const slides: HeroSlide[] = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        title: data.name,
+        description: data.description,
+        backgroundImage: data.image,
+        cta: "Shop Now",
+        ctaHref: `/products/${doc.id}`
+      };
+    });
+
+    return { success: true, data: slides };
+  } catch (error) {
+    const message =
+      isFirebaseError(error) || error instanceof Error ? error.message : "Unknown error fetching hero slides";
     return { success: false, error: message };
   }
 }

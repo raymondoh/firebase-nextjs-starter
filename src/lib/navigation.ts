@@ -24,6 +24,7 @@ export type NavItem = {
   title: string;
   href: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  hasDropdown?: boolean; // Add this property
   // Add the subItems property
   subItems?: Array<{
     title: string;
@@ -31,6 +32,22 @@ export type NavItem = {
     icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   }>;
 };
+
+// Add this to your NavItem type in navigation.ts
+// export interface NavItem {
+//   title: string;
+//   href: string;
+//   icon: LucideIcon;
+//   hasDropdown?: boolean; // Add this property
+// }
+
+// Then add a product nav item to generalNavItems
+// {
+//   title: "Products",
+//   href: "#", // This will be overridden by the dropdown
+//   icon: ShoppingBag,
+//   hasDropdown: true
+// }
 
 // General navigation items visible to all users
 export const generalNavItems: NavItem[] = [
@@ -64,6 +81,12 @@ export const generalNavItems: NavItem[] = [
     href: "/products",
     icon: ShoppingBag
   }
+  // {
+  //   title: "Products",
+  //   href: "#", // This will be overridden by the dropdown
+  //   icon: ShoppingBag,
+  //   hasDropdown: true
+  // }
 ];
 
 // User-specific navigation items

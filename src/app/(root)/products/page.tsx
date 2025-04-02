@@ -1,44 +1,49 @@
-import { getAllProductsFromFirestore, getFeaturedProductsFromFirestore } from "@/firebase/admin/products";
+import {
+  getAllProductsFromFirestore,
+  getFeaturedProductsFromFirestore,
+  getHeroSlidesFromFirestore
+} from "@/firebase/admin/products";
 import { ProductCarousel } from "@/components/product-carousel";
 import { HeroCarousel } from "@/components/hero-carousel";
-import { heroSlides } from "@/lib/carousel-data";
 import { FeaturedProductsCarousel } from "@/components";
 
 import type { Metadata } from "next";
+
 export const metadata: Metadata = {
   title: "Our Products",
   description: "Browse our collection of high-quality products with free shipping on all orders.",
   keywords: ["products", "shop", "collection", "featured items"]
 };
 
-export const dynamic = "force-dynamic"; // 👈 add this
+export const dynamic = "force-dynamic";
 
+// 👇 Wrap the page logic in a default export function
 export default async function ProductsPage() {
-  const result = await getAllProductsFromFirestore();
-  const featured = await getFeaturedProductsFromFirestore();
+  const [allProductsRes, featuredRes, heroRes] = await Promise.all([
+    getAllProductsFromFirestore(),
+    getFeaturedProductsFromFirestore(),
+    getHeroSlidesFromFirestore()
+  ]);
 
-  if (!result.success) {
-    return <div className="container mx-auto max-w-md mt-10">no products</div>;
+  if (!allProductsRes.success || !featuredRes.success || !heroRes.success) {
+    return <div className="container mx-auto max-w-md mt-10">No products available</div>;
   }
+
   return (
     <div>
-      {/* 👇 HeroCarousel appears at the top */}
+      {/* Hero Carousel */}
       <div className="container mx-auto max-w-6xl mt-10">
-        <HeroCarousel slides={heroSlides} autoPlay loop className="mb-8" />
-      </div>
-      {/* 👇 Product Carousel appears below */}
-      <div className="container mx-auto max-w-6xl mt-10">
-        <ProductCarousel products={result.data} showTitle={false} />
+        <HeroCarousel slides={heroRes.data} autoPlay loop className="mb-8" />
       </div>
 
-      {/* Featured Carousel */}
+      {/* All Products */}
       <div className="container mx-auto max-w-6xl mt-10">
-        {" "}
-        {featured.success && featured.data.length > 0 && (
-          <div className="container mx-auto max-w-6xl mt-10">
-            <FeaturedProductsCarousel products={featured.data} />
-          </div>
-        )}
+        <ProductCarousel products={allProductsRes.data} showTitle={false} />
+      </div>
+
+      {/* Featured Products */}
+      <div className="container mx-auto max-w-6xl mt-10">
+        <FeaturedProductsCarousel products={featuredRes.data} title="Featured Products" />
       </div>
     </div>
   );
