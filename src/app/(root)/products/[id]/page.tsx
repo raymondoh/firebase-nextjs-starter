@@ -4,12 +4,16 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProductByIdFromFirestore } from "@/firebase/admin/products";
 
-interface ProductPageProps {
-  params: { id: string };
-}
+// interface ProductPageProps {
+//   params: { id: string };
+// }
+// export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+//   const resolvedParams = await params;
+//   const productId = resolvedParams.id;
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const result = await getProductByIdFromFirestore(params.id);
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const result = await getProductByIdFromFirestore(resolvedParams.id);
 
   if (!result.success) {
     return notFound();
