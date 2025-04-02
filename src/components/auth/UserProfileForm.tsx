@@ -7,7 +7,6 @@ import { useActionState } from "react";
 import { Shield, User, Upload, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-
 import { updateUserProfile } from "@/actions/user";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { ProfileUpdateState } from "@/types/user";

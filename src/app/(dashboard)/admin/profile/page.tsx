@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-//import { AdminProfileForm } from "@/components/dashboard/admin";
 import { UserProfileForm } from "@/components/auth/UserProfileForm";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
