@@ -29,15 +29,10 @@ export function AdminRecentActivityPreview({
         if (Array.isArray(result)) {
           setActivities(result);
         } else {
-          const message = result.error || "Failed to load activity logs";
-          console.error("Failed to load activity logs:", message);
-          setError(message);
+          setError(result.error || "Failed to load activity logs");
         }
       } catch (err) {
-        console.error("Unexpected error loading admin activity:", err);
-
         const message = isFirebaseError(err) ? firebaseError(err) : "Unexpected error loading activity logs";
-
         setError(message);
       } finally {
         setLoading(false);
@@ -55,6 +50,7 @@ export function AdminRecentActivityPreview({
           <CardDescription>Recent activities across the platform</CardDescription>
         </CardHeader>
       )}
+
       <CardContent>
         {loading ? (
           <div className="space-y-4">
@@ -77,7 +73,7 @@ export function AdminRecentActivityPreview({
             {activities.map(activity => (
               <div key={activity.id} className="flex flex-col space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">{activity.userEmail ? activity.userEmail.split("@")[0] : "User"}</span>
+                  <span className="font-medium">{activity.userEmail?.split("@")[0] || "User"}</span>
                   <span className="text-xs text-muted-foreground">{formatDate(activity.timestamp)}</span>
                 </div>
                 <p className="text-sm">{activity.description}</p>

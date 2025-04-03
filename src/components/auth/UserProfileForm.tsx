@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useActionState } from "react";
-import { Shield, User, Upload, Loader2, AlertCircle } from "lucide-react";
+import { Upload, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { updateUserProfile } from "@/actions/user";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { ProfileUpdateState } from "@/types/user";
+import { getInitials } from "@/utils/get-initials";
+import { uploadFile } from "@/utils/uploadFile";
 
 interface UnifiedProfileFormProps {
   id?: string;
@@ -100,26 +102,6 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
     }
   };
 
-  const uploadFile = async (file: File): Promise<string> => {
-    setIsUploading(true);
-    try {
-      const renamedFile = new File([file], `profile-${file.name}`, { type: file.type });
-      const formData = new FormData();
-      formData.append("file", renamedFile);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Upload failed");
-      return result.url;
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     updateProcessedRef.current = false;
@@ -130,15 +112,20 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
       formData.append("bio", bio);
 
       if (photoFile) {
-        const imageUrl = await uploadFile(photoFile);
+        const imageUrl = await uploadFile(photoFile, { prefix: "profile" });
         formData.append("imageUrl", imageUrl);
       }
 
       startTransition(() => {
         formAction(formData);
       });
-    } catch (error) {
-      const errMsg = isFirebaseError(error) ? firebaseError(error) : "Failed to update profile";
+    } catch (error: unknown) {
+      const errMsg = isFirebaseError(error)
+        ? firebaseError(error)
+        : error instanceof Error
+        ? error.message
+        : "Failed to update profile";
+
       toast.error(errMsg);
       console.error("Profile update error:", error);
     }
@@ -165,7 +152,7 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
       )}
 
       <div className="flex flex-col gap-6 md:flex-row md:items-center">
-        <Avatar className="h-24 w-24 relative">
+        {/* <Avatar className="h-24 w-24 relative">
           {photoURL ? (
             <div className="absolute inset-0 overflow-hidden rounded-full">
               <Image
@@ -180,6 +167,24 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
           ) : (
             <AvatarFallback className="text-lg">
               {isAdmin ? <Shield className="h-12 w-12" /> : <User className="h-12 w-12" />}
+            </AvatarFallback>
+          )}
+        </Avatar> */}
+        <Avatar className="h-24 w-24 relative">
+          {photoURL ? (
+            <div className="absolute inset-0 overflow-hidden rounded-full">
+              <Image
+                src={photoURL || "/placeholder.svg"}
+                alt={session?.user?.name || "User"}
+                fill
+                sizes="(max-width: 768px) 96px"
+                className="object-cover"
+                priority
+              />
+            </div>
+          ) : (
+            <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+              {getInitials(session?.user?.name || session?.user?.email || "U")}
             </AvatarFallback>
           )}
         </Avatar>

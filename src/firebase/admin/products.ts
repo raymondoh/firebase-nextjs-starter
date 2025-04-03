@@ -30,6 +30,7 @@ export async function getAllProductsFromFirestore(): Promise<
         inStock: data.inStock,
         badge: data.badge,
         isFeatured: data.isFeatured ?? false,
+        isHero: data.isHero ?? false,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt
       };

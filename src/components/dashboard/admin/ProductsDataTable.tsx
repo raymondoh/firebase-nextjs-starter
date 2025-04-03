@@ -125,6 +125,23 @@ export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) 
       }
     },
     {
+      accessorKey: "isFeatured",
+      header: "Featured",
+      cell: ({ row }) => {
+        const value = row.getValue("isFeatured") as boolean;
+        return <Badge variant={value ? "default" : "outline"}> {value ? "Yes" : "No"}</Badge>;
+      }
+    },
+    {
+      accessorKey: "isHero",
+      header: "Hero",
+      cell: ({ row }) => {
+        const value = row.getValue("isHero") as boolean;
+        return <Badge variant={value ? "default" : "outline"}>{value ? "Yes" : "No"}</Badge>;
+      }
+    },
+
+    {
       id: "actions",
       cell: ({ row }) => {
         const product = row.original;

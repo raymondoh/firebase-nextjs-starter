@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   }
 };
 
-export default function Page() {
+export default function HomePage() {
   return (
     <div className="text-foreground">
       {/* Hero Section - Adaptive gradient background */}
@@ -22,7 +22,7 @@ export default function Page() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-              Your App's <span className="text-primary">Main Value Proposition</span>
+              Your App&apos;s <span className="text-primary">Main Value Proposition</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
               A clear, concise description of what your app does and why users should care.

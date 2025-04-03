@@ -15,6 +15,7 @@ import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import { Loader2, ArrowLeft, Save } from "lucide-react";
 import type { Product } from "@/types/product";
 import Image from "next/image";
+import { uploadFile } from "@/utils/uploadFile";
 
 interface UpdateProductFormProps {
   product: Product;
@@ -36,24 +37,24 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(product.image || null);
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
 
-  const uploadFile = async (file: File): Promise<string> => {
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+  // const uploadFile = async (file: File): Promise<string> => {
+  //   setIsUploading(true);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("file", file);
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      });
+  //     const response = await fetch("/api/upload", {
+  //       method: "POST",
+  //       body: formData
+  //     });
 
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Upload failed");
-      return result.url;
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  //     const result = await response.json();
+  //     if (!response.ok) throw new Error(result.error || "Upload failed");
+  //     return result.url;
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,6 +68,46 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
     }
   };
 
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+
+  //   startTransition(async () => {
+  //     try {
+  //       let imageUrl = image;
+
+  //       if (newImageFile) {
+  //         imageUrl = await uploadFile(newImageFile);
+  //       }
+
+  //       const result = await updateProduct(product.id, {
+  //         name,
+  //         price: Number.parseFloat(price),
+  //         description,
+  //         inStock,
+  //         badge,
+  //         isFeatured,
+  //         isHero,
+  //         image: imageUrl
+  //       });
+
+  //       if (result.success) {
+  //         toast.success("Product updated successfully!");
+  //         router.refresh();
+  //       } else {
+  //         toast.error(result.error || "Failed to update product");
+  //       }
+  //     } catch (err: unknown) {
+  //       const message = isFirebaseError(err)
+  //         ? firebaseError(err)
+  //         : err instanceof Error
+  //         ? err.message
+  //         : "Unknown error while updating product";
+
+  //       console.error("Error in UpdateProductForm submission:", message);
+  //       toast.error(message);
+  //     }
+  //   });
+  // };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -75,7 +116,8 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
         let imageUrl = image;
 
         if (newImageFile) {
-          imageUrl = await uploadFile(newImageFile);
+          // Use the shared utility with "product" prefix
+          imageUrl = await uploadFile(newImageFile, "product");
         }
 
         const result = await updateProduct(product.id, {

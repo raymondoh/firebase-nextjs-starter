@@ -318,84 +318,11 @@ export async function getHeroSlides(): Promise<GetHeroSlidesResponse> {
 
 // ================= Activity Logs =================
 
-export async function getUserActivityLogs(
-  limit = 100,
-  startAfter?: string,
-  type?: string
-): Promise<GetUserActivityLogsResult> {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  try {
-    const collectionRef = adminDb.collection("activityLogs");
-    let query: Query<DocumentData> = collectionRef.where("userId", "==", session.user.id);
-
-    if (type) {
-      query = query.where("type", "==", type);
-    }
-
-    query = query.orderBy("timestamp", "desc");
-
-    if (startAfter) {
-      const startAfterDoc = await collectionRef.doc(startAfter).get();
-      if (startAfterDoc.exists) {
-        query = query.startAfter(startAfterDoc);
-      }
-    }
-
-    query = query.limit(limit);
-
-    const logsSnapshot = await query.get();
-
-    const activities: ActivityLogWithId[] = await Promise.all(
-      logsSnapshot.docs.map(async doc => {
-        const data = doc.data();
-        let userEmail = "";
-
-        try {
-          const userRecord = await adminAuth.getUser(data.userId);
-          userEmail = userRecord.email ?? "";
-        } catch (authError) {
-          console.warn(`Failed to fetch email for user ${data.userId}:`, authError);
-        }
-
-        return {
-          id: doc.id,
-          userId: data.userId,
-          userEmail,
-          type: data.type,
-          description: data.description,
-          status: data.status,
-          timestamp: data.timestamp,
-          ipAddress: data.ipAddress,
-          location: data.location,
-          device: data.device,
-          deviceType: data.deviceType,
-          metadata: data.metadata
-        };
-      })
-    );
-
-    return { success: true, activities };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error";
-
-    console.error("Error getting user activity logs:", message);
-    return { success: false, error: message };
-  }
-}
-
 export async function getAllActivityLogs(
-  limit = 100,
+  limit = 10,
   startAfter?: string,
   type?: string
+  //description?: string
 ): Promise<GetUserActivityLogsResult> {
   const session = await auth();
 
@@ -410,6 +337,9 @@ export async function getAllActivityLogs(
     if (type) {
       query = query.where("type", "==", type);
     }
+    // if (description) {
+    //   query = query.where("description", "==", description);
+    // }
 
     query = query.orderBy("timestamp", "desc");
 
@@ -467,25 +397,108 @@ export async function getAllActivityLogs(
   }
 }
 
+export async function getUserActivityLogs(
+  limit = 100,
+  startAfter?: string,
+  type?: string,
+  description?: string // ✅ NEW
+): Promise<GetUserActivityLogsResult> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    const collectionRef = adminDb.collection("activityLogs");
+    let query: Query<DocumentData> = collectionRef.where("userId", "==", session.user.id);
+
+    if (type) {
+      query = query.where("type", "==", type);
+    }
+
+    if (description) {
+      query = query.where("description", "==", description);
+    }
+
+    query = query.orderBy("timestamp", "desc");
+
+    if (startAfter) {
+      const startAfterDoc = await collectionRef.doc(startAfter).get();
+      if (startAfterDoc.exists) {
+        query = query.startAfter(startAfterDoc);
+      }
+    }
+
+    query = query.limit(limit);
+
+    const logsSnapshot = await query.get();
+
+    const activities: ActivityLogWithId[] = await Promise.all(
+      logsSnapshot.docs.map(async doc => {
+        const data = doc.data();
+        let userEmail = "";
+
+        try {
+          const userRecord = await adminAuth.getUser(data.userId);
+          userEmail = userRecord.email ?? "";
+        } catch (authError) {
+          console.warn(`Failed to fetch email for user ${data.userId}:`, authError);
+        }
+
+        return {
+          id: doc.id,
+          userId: data.userId,
+          userEmail,
+          type: data.type,
+          description: data.description,
+          status: data.status,
+          timestamp: data.timestamp,
+          ipAddress: data.ipAddress,
+          location: data.location,
+          device: data.device,
+          deviceType: data.deviceType,
+          metadata: data.metadata
+        };
+      })
+    );
+
+    return { success: true, activities };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error";
+
+    console.error("Error getting user activity logs:", message);
+    return { success: false, error: message };
+  }
+}
+
 export async function logActivity(data: Omit<ActivityLogData, "timestamp">): Promise<LogActivityResult> {
   try {
-    const docRef = await adminDb.collection("activityLogs").add({
+    const payload: ActivityLogData = {
       ...data,
       timestamp: Timestamp.now()
-    });
+    };
+
+    const docRef = await adminDb.collection("activityLogs").add(payload);
 
     return { success: true, activityId: docRef.id };
-  } catch (error) {
+  } catch (error: unknown) {
     const message = isFirebaseError(error)
       ? firebaseError(error)
       : error instanceof Error
       ? error.message
       : "Unknown error logging activity";
 
+    console.error("🔥 Error logging activity:", message); // optional: helpful log
     return { success: false, error: message };
   }
 }
 
+// ================= Email =================
 export async function sendResetPasswordEmail(email: string): Promise<SendResetPasswordEmailResult> {
   try {
     const actionCodeSettings = {
@@ -560,6 +573,7 @@ export async function getAllProductsFromFirestore(): Promise<
         inStock: data.inStock,
         badge: data.badge,
         isFeatured: data.isFeatured ?? false,
+        isHero: data.isHero ?? false,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt
       };

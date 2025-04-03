@@ -1,3 +1,4 @@
+// src/actions/auth/firebase-auth.ts
 "use server";
 
 import { signIn } from "@/auth";
@@ -27,12 +28,12 @@ export async function signInWithFirebase(idToken: string) {
       throw new Error(result.error);
     }
 
-    await logActivity({
-      userId,
-      type: "login",
-      description: "Signed in with Firebase credentials",
-      status: "success"
-    });
+    // await logActivity({
+    //   userId,
+    //   type: "login",
+    //   description: "Signed in with Firebase credentials",
+    //   status: "success"
+    // });
 
     return { success: true };
   } catch (error) {

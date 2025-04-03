@@ -83,6 +83,7 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
         emailVerified: false,
         createdAt: serverTimestamp()
       });
+    // ✅ Registration activity is logged here and should not be duplicated elsewhere.
 
     // Log activity
     await logActivity({

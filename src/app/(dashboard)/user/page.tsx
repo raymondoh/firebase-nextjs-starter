@@ -63,15 +63,15 @@ export default async function UserDashboardOverviewPage() {
       <DashboardHeader heading="Dashboard" text={`Welcome back, ${userName}! Here's an overview of your account.`} />
       <Separator className="mb-8" />
 
-      {/* Changed to flex column on small screens, row on larger screens */}
-      <div className="w-full mx-auto max-w-6xl flex flex-col lg:grid lg:grid-cols-2 gap-4 md:gap-8">
+      {/* Updated layout with consistent width */}
+      <div className="w-full max-w-8xl mx-auto max-w-8xl flex flex-col lg:grid lg:grid-cols-2 gap-4 md:gap-8">
         {/* Account summary in its own container */}
         <div className="w-full min-w-0 overflow-hidden">
           <UserAccountPreview userData={serializedUserData} />
         </div>
 
         {/* Activity preview in its own scrollable container */}
-        <div className="w-full min-w-0 overflow-x-auto">
+        <div className="w-full min-w-0 overflow-hidden">
           <UserActivityPreview
             limit={5}
             showFilters={false}

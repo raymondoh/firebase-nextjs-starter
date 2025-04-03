@@ -13,7 +13,7 @@ export { UserAccountPreview } from "./overview/UserAccountPreview";
 export { UserActivityPreview } from "./overview/UserActivityPreview";
 
 // User Profile page
-//export { UserProfileForm } from "./profile/UserProfileForm";
+//export { UserProfileForm } from "./profile/UserProfileForm";// now in auth folder
 
 // Settings page
 export { NotificationForm } from "./settings/NotificationForm";

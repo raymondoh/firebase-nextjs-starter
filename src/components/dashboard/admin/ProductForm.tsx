@@ -13,6 +13,7 @@ import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import { Loader2, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
+import { uploadFile } from "@/utils/uploadFile";
 
 interface ProductFormProps {
   onSuccess?: () => void;
@@ -26,25 +27,25 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
   const [isHero, setIsHero] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const uploadFile = async (file: File): Promise<string> => {
-    setIsUploading(true);
-    try {
-      const renamedFile = new File([file], `product-${file.name}`, { type: file.type });
-      const formData = new FormData();
-      formData.append("file", renamedFile);
+  // const uploadFile = async (file: File): Promise<string> => {
+  //   setIsUploading(true);
+  //   try {
+  //     const renamedFile = new File([file], `product-${file.name}`, { type: file.type });
+  //     const formData = new FormData();
+  //     formData.append("file", renamedFile);
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      });
+  //     const response = await fetch("/api/upload", {
+  //       method: "POST",
+  //       body: formData
+  //     });
 
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Upload failed");
-      return result.url;
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  //     const result = await response.json();
+  //     if (!response.ok) throw new Error(result.error || "Upload failed");
+  //     return result.url;
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,11 +60,54 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
     }
   };
 
+  // const handleSubmit = (formData: FormData) => {
+  //   startTransition(async () => {
+  //     try {
+  //       const file = formData.get("image") as File;
+  //       const imageUrl = file && file.size > 0 ? await uploadFile(file) : "";
+
+  //       const result = await addProduct({
+  //         name: formData.get("name") as string,
+  //         price: Number.parseFloat(formData.get("price") as string),
+  //         description: formData.get("description") as string,
+  //         inStock: formData.get("inStock") === "on",
+  //         badge: formData.get("badge") as string,
+  //         image: imageUrl,
+  //         isFeatured: isFeatured,
+  //         isHero: isHero
+  //       });
+
+  //       if (result.success) {
+  //         toast.success("Product added successfully!");
+  //         onSuccess?.();
+  //         const form = document.getElementById("product-form") as HTMLFormElement;
+  //         if (form) {
+  //           form.reset();
+  //           setPreviewUrl(null);
+  //           setInStock(true);
+  //           setIsFeatured(false);
+  //         }
+  //       } else {
+  //         toast.error(result.error);
+  //       }
+  //     } catch (err: unknown) {
+  //       const message = isFirebaseError(err)
+  //         ? firebaseError(err)
+  //         : err instanceof Error
+  //         ? err.message
+  //         : "Unknown error while adding product";
+
+  //       console.error("Error in ProductForm submission:", message);
+  //       toast.error(message);
+  //     }
+  //   });
+  // };
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
       try {
         const file = formData.get("image") as File;
-        const imageUrl = file && file.size > 0 ? await uploadFile(file) : "";
+
+        const imageUrl = file && file.size > 0 ? await uploadFile(file, "product") : "";
 
         const result = await addProduct({
           name: formData.get("name") as string,
@@ -85,6 +129,7 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
             setPreviewUrl(null);
             setInStock(true);
             setIsFeatured(false);
+            setIsHero(false);
           }
         } else {
           toast.error(result.error);

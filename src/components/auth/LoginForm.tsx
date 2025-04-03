@@ -17,7 +17,7 @@ import { loginUser, signInWithFirebase } from "@/actions/auth";
 import type { LoginState } from "@/types/auth";
 import { GoogleAuthButton } from "@/components";
 import { CloseButton } from "@/components";
-import { isFirebaseError, firebaseError } from "@/utils/firebase-error"; // ✅
+import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
@@ -28,9 +28,13 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null);
-  const componentId = useRef(`login-form-${Math.random().toString(36).substring(7)}`).current;
+  //const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null);
+  const [formKey, setFormKey] = useState(0);
+  const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null, formKey);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const componentId = useRef(`login-form-${Math.random().toString(36).substring(7)}`).current;
+  console.log("formKey:", formKey);
   useEffect(() => {
     console.log(`[${componentId}] LoginForm mounted`);
     return () => console.log(`[${componentId}] LoginForm unmounted`);
@@ -54,6 +58,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
   useEffect(() => {
     if (state?.success && !hasToastShown.current && !isRedirecting.current) {
+      setErrorMessage(null);
       hasToastShown.current = true;
       isRedirecting.current = true;
 
@@ -88,6 +93,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         });
       }
     } else if (state?.message && !state.success && !hasToastShown.current) {
+      setErrorMessage(state.message);
       hasToastShown.current = true;
       toast.error(state.message);
     }
@@ -105,10 +111,16 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         </CardHeader>
       </div>
       <CardContent>
-        {state?.message && !state.success && (
+        {/* {state?.message && !state.success && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{state.message}</AlertDescription>
+          </Alert>
+        )} */}
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         )}
 
@@ -122,7 +134,14 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               placeholder="Enter your email"
               required
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              //onChange={e => setEmail(e.target.value)}
+              onChange={e => {
+                setEmail(e.target.value);
+                if (state?.message) {
+                  setFormKey(prev => prev + 1);
+                  hasToastShown.current = false;
+                }
+              }}
             />
           </div>
 
@@ -136,7 +155,14 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 placeholder="Enter your password"
                 required
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                //onChange={e => setPassword(e.target.value)}
+                onChange={e => {
+                  setPassword(e.target.value);
+                  if (state?.message) {
+                    setFormKey(prev => prev + 1); // 👈 triggers `useActionState` to reset
+                    hasToastShown.current = false;
+                  }
+                }}
               />
               <Button
                 type="button"

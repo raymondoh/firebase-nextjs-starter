@@ -2,7 +2,7 @@
 
 import bcryptjs from "bcryptjs";
 import { adminAuth, adminDb } from "@/firebase/admin";
-import { logActivity } from "@/firebase";
+//import { logActivity } from "@/firebase";
 import { loginSchema } from "@/schemas/auth";
 import type { LoginState } from "@/types/auth/login";
 import type { UserData } from "@/types";
@@ -68,25 +68,25 @@ export async function loginUser(prevState: LoginState | null, formData: FormData
 
     const customToken = await adminAuth.createCustomToken(userRecord.uid);
 
-    // 🔐 Log activity
-    if (!skipSession) {
-      await logActivity({
-        userId: userRecord.uid,
-        type: "login",
-        description: "Logged in with email/password",
-        status: "success"
-      });
-    } else if (isRegistration) {
-      await logActivity({
-        userId: userRecord.uid,
-        type: "registration",
-        description: "User registered with email/password",
-        status: "success",
-        metadata: {
-          emailVerified: isEmailVerified
-        }
-      });
-    }
+    // // 🔐 Log activity
+    // if (!skipSession) {
+    //   await logActivity({
+    //     userId: userRecord.uid,
+    //     type: "login",
+    //     description: "Logged in with email/password",
+    //     status: "success"
+    //   });
+    // } else if (isRegistration) {
+    //   await logActivity({
+    //     userId: userRecord.uid,
+    //     type: "registration",
+    //     description: "User registered with email/password",
+    //     status: "success",
+    //     metadata: {
+    //       emailVerified: isEmailVerified
+    //     }
+    //   });
+    // }
 
     return {
       success: true,

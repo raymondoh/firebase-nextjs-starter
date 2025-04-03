@@ -112,7 +112,7 @@ body {
 
 /* Add these styles to your globals.css file */
 
-/* Center icons in collapsed sidebar */
+/* Center icons in collapsed sidebar 
 [data-collapsible="icon"] [data-sidebar="menu-button"] {
   display: flex !important;
   justify-content: center !important;
@@ -123,14 +123,44 @@ body {
   margin-right: auto !important;
   padding: 0.5rem !important;
 }
-
-/* Adjust icon size if needed */
+*/
+/* Adjust icon size if needed 
 [data-collapsible="icon"] [data-sidebar="menu-button"] svg {
   width: 1.5rem !important;
   height: 1.5rem !important;
 }
-
-/* Adjust height for the taller menu items */
+*/
+/* Adjust height for the taller menu items
 [data-sidebar="menu-button"] {
   min-height: 2.25rem;
+}
+ */
+/* Reset the fixed size and center the content */
+[data-collapsible="icon"] [data-sidebar="menu-button"] {
+  width: 100% !important;
+  height: 2rem !important; /* or your preferred height */
+  display: flex !important;
+  justify-content: center !important;
+  padding: 0.5rem !important;
+}
+
+/* Hide the text in collapsed mode */
+[data-collapsible="icon"] [data-sidebar="menu-button"] > span:not(:first-child) {
+  display: none !important;
+}
+
+/* Make sure the icon is centered */
+[data-collapsible="icon"] [data-sidebar="menu-button"] > svg {
+  margin: 0 auto !important;
+}
+/* Increase icon size in collapsed sidebar */
+[data-collapsible="icon"] [data-sidebar="menu-button"] > svg {
+  width: 1.5rem !important; /* 24px (size-6) */
+  height: 1.5rem !important; /* 24px (size-6) */
+}
+
+/* Optional: Increase the height of the button container */
+[data-collapsible="icon"] [data-sidebar="menu-button"] {
+  height: 3rem !important; /* 48px (h-12) */
+  justify-content: center !important;
 }

@@ -105,7 +105,11 @@ export function HeroCarousel({
         <CarouselContent>
           {slides.map((slide, index) => (
             <CarouselItem key={index}>
-              <div className={cn(height, "w-full flex items-center justify-center px-6 relative overflow-hidden")}>
+              <div
+                className={cn(
+                  height,
+                  "w-full flex items-center justify-center px-6 relative overflow-hidden md:mt-10 md:rounded-md"
+                )}>
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0">
                   <Image

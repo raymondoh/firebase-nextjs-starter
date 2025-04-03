@@ -111,7 +111,7 @@ export const authOptions: NextAuthConfig = {
             await logActivity({
               userId: uid,
               type: "login",
-              description: "Logged in",
+              description: "Logged in with email/password",
               status: "success",
               metadata: {
                 provider: decodedToken.firebase?.sign_in_provider || "unknown",

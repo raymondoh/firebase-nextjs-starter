@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Admin Dashboard"
 };
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardOverviewPage() {
   // Get the session server-side
   const session = await auth();
 
@@ -122,7 +122,7 @@ export default async function AdminDashboardPage() {
         {/* Admin Activity Log */}
         <div className="w-full min-w-0 overflow-hidden">
           <AdminRecentActivityPreview
-            limit={5}
+            limit={5} // takes precedence
             showFilters={false}
             showHeader={true}
             showViewAll={true}

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { auth } from "@/auth";
 
-export default async function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminDashboardLayout({ children }: { children: ReactNode }) {
   try {
     const session = await auth();
 
@@ -30,8 +30,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     console.log("Admin layout - Access granted - rendering admin layout");
 
     return (
-      <SidebarInset className="w-full max-w-8xl">
-        <header className="flex h-16 items-center gap-2 border-b px-4 sticky top-0 bg-background z-10 w-full">
+      <SidebarInset className="w-full max-w-8xl mx-auto">
+        <header className="flex h-16 items-center gap-2 border-b px-4 sticky top-0 bg-background z-10">
           <SidebarTrigger className="-ml-1" />
           <h1 className="font-semibold">Admin Dashboard</h1>
         </header>

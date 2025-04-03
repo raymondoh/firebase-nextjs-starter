@@ -66,16 +66,12 @@ export const generalNavItems: NavItem[] = [
     href: "/contact",
     icon: Mail
   },
-  {
-    title: "Debug",
-    href: "/debug-session",
-    icon: Settings
-  },
-  {
-    title: "Carousel",
-    href: "/carousel",
-    icon: CarIcon
-  },
+  // {
+  //   title: "Debug",
+  //   href: "/debug-session",
+  //   icon: Settings
+  // },
+
   {
     title: "Products",
     href: "/products",

@@ -2,49 +2,10 @@
 import type { SerializedActivity } from "../firebase/activity";
 import { Timestamp } from "firebase/firestore";
 
-/**
- * Props for the ActivityLog server component
- */
-export interface ActivityLogProps {
-  userId: string;
-  limit?: number;
-  showFilters?: boolean;
-  showHeader?: boolean;
-}
+//
+// 🔷 Shared Activity Types
+//
 
-/**
- * Props for the ActivityLogClient component
- */
-export interface ActivityLogClientProps {
-  activities: SerializedActivity[];
-  showFilters: boolean;
-  isRefreshing?: boolean;
-}
-
-/**
- * Props for the ActivityLogWrapper component
- */
-export interface ActivityLogWrapperProps {
-  limit?: number;
-  showFilters?: boolean;
-  showHeader?: boolean;
-  showViewAll?: boolean;
-  viewAllUrl?: string;
-  className?: string;
-}
-
-/**
- * Props for the ActivityPageClient component
- */
-export interface ActivityPageClientProps {
-  initialData?: SerializedActivity[];
-}
-
-// Existing content...
-
-/**
- * Firestore activity log entry for display
- */
 export interface Activity {
   id: string;
   userId: string;
@@ -54,16 +15,9 @@ export interface Activity {
   userEmail?: string;
 }
 
-/**
- * Props for the AdminActivityLogWrapper component
- */
-export interface AdminActivityLogWrapperProps {
-  limit?: number;
-  showFilters?: boolean;
-  showHeader?: boolean;
-  showViewAll?: boolean;
-  viewAllUrl?: string;
-}
+//
+// 🔷 System Info
+//
 
 export interface SystemStats {
   totalUsers: number;
@@ -71,6 +25,7 @@ export interface SystemStats {
   newUsersToday: number;
   totalActivities: number;
 }
+
 export interface SystemAlert {
   id: string;
   title: string;
@@ -78,4 +33,39 @@ export interface SystemAlert {
   severity: "info" | "warning" | "error" | "success";
   timestamp: Date | Timestamp | null;
   resolved: boolean;
+}
+
+//
+// 🔷 Admin Components Props (Grouped at the top as requested)
+//
+
+export interface AdminActivityLogWrapperProps {
+  limit?: number;
+  showFilters?: boolean;
+  showHeader?: boolean;
+  showViewAll?: boolean;
+  viewAllUrl?: string;
+
+  className?: string;
+}
+
+export interface AdminActivityPageClientProps {
+  initialData?: SerializedActivity[];
+}
+
+//
+// 🔷 Generic Activity Log Props
+//
+
+export interface ActivityLogProps {
+  userId: string;
+  limit?: number;
+  showFilters?: boolean;
+  showHeader?: boolean;
+}
+
+export interface ActivityLogClientProps {
+  activities: SerializedActivity[];
+  showFilters: boolean;
+  isRefreshing?: boolean;
 }

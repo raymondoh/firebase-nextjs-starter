@@ -32,12 +32,12 @@ export default async function ProductsPage() {
   return (
     <div>
       {/* Hero Carousel */}
-      <div className="container mx-auto max-w-6xl mt-10">
+      <div className="max-w-full md:max-w-6xl mx-auto mt-0">
         <HeroCarousel slides={heroRes.data} autoPlay loop className="mb-8" />
       </div>
 
       {/* All Products */}
-      <div className="container mx-auto max-w-6xl mt-10">
+      <div className="container max-w-7xl mx-auto mt-10">
         <ProductCarousel products={allProductsRes.data} showTitle={false} />
       </div>
 
