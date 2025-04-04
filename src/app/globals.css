@@ -95,53 +95,32 @@ body {
   }
 }
 
-/* Add these styles to ensure the sidebar stretches to the full height */
-[data-sidebar="sidebar"] {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 100vh;
-}
+/* 
+ * Sidebar Icon Styling
+ * These styles target the sidebar menu buttons when the sidebar is collapsed
+ */
 
-[data-sidebar="content"] {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
+/* 
+ * Sidebar Icon Styling
+ * These styles target the sidebar menu buttons in both collapsed and expanded states
+ */
 
-/* Add these styles to your globals.css file */
-
-/* Center icons in collapsed sidebar 
+/* ===== COLLAPSED STATE STYLING ===== */
+/* Center the button content and set dimensions when collapsed */
 [data-collapsible="icon"] [data-sidebar="menu-button"] {
+  width: 100% !important;
+  height: 3rem !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  width: 2.5rem !important;
-  height: 2.5rem !important;
-  margin-left: 12px !important;
-  margin-right: auto !important;
   padding: 0.5rem !important;
 }
-*/
-/* Adjust icon size if needed 
-[data-collapsible="icon"] [data-sidebar="menu-button"] svg {
+
+/* Increase icon size when collapsed */
+[data-collapsible="icon"] [data-sidebar="menu-button"] > svg {
   width: 1.5rem !important;
   height: 1.5rem !important;
-}
-*/
-/* Adjust height for the taller menu items
-[data-sidebar="menu-button"] {
-  min-height: 2.25rem;
-}
- */
-/* Reset the fixed size and center the content */
-[data-collapsible="icon"] [data-sidebar="menu-button"] {
-  width: 100% !important;
-  height: 2rem !important; /* or your preferred height */
-  display: flex !important;
-  justify-content: center !important;
-  padding: 0.5rem !important;
+  margin: 0 auto !important;
 }
 
 /* Hide the text in collapsed mode */
@@ -149,18 +128,40 @@ body {
   display: none !important;
 }
 
-/* Make sure the icon is centered */
-[data-collapsible="icon"] [data-sidebar="menu-button"] > svg {
-  margin: 0 auto !important;
-}
-/* Increase icon size in collapsed sidebar */
-[data-collapsible="icon"] [data-sidebar="menu-button"] > svg {
-  width: 1.5rem !important; /* 24px (size-6) */
-  height: 1.5rem !important; /* 24px (size-6) */
+/* ===== EXPANDED STATE STYLING ===== */
+/* Increase button height and padding when expanded */
+[data-state="expanded"] [data-sidebar="menu-button"] {
+  height: 3rem !important;
+  padding: 0.75rem 1rem !important;
+  align-items: center !important;
 }
 
-/* Optional: Increase the height of the button container */
-[data-collapsible="icon"] [data-sidebar="menu-button"] {
-  height: 3rem !important; /* 48px (h-12) */
-  justify-content: center !important;
+/* Increase icon size when expanded */
+[data-state="expanded"] [data-sidebar="menu-button"] > svg {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  margin-right: 0.75rem !important;
+}
+
+/* Increase text size when expanded */
+[data-state="expanded"] [data-sidebar="menu-button"] > span {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+}
+
+/* ===== HOVER EFFECTS FOR BOTH STATES ===== */
+/* Add hover effect for icons */
+[data-sidebar="menu-button"]:hover > svg {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Optional: Add active state styling */
+[data-sidebar="menu-button"][data-active="true"] > svg {
+  color: hsl(var(--primary)) !important;
+}
+
+[data-sidebar="menu-button"][data-active="true"] > span {
+  color: hsl(var(--primary)) !important;
+  font-weight: 600 !important;
 }

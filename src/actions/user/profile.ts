@@ -6,7 +6,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { profileUpdateSchema } from "@/schemas/user";
 import { convertTimestamps } from "@/firebase/utils/firestore";
 import { logActivity } from "@/firebase";
-import { firebaseError, isFirebaseError } from "@/utils/firebase-error"; // ✅ added
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 import type { ProfileUpdateState } from "@/types/user/profile";
 import type { User } from "@/types/user/common";

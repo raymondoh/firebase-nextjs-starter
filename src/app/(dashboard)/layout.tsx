@@ -24,10 +24,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
     // Get the cookie store and read sidebar state
     // Default to false (collapsed) if the cookie doesn't exist
-    const cookieStore = await cookies();
-    const sidebarState = cookieStore.get("sidebar:state")?.value === "true" || false;
+    const cookieStore = await cookies(); // No need for await here
+    const sidebarCookie = cookieStore.get("sidebar:state");
+    const sidebarState = sidebarCookie ? sidebarCookie.value === "true" : false;
 
-    console.log("Root Dashboard Layout - Rendering with session");
+    console.log("Root Dashboard Layout - Sidebar cookie:", sidebarCookie);
+    console.log("Root Dashboard Layout - Sidebar state:", sidebarState);
 
     return (
       <SidebarProvider defaultOpen={sidebarState}>

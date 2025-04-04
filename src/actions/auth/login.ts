@@ -6,7 +6,7 @@ import { adminAuth, adminDb } from "@/firebase/admin";
 import { loginSchema } from "@/schemas/auth";
 import type { LoginState } from "@/types/auth/login";
 import type { UserData } from "@/types";
-import { firebaseError, isFirebaseError } from "@/utils/firebase-error"; // ✅
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export async function loginUser(prevState: LoginState | null, formData: FormData): Promise<LoginState> {
   console.log("loginUser action called with formData:", formData ? "exists" : "null");

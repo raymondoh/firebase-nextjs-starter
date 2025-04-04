@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { deleteProductFromFirestore } from "@/firebase/admin/products";
-//import type { Product } from "@/types/product";
 
 export async function deleteProduct(productId: string): Promise<{ success: true } | { success: false; error: string }> {
   const result = await deleteProductFromFirestore(productId);

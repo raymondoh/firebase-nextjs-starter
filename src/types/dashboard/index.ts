@@ -12,8 +12,8 @@ export type { AccountSummaryProps, AccountSummaryClientProps, AccountSettingsPro
 export type {
   ActivityLogProps,
   ActivityLogClientProps,
-  ActivityLogWrapperProps,
-  ActivityPageClientProps,
+  //ActivityLogWrapperProps,
+  //ActivityPageClientProps,
   AdminActivityLogWrapperProps,
   Activity,
   SystemStats,

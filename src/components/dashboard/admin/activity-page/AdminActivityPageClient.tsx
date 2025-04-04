@@ -8,7 +8,7 @@ import { AdminActivityLogClient } from "@/components";
 import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
 import type { SerializedActivity } from "@/types/firebase/activity";
 import type { AdminActivityPageClientProps } from "@/types/dashboard/activity";
-import { firebaseError } from "@/utils/firebase-error";
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export function AdminActivityPageClient({ initialData = [] }: AdminActivityPageClientProps) {
   const [activities, setActivities] = useState<SerializedActivity[]>(initialData);
@@ -37,8 +37,12 @@ export function AdminActivityPageClient({ initialData = [] }: AdminActivityPageC
         } else {
           throw new Error("Invalid response");
         }
-      } catch (err) {
-        const message = firebaseError(err);
+      } catch (error) {
+        const message = isFirebaseError(error)
+          ? firebaseError(error)
+          : error instanceof Error
+          ? error.message
+          : "Failed to fetch activity logs";
         setError(message);
       } finally {
         setLoading(false);
@@ -73,8 +77,13 @@ export function AdminActivityPageClient({ initialData = [] }: AdminActivityPageC
       } else {
         throw new Error("Invalid response");
       }
-    } catch (err) {
-      const message = firebaseError(err);
+    } catch (error) {
+      const message = isFirebaseError(error)
+        ? firebaseError(error)
+        : error instanceof Error
+        ? error.message
+        : "Failed to fetch activity logs";
+
       setError(message);
     } finally {
       setIsRefreshing(false);

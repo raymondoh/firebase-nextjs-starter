@@ -100,7 +100,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section - Dark mode responsive background */}
-      <section className="py-20 border-t bg-amber-50 dark:bg-amber-950/20">
+      <section className="py-20 border-t bg-slate-50 dark:bg-slate-900/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>

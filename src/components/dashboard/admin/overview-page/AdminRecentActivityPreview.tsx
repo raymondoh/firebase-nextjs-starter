@@ -73,7 +73,10 @@ export function AdminRecentActivityPreview({
             {activities.map(activity => (
               <div key={activity.id} className="flex flex-col space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">{activity.userEmail?.split("@")[0] || "User"}</span>
+                  <span className="font-medium">
+                    {activity.metadata?.name ?? activity.userEmail?.split("@")[0] ?? "User"}
+                  </span>
+
                   <span className="text-xs text-muted-foreground">{formatDate(activity.timestamp)}</span>
                 </div>
                 <p className="text-sm">{activity.description}</p>

@@ -337,9 +337,6 @@ export async function getAllActivityLogs(
     if (type) {
       query = query.where("type", "==", type);
     }
-    // if (description) {
-    //   query = query.where("description", "==", description);
-    // }
 
     query = query.orderBy("timestamp", "desc");
 
@@ -401,7 +398,7 @@ export async function getUserActivityLogs(
   limit = 100,
   startAfter?: string,
   type?: string,
-  description?: string // ✅ NEW
+  description?: string
 ): Promise<GetUserActivityLogsResult> {
   const session = await auth();
 

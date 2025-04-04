@@ -22,23 +22,34 @@ import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
   const { update } = useSession();
+
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [formKey, setFormKey] = useState("0");
+
+  const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null, formKey);
+
   const hasToastShown = useRef(false);
   const isRedirecting = useRef(false);
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  //const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null);
-  const [formKey, setFormKey] = useState(0);
-  const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null, formKey);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const componentId = useRef(`login-form-${Math.random().toString(36).substring(7)}`).current;
-  console.log("formKey:", formKey);
+
   useEffect(() => {
     console.log(`[${componentId}] LoginForm mounted`);
     return () => console.log(`[${componentId}] LoginForm unmounted`);
   }, [componentId]);
+
+  const handleInputChange =
+    (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setter(e.target.value);
+      setErrorMessage(null);
+      hasToastShown.current = false;
+      isRedirecting.current = false;
+      setFormKey(prev => `${parseInt(prev) + 1}`);
+    };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,9 +58,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     formData.append("email", email);
     formData.append("password", password);
     formData.append("isRegistration", "false");
-
-    hasToastShown.current = false;
-    isRedirecting.current = false;
 
     startTransition(() => {
       action(formData);
@@ -97,7 +105,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       hasToastShown.current = true;
       toast.error(state.message);
     }
-  }, [state, router, update, componentId, isPending]);
+  }, [state, router, update, componentId]);
 
   return (
     <Card className={className} {...props}>
@@ -111,12 +119,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         </CardHeader>
       </div>
       <CardContent>
-        {/* {state?.message && !state.success && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        )} */}
         {errorMessage && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -131,17 +133,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               id="email"
               name="email"
               type="email"
-              placeholder="Enter your email"
               required
               value={email}
-              //onChange={e => setEmail(e.target.value)}
-              onChange={e => {
-                setEmail(e.target.value);
-                if (state?.message) {
-                  setFormKey(prev => prev + 1);
-                  hasToastShown.current = false;
-                }
-              }}
+              onChange={handleInputChange(setEmail)}
+              placeholder="Enter your email"
             />
           </div>
 
@@ -152,17 +147,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
                 required
                 value={password}
-                //onChange={e => setPassword(e.target.value)}
-                onChange={e => {
-                  setPassword(e.target.value);
-                  if (state?.message) {
-                    setFormKey(prev => prev + 1); // 👈 triggers `useActionState` to reset
-                    hasToastShown.current = false;
-                  }
-                }}
+                onChange={handleInputChange(setPassword)}
+                placeholder="Enter your password"
               />
               <Button
                 type="button"

@@ -1,8 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-//import { adminDb } from "@/firebase/admin";
-//import { Timestamp } from "firebase-admin/firestore";
 import { addProductToFirestore } from "@/firebase/admin/products"; // renamed for clarity
 import type { Product } from "@/types/product";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";

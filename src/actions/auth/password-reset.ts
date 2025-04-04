@@ -4,7 +4,7 @@ import { adminAuth, adminDb } from "@/firebase/admin";
 import { serverTimestamp } from "@/firebase/admin/firestore";
 import { logActivity } from "@/firebase";
 import bcryptjs from "bcryptjs";
-import { firebaseError, isFirebaseError } from "@/utils/firebase-error"; // ✅
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 /**
  * Logs a password reset activity

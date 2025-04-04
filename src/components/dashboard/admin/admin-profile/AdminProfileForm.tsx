@@ -106,55 +106,10 @@ export function AdminProfileForm({ id, onCancel, redirectAfterSuccess = "/admin"
     }
   };
 
-  // const uploadFile = async (file: File): Promise<string> => {
-  //   setIsUploading(true);
-  //   try {
-  //     const uploadFormData = new FormData();
-  //     uploadFormData.append("file", file);
-
-  //     const res = await fetch("/api/upload", { method: "POST", body: uploadFormData });
-
-  //     if (!res.ok) {
-  //       const errorData = await res.json();
-  //       throw new Error(errorData.error || "Upload failed");
-  //     }
-
-  //     const result = await res.json();
-  //     return result.url;
-  //   } catch (err) {
-  //     const message = isFirebaseError(err) ? firebaseError(err) : "Failed to upload image";
-  //     toast.error(message);
-  //     throw err;
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     updateProcessedRef.current = false;
 
-    // try {
-    //   const formData = new FormData();
-    //   formData.append("name", name);
-    //   formData.append("bio", bio);
-
-    //   if (photoFile) {
-    //     try {
-    //       const imageUrl = await uploadFile(photoFile);
-    //       formData.append("imageUrl", imageUrl);
-    //     } catch {
-    //       return;
-    //     }
-    //   }
-
-    //   startTransition(() => {
-    //     formAction(formData);
-    //   });
-    // } catch (err) {
-    //   const message = isFirebaseError(err) ? firebaseError(err) : "Failed to update profile";
-    //   toast.error(message);
-    // }
     try {
       const formData = new FormData();
       formData.append("name", name);

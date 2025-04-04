@@ -37,25 +37,6 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(product.image || null);
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
 
-  // const uploadFile = async (file: File): Promise<string> => {
-  //   setIsUploading(true);
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-
-  //     const response = await fetch("/api/upload", {
-  //       method: "POST",
-  //       body: formData
-  //     });
-
-  //     const result = await response.json();
-  //     if (!response.ok) throw new Error(result.error || "Upload failed");
-  //     return result.url;
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -68,46 +49,6 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
     }
   };
 
-  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-
-  //   startTransition(async () => {
-  //     try {
-  //       let imageUrl = image;
-
-  //       if (newImageFile) {
-  //         imageUrl = await uploadFile(newImageFile);
-  //       }
-
-  //       const result = await updateProduct(product.id, {
-  //         name,
-  //         price: Number.parseFloat(price),
-  //         description,
-  //         inStock,
-  //         badge,
-  //         isFeatured,
-  //         isHero,
-  //         image: imageUrl
-  //       });
-
-  //       if (result.success) {
-  //         toast.success("Product updated successfully!");
-  //         router.refresh();
-  //       } else {
-  //         toast.error(result.error || "Failed to update product");
-  //       }
-  //     } catch (err: unknown) {
-  //       const message = isFirebaseError(err)
-  //         ? firebaseError(err)
-  //         : err instanceof Error
-  //         ? err.message
-  //         : "Unknown error while updating product";
-
-  //       console.error("Error in UpdateProductForm submission:", message);
-  //       toast.error(message);
-  //     }
-  //   });
-  // };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -117,7 +58,8 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
 
         if (newImageFile) {
           // Use the shared utility with "product" prefix
-          imageUrl = await uploadFile(newImageFile, "product");
+          imageUrl = await uploadFile(newImageFile, { prefix: "product" });
+          setIsUploading(true);
         }
 
         const result = await updateProduct(product.id, {

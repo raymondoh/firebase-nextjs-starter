@@ -1,16 +1,9 @@
 "use client";
 
-import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LoaderCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "@/firebase/client";
-import { signInWithFirebase } from "@/actions/auth/firebase-auth";
-import { useSession } from "next-auth/react"; // Add this import
-import { FirebaseError } from "firebase/app";
+import { signIn } from "next-auth/react";
 
 interface GoogleAuthButtonProps {
   mode: "signin" | "signup";
@@ -19,69 +12,16 @@ interface GoogleAuthButtonProps {
 
 export function GoogleAuthButton({ mode, className }: GoogleAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const { update } = useSession(); // Add this to get the session update function
 
-  const handleGoogleAuth = async () => {
+  const handleGoogleAuth = () => {
     if (isLoading) return;
+    setIsLoading(true);
 
-    try {
-      setIsLoading(true);
-      console.log("Starting Google authentication flow");
-
-      // Create a Google provider instance
-      const googleProvider = new GoogleAuthProvider();
-
-      // Add additional scopes if needed
-      googleProvider.addScope("email");
-      googleProvider.addScope("profile");
-
-      // Set custom parameters
-      googleProvider.setCustomParameters({
-        prompt: "select_account"
-      });
-
-      // Sign in with Firebase using a popup
-      console.log("Opening Google sign-in popup");
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log("Google sign-in successful, getting ID token");
-
-      // Get the ID token
-      const idToken = await result.user.getIdToken();
-      console.log("ID token obtained, signing in with NextAuth");
-
-      // Sign in with NextAuth using the Firebase ID token
-      const signInResult = await signInWithFirebase(idToken);
-
-      if (!signInResult.success) {
-        throw new Error(signInResult.error || "Failed to sign in");
-      }
-
-      console.log("NextAuth sign-in successful");
-      toast.success(mode === "signup" ? "Account created with Google!" : "Signed in with Google!");
-
-      // Update the session client-side
-      console.log("Updating session client-side");
-      await update();
-      console.log("Session updated");
-
-      // Redirect to home page
-      router.push("/");
-    } catch (error: unknown) {
-      const err = error as FirebaseError;
-      console.error("Google auth error:", err);
-
-      // Handle specific error cases
-      if (err.code === "auth/popup-closed-by-user") {
-        toast.error("Sign-in cancelled. Please try again.");
-      } else if (err.code === "auth/popup-blocked") {
-        toast.error("Popup was blocked by your browser. Please allow popups for this site.");
-      } else {
-        toast.error("An unexpected error occurred. Please try again later.");
-      }
-    } finally {
+    signIn("google", {
+      callbackUrl: "/"
+    }).finally(() => {
       setIsLoading(false);
-    }
+    });
   };
 
   return (

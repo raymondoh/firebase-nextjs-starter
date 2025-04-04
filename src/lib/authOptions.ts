@@ -2,25 +2,31 @@ import type { NextAuthConfig } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { AdapterSession } from "@auth/core/adapters";
 import type { Adapter } from "next-auth/adapters";
-
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
 import { cert } from "firebase-admin/app";
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { getFirestore } from "firebase-admin/firestore";
 import { logActivity } from "@/firebase";
+import { logGoogleActivity } from "@/firebase/analytics/log-google-activity";
 
 const firebaseAdminConfig = {
   credential: cert({
-    projectId: process.env.FIREBASE_PROJECT_ID!,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, "\n")
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
   })
 };
 
 export const authOptions: NextAuthConfig = {
   basePath: "/api/auth", // Add this line explicitly
   providers: [
+    GoogleProvider({
+      clientId: process.env.AUTH_GOOGLE_CLIENT_ID,
+      clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET
+    }),
+
     CredentialsProvider({
       name: "Firebase",
       credentials: {
@@ -196,14 +202,12 @@ export const authOptions: NextAuthConfig = {
     error: "/login" // Add this line to redirect to login page on error
   },
   events: {
-    // Fix: Type the parameter correctly
-    // async signOut(params: { session: AdapterSession | null | undefined } | { token: JWT | null }) {
-    //   // Check if token exists in the params
-    //   if ("token" in params && params.token) {
-    //     // Perform any cleanup or additional logout logic here
-    //     console.log("User signed out:", params.token);
-    //     // You could add additional logic here, such as invalidating the session in your database
-    //   }
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        const email = user.email ?? "unknown";
+        await logGoogleActivity(user.id ?? "unknown-id", email, user.name);
+      }
+    },
     // }
     async signOut(
       message: { session: void | AdapterSession | null | undefined } | { token: JWT | null }

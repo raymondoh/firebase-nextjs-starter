@@ -1,3 +1,4 @@
+// src/firebase/client/index.ts
 "use client";
 
 import { initializeApp, getApps } from "firebase/app";
@@ -31,38 +32,4 @@ export function dateToTimestamp(date: Date): Timestamp {
 
 export function timestampToDate(timestamp: Timestamp): Date {
   return timestamp.toDate();
-}
-
-// Client-side auth functions
-export async function signInWithGoogle() {
-  const { signInWithPopup } = await import("firebase/auth");
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return { success: true, user: result.user };
-  } catch (error) {
-    console.error("Error signing in with Google:", error);
-    return { success: false, error };
-  }
-}
-
-export async function signInWithGithub() {
-  const { signInWithPopup } = await import("firebase/auth");
-  try {
-    const result = await signInWithPopup(auth, githubProvider);
-    return { success: true, user: result.user };
-  } catch (error) {
-    console.error("Error signing in with GitHub:", error);
-    return { success: false, error };
-  }
-}
-
-export async function signOut() {
-  const { signOut: firebaseSignOut } = await import("firebase/auth");
-  try {
-    await firebaseSignOut(auth);
-    return { success: true };
-  } catch (error) {
-    console.error("Error signing out:", error);
-    return { success: false, error };
-  }
 }
