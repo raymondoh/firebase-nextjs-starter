@@ -3,7 +3,7 @@
 // import { useState, useEffect } from "react";
 // import { Button } from "@/components/ui/button";
 // import { Card } from "@/components/ui/card";
-// import { ActivityLogClient } from "../overview/ActivityLogClient";
+// import { ActivityLogClient } from "./ActivityLogClient";
 // import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // import type { SerializedActivity } from "@/types/firebase/activity";
@@ -112,7 +112,7 @@
 //   ];
 
 //   return (
-//     <div className="space-y-6">
+//     <div className="space-y-6 w-full max-w-full">
 //       <div className="flex flex-col sm:flex-row justify-between gap-4">
 //         <div className="flex flex-col sm:flex-row gap-4">
 //           <div className="w-full sm:w-48">
@@ -162,7 +162,7 @@
 //         </Button>
 //       </div>
 
-//       <Card className="p-6">
+//       <Card className="p-4 sm:p-6 w-full overflow-hidden">
 //         {loading && !isRefreshing ? (
 //           <p className="text-muted-foreground text-sm">Loading activity logs...</p>
 //         ) : error ? (
@@ -170,7 +170,7 @@
 //         ) : activities.length === 0 ? (
 //           <p className="text-muted-foreground text-sm">No activity found.</p>
 //         ) : (
-//           <>
+//           <div className="w-full overflow-hidden">
 //             <ActivityLogClient activities={activities} showFilters={false} isRefreshing={isRefreshing} />
 
 //             {hasMore && (
@@ -180,7 +180,7 @@
 //                 </Button>
 //               </div>
 //             )}
-//           </>
+//           </div>
 //         )}
 //       </Card>
 //     </div>
@@ -195,6 +195,8 @@ import { ActivityLogClient } from "./ActivityLogClient";
 import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SerializedActivity } from "@/types/firebase/activity";
+import { useSession } from "next-auth/react";
+import { getDisplayName } from "@/utils/getDisplayName";
 
 export function ActivityPageClient() {
   const [activities, setActivities] = useState<SerializedActivity[]>([]);
@@ -205,7 +207,8 @@ export function ActivityPageClient() {
   const [pageSize, setPageSize] = useState(10);
   const [activeType, setActiveType] = useState<string | undefined>(undefined);
 
-  // Load initial data
+  const { data: session } = useSession();
+
   useEffect(() => {
     loadActivities();
   }, [pageSize, activeType]);
@@ -222,14 +225,21 @@ export function ActivityPageClient() {
       const data = await fetchActivityLogs(params);
 
       if (Array.isArray(data)) {
-        if (reset) {
-          setActivities(data as SerializedActivity[]);
-        } else {
-          setActivities(prev => [...prev, ...(data as SerializedActivity[])]);
-        }
+        const enriched = data.map(activity => ({
+          ...activity,
+          userEmail: session?.user?.email ?? activity.userEmail,
+          metadata: {
+            ...activity.metadata,
+            name: getDisplayName(session?.user?.name, session?.user?.email)
+          }
+        }));
 
-        // If we got fewer items than requested, there are no more to load
-        setHasMore(data.length === pageSize);
+        if (reset) {
+          setActivities(enriched);
+        } else {
+          setActivities(prev => [...prev, ...enriched]);
+        }
+        setHasMore(enriched.length === pageSize);
       } else {
         console.error("Invalid data format received:", data);
         setError("Invalid data format received");
@@ -259,10 +269,17 @@ export function ActivityPageClient() {
       const data = await fetchActivityLogs(params);
 
       if (Array.isArray(data)) {
-        setActivities(prev => [...prev, ...(data as SerializedActivity[])]);
+        const enriched = data.map(activity => ({
+          ...activity,
+          userEmail: session?.user?.email ?? activity.userEmail,
+          metadata: {
+            ...activity.metadata,
+            name: getDisplayName(session?.user?.name, session?.user?.email)
+          }
+        }));
 
-        // If we got fewer items than requested, there are no more to load
-        setHasMore(data.length === pageSize);
+        setActivities(prev => [...prev, ...enriched]);
+        setHasMore(enriched.length === pageSize);
       } else {
         console.error("Invalid data format received:", data);
         setError("Invalid data format received");
@@ -287,7 +304,6 @@ export function ActivityPageClient() {
     setPageSize(Number.parseInt(value, 10));
   };
 
-  // Activity type options
   const activityTypes = [
     { label: "All Activities", value: "all" },
     { label: "Logins", value: "login" },
@@ -360,7 +376,6 @@ export function ActivityPageClient() {
         ) : (
           <div className="w-full overflow-hidden">
             <ActivityLogClient activities={activities} showFilters={false} isRefreshing={isRefreshing} />
-
             {hasMore && (
               <div className="mt-6 text-center">
                 <Button variant="outline" onClick={loadMore} disabled={isRefreshing}>

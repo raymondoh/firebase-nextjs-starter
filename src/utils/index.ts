@@ -11,3 +11,4 @@ export * from "./serializeUser";
 export * from "./firebase-error";
 export * from "./get-initials";
 export * from "./uploadFile";
+export * from "./getDisplayName";

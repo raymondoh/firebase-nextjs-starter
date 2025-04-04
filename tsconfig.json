@@ -22,10 +22,13 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "types", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": [
-    "node_modules",
-    "**/*.tsxX", // Optional: if you ever keep these again
-    "**/*.bak.tsx" // Optional: for backups
-  ]
+  "include": [
+    "next-env.d.ts",
+    "types",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/components/dashboard/admin/admin-profile/AdminProfileForm.Xtsx"
+  ],
+  "exclude": ["node_modules"]
 }

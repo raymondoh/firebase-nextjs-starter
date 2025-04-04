@@ -10,7 +10,7 @@ export { DataExport } from "./data-privacy/DataExport";
 export { AccountSummary } from "./overview/AccountSummary";
 export { ActivityLogClient } from "./overview/ActivityLogClient";
 export { UserAccountPreview } from "./overview/UserAccountPreview";
-export { UserActivityPreview } from "./overview/UserActivityPreview";
+export { UserRecentActivityPreview } from "./overview/UserRecentActivityPreview";
 
 // User Profile page
 //export { UserProfileForm } from "./profile/UserProfileForm";// now in auth folder

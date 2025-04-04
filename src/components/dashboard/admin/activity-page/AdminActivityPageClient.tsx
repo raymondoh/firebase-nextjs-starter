@@ -6,18 +6,56 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AdminActivityLogClient } from "@/components";
 import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/firebase/client";
 import type { SerializedActivity } from "@/types/firebase/activity";
 import type { AdminActivityPageClientProps } from "@/types/dashboard/activity";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export function AdminActivityPageClient({ initialData = [] }: AdminActivityPageClientProps) {
   const [activities, setActivities] = useState<SerializedActivity[]>(initialData);
+  const [usersMap, setUsersMap] = useState<Map<string, { name?: string; email?: string }>>(new Map());
   const [loading, setLoading] = useState(initialData.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [pageSize, setPageSize] = useState(10);
   const [activeType, setActiveType] = useState<string | undefined>();
+
+  const loadUsers = useCallback(async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "users"));
+      const map = new Map<string, { name?: string; email?: string }>();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        map.set(doc.id, {
+          name: data.name,
+          email: data.email
+        });
+      });
+      setUsersMap(map);
+    } catch (err) {
+      console.warn("Failed to fetch users for activity enrichment:", err);
+    }
+  }, []);
+
+  const enrichLogsWithUsers = useCallback(
+    (logs: SerializedActivity[]) => {
+      return logs.map(log => {
+        const user = usersMap.get(log.userId);
+        return {
+          ...log,
+          metadata: {
+            ...log.metadata,
+            name:
+              user?.name ?? log.metadata?.name ?? user?.email?.split("@")[0] ?? log.userEmail?.split("@")[0] ?? "User"
+          },
+          userEmail: user?.email ?? log.userEmail ?? "Unknown"
+        };
+      });
+    },
+    [usersMap]
+  );
 
   const loadActivities = useCallback(
     async (reset = true) => {
@@ -31,7 +69,8 @@ export function AdminActivityPageClient({ initialData = [] }: AdminActivityPageC
         const data = await fetchActivityLogs(params);
 
         if (Array.isArray(data)) {
-          reset ? setActivities(data) : setActivities(prev => [...prev, ...data]);
+          const enriched = enrichLogsWithUsers(data);
+          reset ? setActivities(enriched) : setActivities(prev => [...prev, ...enriched]);
           setHasMore(data.length === pageSize);
           setError(null);
         } else {
@@ -49,14 +88,16 @@ export function AdminActivityPageClient({ initialData = [] }: AdminActivityPageC
         setIsRefreshing(false);
       }
     },
-    [pageSize, activeType]
+    [pageSize, activeType, enrichLogsWithUsers]
   );
 
   useEffect(() => {
-    if (!initialData.length) {
-      loadActivities();
-    }
+    if (!initialData.length) loadActivities();
   }, [initialData.length, loadActivities]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const loadMore = async () => {
     if (!activities.length) return;
@@ -72,7 +113,8 @@ export function AdminActivityPageClient({ initialData = [] }: AdminActivityPageC
 
       const data = await fetchActivityLogs(params);
       if (Array.isArray(data)) {
-        setActivities(prev => [...prev, ...data]);
+        const enriched = enrichLogsWithUsers(data);
+        setActivities(prev => [...prev, ...enriched]);
         setHasMore(data.length === pageSize);
       } else {
         throw new Error("Invalid response");

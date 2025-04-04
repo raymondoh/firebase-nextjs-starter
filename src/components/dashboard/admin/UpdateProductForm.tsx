@@ -57,7 +57,7 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
         let imageUrl = image;
 
         if (newImageFile) {
-          // Use the shared utility with "product" prefix
+          // This will throw if the file is too large
           imageUrl = await uploadFile(newImageFile, { prefix: "product" });
           setIsUploading(true);
         }
@@ -80,11 +80,14 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
           toast.error(result.error || "Failed to update product");
         }
       } catch (err: unknown) {
-        const message = isFirebaseError(err)
-          ? firebaseError(err)
-          : err instanceof Error
-          ? err.message
-          : "Unknown error while updating product";
+        const message =
+          err instanceof Error && err.message.includes("File too large")
+            ? "Image too large. Please upload a file under 2MB."
+            : isFirebaseError(err)
+            ? firebaseError(err)
+            : err instanceof Error
+            ? err.message
+            : "Unknown error while updating product";
 
         console.error("Error in UpdateProductForm submission:", message);
         toast.error(message);

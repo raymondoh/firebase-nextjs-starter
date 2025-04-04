@@ -120,14 +120,19 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
         formAction(formData);
       });
     } catch (error: unknown) {
-      const errMsg = isFirebaseError(error)
-        ? firebaseError(error)
-        : error instanceof Error
-        ? error.message
-        : "Failed to update profile";
+      const message =
+        error instanceof Error && error.message.includes("File too large")
+          ? "Image too large. Please upload a file under 2MB."
+          : isFirebaseError(error)
+          ? firebaseError(error)
+          : error instanceof Error
+          ? error.message
+          : "Failed to update profile";
 
-      toast.error(errMsg);
+      toast.error(message);
       console.error("Profile update error:", error);
+    } finally {
+      setIsUploading(false);
     }
   };
 

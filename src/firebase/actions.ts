@@ -318,6 +318,7 @@ export async function getHeroSlides(): Promise<GetHeroSlidesResponse> {
 
 // ================= Activity Logs =================
 
+//**Purpose**: Retrieves activity logs for administrative purposes
 export async function getAllActivityLogs(
   limit = 10,
   startAfter?: string,
@@ -394,6 +395,7 @@ export async function getAllActivityLogs(
   }
 }
 
+//**Purpose**: Retrieves activity logs for the currently authenticated user.
 export async function getUserActivityLogs(
   limit = 100,
   startAfter?: string,
@@ -473,6 +475,7 @@ export async function getUserActivityLogs(
   }
 }
 
+//**Purpose**: Logs an activity for the currently authenticated user.**Purpose**: Creates a new activity log entry in the database.
 export async function logActivity(data: Omit<ActivityLogData, "timestamp">): Promise<LogActivityResult> {
   try {
     const payload: ActivityLogData = {

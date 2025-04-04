@@ -40,7 +40,6 @@ export default async function UserDashboardLayout({ children }: { children: Reac
     );
   } catch (error) {
     console.error("Error in UserLayout:", error);
-    //redirect("/error");
-    throw error;
+    redirect("/error");
   }
 }

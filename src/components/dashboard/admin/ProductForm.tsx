@@ -73,14 +73,17 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
           toast.error(result.error);
         }
       } catch (err: unknown) {
-        const message = isFirebaseError(err)
-          ? firebaseError(err)
-          : err instanceof Error
-          ? err.message
-          : "Unknown error while adding product";
+        const message =
+          err instanceof Error && err.message.includes("File too large")
+            ? "Image too large. Please upload a file under 2MB."
+            : isFirebaseError(err)
+            ? firebaseError(err)
+            : err instanceof Error
+            ? err.message
+            : "Unknown error while adding product";
 
-        console.error("Error in ProductForm submission:", message);
         toast.error(message);
+        console.error("Error in ProductForm submission:", message);
       }
     });
   };
