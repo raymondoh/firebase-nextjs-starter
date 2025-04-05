@@ -45,7 +45,13 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
       try {
         const file = formData.get("image") as File;
 
-        const imageUrl = file && file.size > 0 ? await uploadFile(file, { prefix: "product" }) : "";
+        let imageUrl = "";
+        if (file && file.size > 0) {
+          if (file.size > 2 * 1024 * 1024) {
+            throw new Error("Image too large. Please upload a file under 2MB.");
+          }
+          imageUrl = await uploadFile(file, { prefix: "product" });
+        }
 
         const result = await addProduct({
           name: formData.get("name") as string,
@@ -61,6 +67,7 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
         if (result.success) {
           toast.success("Product added successfully!");
           onSuccess?.();
+
           const form = document.getElementById("product-form") as HTMLFormElement;
           if (form) {
             form.reset();
@@ -74,8 +81,8 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
         }
       } catch (err: unknown) {
         const message =
-          err instanceof Error && err.message.includes("File too large")
-            ? "Image too large. Please upload a file under 2MB."
+          err instanceof Error && err.message.includes("Image too large")
+            ? err.message
             : isFirebaseError(err)
             ? firebaseError(err)
             : err instanceof Error

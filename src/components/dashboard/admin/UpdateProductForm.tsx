@@ -57,7 +57,10 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
         let imageUrl = image;
 
         if (newImageFile) {
-          // This will throw if the file is too large
+          if (newImageFile.size > 2 * 1024 * 1024) {
+            throw new Error("Image too large. Please upload a file under 2MB.");
+          }
+
           imageUrl = await uploadFile(newImageFile, { prefix: "product" });
           setIsUploading(true);
         }
@@ -81,8 +84,8 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
         }
       } catch (err: unknown) {
         const message =
-          err instanceof Error && err.message.includes("File too large")
-            ? "Image too large. Please upload a file under 2MB."
+          err instanceof Error && err.message.includes("Image too large")
+            ? err.message
             : isFirebaseError(err)
             ? firebaseError(err)
             : err instanceof Error
@@ -91,6 +94,8 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
 
         console.error("Error in UpdateProductForm submission:", message);
         toast.error(message);
+      } finally {
+        setIsUploading(false);
       }
     });
   };

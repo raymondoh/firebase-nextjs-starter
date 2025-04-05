@@ -47,7 +47,9 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    --sidebar-width-icon: 4rem !important;
+    --app-header-height: 64px; /* Adjust to your actual header height */
+    --app-footer-height: 64px; /* Adjust to your actual footer height */
+    --sidebar-width: 16rem; /* Add this to match your sidebar width */
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -82,7 +84,6 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    --sidebar-width-icon: 4rem !important;
   }
 }
 
@@ -95,18 +96,24 @@ body {
   }
 }
 
-/* 
- * Sidebar Icon Styling
- * These styles target the sidebar menu buttons when the sidebar is collapsed
- */
+/* Add this to ensure your main app header has a higher z-index */
+.main-header {
+  @apply z-50 relative;
+}
 
-/* 
- * Sidebar Icon Styling
- * These styles target the sidebar menu buttons in both collapsed and expanded states
- */
+/* Custom styles for the sidebar */
+@media (min-width: 768px) {
+  /* Only apply this padding on desktop */
+  [data-sidebar="content"] {
+    padding-top: var(--app-header-height);
+  }
+}
 
-/* ===== COLLAPSED STATE STYLING ===== */
-/* Center the button content and set dimensions when collapsed */
+/* Add this to ensure proper layout with fixed header */
+body {
+}
+
+/* Your existing desktop sidebar styling */
 [data-collapsible="icon"] [data-sidebar="menu-button"] {
   width: 100% !important;
   height: 3rem !important;
@@ -164,4 +171,56 @@ body {
 [data-sidebar="menu-button"][data-active="true"] > span {
   color: hsl(var(--primary)) !important;
   font-weight: 600 !important;
+}
+
+/* ===== MOBILE SIDEBAR STYLING ===== */
+/* Target the mobile sidebar */
+[data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="menu-button"],
+.sheet-content [data-sidebar="menu-button"] {
+  height: 3.5rem !important; /* Even taller for better touch targets */
+  padding: 0.75rem 1.25rem !important;
+  align-items: center !important;
+}
+
+/* Increase icon size in mobile view */
+[data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="menu-button"] > svg,
+.sheet-content [data-sidebar="menu-button"] > svg {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  margin-right: 1rem !important;
+}
+
+/* Increase text size in mobile view */
+[data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="menu-button"] > span,
+.sheet-content [data-sidebar="menu-button"] > span {
+  font-size: 1.125rem !important; /* 18px */
+  font-weight: 500 !important;
+}
+
+/* Increase submenu item size */
+[data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="menu-sub-button"],
+.sheet-content [data-sidebar="menu-sub-button"] {
+  height: 3rem !important;
+  padding: 0.75rem 1.25rem !important;
+  font-size: 1rem !important;
+}
+
+/* Add more spacing between menu items for better touch targets */
+[data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="menu-item"],
+.sheet-content [data-sidebar="menu-item"] {
+  margin-bottom: 0.5rem !important;
+}
+
+/* Make the sidebar header larger on mobile */
+[data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="header"],
+.sheet-content [data-sidebar="header"] {
+  padding: 1.25rem !important;
+}
+
+/* Make the sidebar group label larger on mobile */
+[data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="group-label"],
+.sheet-content [data-sidebar="group-label"] {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.25rem !important;
 }

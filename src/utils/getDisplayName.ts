@@ -1,22 +1,30 @@
 // src/utils/getDisplayName.ts
 import type { SerializedActivity } from "@/types/firebase/activity";
 
-/**
- * Returns the best display name from activity metadata or user email
- * Falls back to 'User' if nothing available
- */
+// Function overload signatures
+export function getDisplayName(activity: SerializedActivity, user?: { name?: string; email?: string }): string;
+export function getDisplayName(name?: string | null, email?: string | null): string;
 
-/**
- * Returns the best display name for activity logs.
- * Prioritizes:
- * 1. user.name (if provided)
- * 2. metadata.name (from activity)
- * 3. user.email prefix (if available)
- * 4. activity.userEmail prefix
- * 5. Fallback to "User"
- */
-export function getDisplayName(activity: SerializedActivity, user?: { name?: string; email?: string }): string {
-  return (
-    user?.name ?? activity.metadata?.name ?? user?.email?.split("@")[0] ?? activity.userEmail?.split("@")[0] ?? "User"
-  );
+// Implementation that handles both cases
+export function getDisplayName(
+  firstParam?: SerializedActivity | string | null,
+  secondParam?: { name?: string; email?: string } | string | null
+): string {
+  // Case 1: Called with (activity, user) pattern
+  if (firstParam && typeof firstParam === "object" && "userEmail" in firstParam) {
+    const activity = firstParam as SerializedActivity;
+    const user = secondParam as { name?: string; email?: string } | undefined;
+
+    return (
+      user?.name ?? activity.metadata?.name ?? user?.email?.split("@")[0] ?? activity.userEmail?.split("@")[0] ?? "User"
+    );
+  }
+
+  // Case 2: Called with (name, email) pattern
+  const name = firstParam as string | undefined | null;
+  const email = secondParam as string | undefined | null;
+
+  if (name) return name;
+  if (email) return email.split("@")[0];
+  return "User";
 }

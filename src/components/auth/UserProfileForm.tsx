@@ -20,7 +20,7 @@ import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { ProfileUpdateState } from "@/types/user";
 import { getInitials } from "@/utils/get-initials";
 import { uploadFile } from "@/utils/uploadFile";
-
+import { validateFileSize } from "@/utils/validateFileSize";
 interface UnifiedProfileFormProps {
   id?: string;
   onCancel?: () => void;
@@ -112,6 +112,12 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
       formData.append("bio", bio);
 
       if (photoFile) {
+        const validationError = validateFileSize(photoFile, 2); // 2MB max
+        if (validationError) {
+          toast.error(validationError);
+          return;
+        }
+
         const imageUrl = await uploadFile(photoFile, { prefix: "profile" });
         formData.append("imageUrl", imageUrl);
       }

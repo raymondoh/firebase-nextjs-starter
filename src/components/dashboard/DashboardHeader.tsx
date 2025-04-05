@@ -1,3 +1,4 @@
+// src/components/dashboard/DashboardHeader.tsx
 import type React from "react";
 
 interface DashboardHeaderProps {

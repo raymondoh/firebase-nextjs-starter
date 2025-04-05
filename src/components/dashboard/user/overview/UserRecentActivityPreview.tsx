@@ -12,6 +12,10 @@ import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
 interface UserActivityPreviewProps {
   limit?: number;
+  showFilters?: boolean;
+  showHeader?: boolean;
+  showViewAll?: boolean;
+  viewAllUrl?: string;
 }
 
 export function UserRecentActivityPreview({ limit = 5 }: UserActivityPreviewProps) {

@@ -1,3 +1,4 @@
+// src/components/dashboard/AppSidebar.tsx
 "use client";
 
 import type React from "react";
@@ -35,7 +36,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="z-50" collapsible="icon">
+    <Sidebar className="pt-6" collapsible="icon">
       <SidebarContent className="pt-5">
         <SidebarGroup>
           <SidebarGroupContent>

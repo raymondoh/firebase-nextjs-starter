@@ -94,6 +94,7 @@ export interface SerializedActivity {
   id: string;
   userId: string;
   userEmail?: string;
+  name: string;
   type: string;
   description: string;
   status: string;
