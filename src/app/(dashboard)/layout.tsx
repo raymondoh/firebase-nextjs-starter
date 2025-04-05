@@ -50,7 +50,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             {/* Header with trigger button */}
             <header className="flex h-16 items-center gap-2 border-b px-4 sticky top-0 bg-background z-10">
               <SidebarTrigger className="-ml-1" />
-              <h1 className="font-semibold">{role === "admin" ? "Admin Dashboard" : "User Dashboard"}</h1>
+              <h1 className="font-semibold">{role === "admin" ? "Dashboard Menu" : "Dashboard Menu"}</h1>
             </header>
 
             {/* Main content with centered container */}

@@ -3,7 +3,7 @@
 import React, { useActionState, useState, useEffect, startTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LoaderCircle, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import type { LoginState } from "@/types/auth";
 import { GoogleAuthButton } from "@/components";
 import { CloseButton } from "@/components";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+import { SubmitButton } from "../shared/SubmitButton";
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
@@ -168,7 +169,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isPending || isRedirecting.current || isGoogleSigningIn}>
+          {/* <Button type="submit" className="w-full" disabled={isPending || isRedirecting.current || isGoogleSigningIn}>
             {isPending || isRedirecting.current ? (
               <>
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -177,7 +178,13 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             ) : (
               "Login"
             )}
-          </Button>
+          </Button> */}
+          <SubmitButton
+            isLoading={isPending || isRedirecting.current || isGoogleSigningIn}
+            loadingText={isRedirecting.current ? "Redirecting..." : "Logging in..."}
+            className="w-full">
+            Login
+          </SubmitButton>
 
           <div className="mt-6">
             <div className="relative">

@@ -76,9 +76,7 @@ export const Navbar = () => {
   if (isLoading) {
     return <NavbarSkeleton />;
   }
-  {
-    /**  <nav className="container max-w-8xl mx-auto flex items-center justify-between py-4 px-0">*/
-  }
+
   return (
     <nav className="container max-w-8xl mx-auto flex items-center justify-between py-4 px-0">
       <div className="flex items-center">

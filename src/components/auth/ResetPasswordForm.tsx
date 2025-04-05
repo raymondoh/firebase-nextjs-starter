@@ -14,6 +14,7 @@ import { auth } from "@/firebase/client";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { updatePasswordHash, getUserIdByEmail } from "@/actions/auth/password-reset";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import { SubmitButton } from "@/components/shared/SubmitButton";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -245,7 +246,7 @@ export function ResetPasswordForm() {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={status === "submitting"}>
+            {/* <Button type="submit" className="w-full" disabled={status === "submitting"}>
               {status === "submitting" ? (
                 <>
                   <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -254,7 +255,10 @@ export function ResetPasswordForm() {
               ) : (
                 "Reset Password"
               )}
-            </Button>
+            </Button> */}
+            <SubmitButton isLoading={status === "submitting"} loadingText="Resetting..." className="w-full">
+              Reset Password
+            </SubmitButton>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { auth } from "@/firebase/client";
 import { applyActionCode } from "firebase/auth";
 import { updateEmailVerificationStatus } from "@/actions/auth/email-verification";
-import { firebaseError, isFirebaseError } from "@/utils/firebase-error"; // ✅ Updated import
+import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export function VerifyEmailForm() {
   const router = useRouter();

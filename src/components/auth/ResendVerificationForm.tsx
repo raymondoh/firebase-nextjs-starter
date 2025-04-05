@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import { sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+import { SubmitButton } from "@/components/shared/SubmitButton";
 
 export function ResendVerificationForm() {
   const [email, setEmail] = useState("");
@@ -103,7 +104,7 @@ export function ResendVerificationForm() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            {/* <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -112,7 +113,10 @@ export function ResendVerificationForm() {
               ) : (
                 "Resend Verification Email"
               )}
-            </Button>
+            </Button> */}
+            <SubmitButton isLoading={isLoading} loadingText="Sending..." className="w-full">
+              Resend Verification Email
+            </SubmitButton>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">

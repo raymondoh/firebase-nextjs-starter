@@ -6,7 +6,7 @@ import { useState, useEffect, startTransition, useRef } from "react";
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LoaderCircle, Eye, EyeOff, AlertCircle, Info } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Info } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -23,6 +23,7 @@ import { signInWithFirebase } from "@/actions/auth/firebase-auth";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { CloseButton } from "@/components";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import { SubmitButton } from "../shared/SubmitButton";
 
 export function RegisterForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const router = useRouter();
@@ -248,7 +249,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
             <p className="text-sm text-muted-foreground">Re-enter your password to confirm.</p>
           </div>
 
-          <Button
+          {/* <Button
             type="submit"
             className="w-full"
             disabled={isPending || isLoggingIn || isLoginPending || isRedirecting.current || isGoogleSigningIn}>
@@ -260,7 +261,13 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
             ) : (
               "Register"
             )}
-          </Button>
+          </Button> */}
+          <SubmitButton
+            disabled={isPending || isLoggingIn || isLoginPending || isRedirecting.current || isGoogleSigningIn}
+            loadingText="Creating account..."
+            className="w-full">
+            Sign up
+          </SubmitButton>
 
           <div className="mt-6">
             <div className="relative">
