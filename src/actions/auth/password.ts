@@ -4,7 +4,7 @@ import bcryptjs from "bcryptjs";
 import { auth } from "@/auth";
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { serverTimestamp } from "@/firebase/admin/firestore";
-import { logActivity } from "@/firebase";
+import { logActivity } from "@/firebase/actions";
 import { forgotPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { ForgotPasswordState, UpdatePasswordState } from "@/types/auth/password";

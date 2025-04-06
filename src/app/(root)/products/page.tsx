@@ -2,7 +2,7 @@ import {
   getAllProductsFromFirestore,
   getFeaturedProductsFromFirestore,
   getHeroSlidesFromFirestore
-} from "@/firebase/admin/products";
+} from "@/firebase/actions";
 import { ProductCarousel } from "@/components/product-carousel";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { FeaturedProductsCarousel } from "@/components";

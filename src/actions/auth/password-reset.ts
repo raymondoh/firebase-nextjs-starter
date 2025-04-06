@@ -2,7 +2,7 @@
 
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { serverTimestamp } from "@/firebase/admin/firestore";
-import { logActivity } from "@/firebase";
+import { logActivity } from "@/firebase/actions";
 import bcryptjs from "bcryptjs";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 

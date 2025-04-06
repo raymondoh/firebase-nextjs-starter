@@ -3,7 +3,7 @@
 
 import { signIn } from "@/auth";
 import { adminAuth } from "@/firebase/admin";
-import { logActivity } from "@/firebase";
+import { logActivity } from "@/firebase/actions";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export async function signInWithFirebase(idToken: string) {

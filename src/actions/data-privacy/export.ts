@@ -5,7 +5,7 @@ import { adminDb, adminStorage } from "@/firebase/admin";
 
 import { exportDataSchema } from "@/schemas/data-privacy";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
-import { logActivity } from "@/firebase";
+import { logActivity } from "@/firebase/actions";
 import { convertTimestamps } from "@/firebase/utils/firestore";
 import type { ExportFormat, ExportDataState } from "@/types/data-privacy/export";
 import { ExportedActivityLog } from "@/types/data-privacy/export";

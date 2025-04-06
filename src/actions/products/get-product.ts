@@ -1,6 +1,6 @@
 "use server";
 
-import { getProductByIdFromFirestore } from "@/firebase/admin/products";
+import { getProductByIdFromFirestore } from "@/firebase/actions";
 import type { GetProductByIdResponse } from "@/types/product";
 
 /**

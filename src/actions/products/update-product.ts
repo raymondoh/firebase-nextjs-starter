@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { UpdateProductInput, UpdateProductResult } from "@/types/product";
-import { updateProductInFirestore } from "@/firebase/admin/products";
+import { updateProductInFirestore } from "@/firebase/actions";
 
 /**
  * Server action to update a product

@@ -2,10 +2,9 @@
 "use server";
 import { Timestamp } from "firebase-admin/firestore";
 import { adminDb, adminAuth } from "./admin/index";
-import { Query, DocumentData } from "firebase-admin/firestore";
+//import { Query, DocumentData } from "firebase-admin/firestore";
 import * as adminUsers from "./admin/user";
 import { auth } from "@/auth";
-//import { getHeroSlides as getHeroSlidesAdmin } from "./admin/hero-slides";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type {
   GetUsersResult,
@@ -14,21 +13,21 @@ import type {
   UpdateUserProfileResult,
   SetUserRoleResult
 } from "@/types/firebase/firestore";
-import type {
-  GetProductByIdFromFirestoreResult,
-  UpdateProductInput,
-  UpdateProductResult,
-  Product,
-  SerializedProduct,
-  HeroSlide
-} from "@/types/product";
+// import type {
+//   GetProductByIdFromFirestoreResult,
+//   UpdateProductInput,
+//   UpdateProductResult,
+//   Product,
+//   SerializedProduct,
+//   HeroSlide
+// } from "@/types/product";
 
-import type {
-  GetUserActivityLogsResult,
-  ActivityLogWithId,
-  ActivityLogData,
-  LogActivityResult
-} from "@/types/firebase/activity";
+// import type {
+//   GetUserActivityLogsResult,
+//   ActivityLogWithId,
+//   ActivityLogData,
+//   LogActivityResult
+// } from "@/types/firebase/activity";
 import type {
   SetCustomClaimsResult,
   VerifyAndCreateUserResult,
@@ -36,9 +35,11 @@ import type {
   SendResetPasswordEmailResult,
   CustomClaims
 } from "@/types/firebase/auth";
-import type { SerializedHeroSlide, GetHeroSlidesResult, GetHeroSlidesError } from "@/types/carousel/hero";
+// import type { SerializedHeroSlide, GetHeroSlidesResult, GetHeroSlidesError } from "@/types/carousel/hero";
 import type { User, UserRole } from "@/types/user";
-import { serializeProduct, serializeProductArray } from "@/utils/serializeProduct";
+// import { serializeProduct, serializeProductArray } from "@/utils/serializeProduct";
+import * as adminActivity from "./admin/activity";
+import * as adminProducts from "./admin/products";
 
 // ================= User CRUD =================
 
@@ -278,224 +279,17 @@ export async function setUserRole(userId: string, role: UserRole): Promise<SetUs
   }
 }
 
-// ================= Hero Slides =================
-
-export type GetHeroSlidesResponse = GetHeroSlidesResult | GetHeroSlidesError;
-
-export async function getHeroSlides(): Promise<GetHeroSlidesResponse> {
-  try {
-    const snapshot = await adminDb.collection("heroSlides").orderBy("order").where("active", "==", true).get();
-
-    const slides: SerializedHeroSlide[] = snapshot.docs.map(doc => {
-      const data = doc.data();
-
-      return {
-        id: doc.id,
-        title: data.title,
-        description: data.description,
-        backgroundImage: data.backgroundImage,
-        cta: data.cta,
-        ctaHref: data.ctaHref,
-        order: data.order,
-        active: data.active,
-        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
-        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt
-      };
-    });
-
-    return { success: true, slides };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error fetching hero slides";
-
-    console.error("Error fetching hero slides:", message);
-    return { success: false, error: message };
-  }
-}
-
 // ================= Activity Logs =================
-
-//**Purpose**: Retrieves activity logs for administrative purposes
-export async function getAllActivityLogs(
-  limit = 10,
-  startAfter?: string,
-  type?: string
-  //description?: string
-): Promise<GetUserActivityLogsResult> {
-  const session = await auth();
-
-  if (!session?.user?.id || session.user.role !== "admin") {
-    return { success: false, error: "Unauthorized access" };
-  }
-
-  try {
-    const collectionRef = adminDb.collection("activityLogs");
-    let query: Query<DocumentData> = collectionRef;
-
-    if (type) {
-      query = query.where("type", "==", type);
-    }
-
-    query = query.orderBy("timestamp", "desc");
-
-    if (startAfter) {
-      const startAfterDoc = await collectionRef.doc(startAfter).get();
-      if (startAfterDoc.exists) {
-        query = query.startAfter(startAfterDoc);
-      }
-    }
-
-    query = query.limit(limit);
-
-    const logsSnapshot = await query.get();
-
-    const activities: ActivityLogWithId[] = await Promise.all(
-      logsSnapshot.docs.map(async doc => {
-        const data = doc.data();
-        let userEmail = "";
-
-        try {
-          const user = await adminAuth.getUser(data.userId);
-          userEmail = user.email ?? "";
-        } catch (error) {
-          const message = isFirebaseError(error) ? firebaseError(error) : "Unknown error fetching user email";
-          console.warn(`Failed to fetch user for ID ${data.userId}: ${message}`);
-        }
-
-        return {
-          id: doc.id,
-          userId: data.userId,
-          type: data.type,
-          description: data.description,
-          status: data.status,
-          timestamp: data.timestamp,
-          ipAddress: data.ipAddress,
-          location: data.location,
-          device: data.device,
-          deviceType: data.deviceType,
-          metadata: data.metadata,
-          userEmail
-        };
-      })
-    );
-
-    return { success: true, activities };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error";
-
-    console.error("Error getting all activity logs:", message);
-    return { success: false, error: message };
-  }
+export async function getAllActivityLogs(...args: Parameters<typeof adminActivity.getAllActivityLogs>) {
+  return adminActivity.getAllActivityLogs(...args);
 }
 
-//**Purpose**: Retrieves activity logs for the currently authenticated user.
-export async function getUserActivityLogs(
-  limit = 100,
-  startAfter?: string,
-  type?: string,
-  description?: string
-): Promise<GetUserActivityLogsResult> {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return { success: false, error: "Not authenticated" };
-  }
-
-  try {
-    const collectionRef = adminDb.collection("activityLogs");
-    let query: Query<DocumentData> = collectionRef.where("userId", "==", session.user.id);
-
-    if (type) {
-      query = query.where("type", "==", type);
-    }
-
-    if (description) {
-      query = query.where("description", "==", description);
-    }
-
-    query = query.orderBy("timestamp", "desc");
-
-    if (startAfter) {
-      const startAfterDoc = await collectionRef.doc(startAfter).get();
-      if (startAfterDoc.exists) {
-        query = query.startAfter(startAfterDoc);
-      }
-    }
-
-    query = query.limit(limit);
-
-    const logsSnapshot = await query.get();
-
-    const activities: ActivityLogWithId[] = await Promise.all(
-      logsSnapshot.docs.map(async doc => {
-        const data = doc.data();
-        let userEmail = "";
-
-        try {
-          const userRecord = await adminAuth.getUser(data.userId);
-          userEmail = userRecord.email ?? "";
-        } catch (authError) {
-          console.warn(`Failed to fetch email for user ${data.userId}:`, authError);
-        }
-
-        return {
-          id: doc.id,
-          userId: data.userId,
-          userEmail,
-          type: data.type,
-          description: data.description,
-          status: data.status,
-          timestamp: data.timestamp,
-          ipAddress: data.ipAddress,
-          location: data.location,
-          device: data.device,
-          deviceType: data.deviceType,
-          metadata: data.metadata
-        };
-      })
-    );
-
-    return { success: true, activities };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error";
-
-    console.error("Error getting user activity logs:", message);
-    return { success: false, error: message };
-  }
+export async function getUserActivityLogs(...args: Parameters<typeof adminActivity.getUserActivityLogs>) {
+  return adminActivity.getUserActivityLogs(...args);
 }
 
-//**Purpose**: Logs an activity for the currently authenticated user.**Purpose**: Creates a new activity log entry in the database.
-export async function logActivity(data: Omit<ActivityLogData, "timestamp">): Promise<LogActivityResult> {
-  try {
-    const payload: ActivityLogData = {
-      ...data,
-      timestamp: Timestamp.now()
-    };
-
-    const docRef = await adminDb.collection("activityLogs").add(payload);
-
-    return { success: true, activityId: docRef.id };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error logging activity";
-
-    console.error("🔥 Error logging activity:", message); // optional: helpful log
-    return { success: false, error: message };
-  }
+export async function logActivity(...args: Parameters<typeof adminActivity.logActivity>) {
+  return adminActivity.logActivity(...args);
 }
 
 // ================= Email =================
@@ -555,235 +349,40 @@ export async function verifyIdToken(token: string) {
 
 // ================= Product =================
 
-export async function getAllProductsFromFirestore(): Promise<
-  { success: true; data: Product[] } | { success: false; error: string }
-> {
-  try {
-    const snapshot = await adminDb.collection("products").orderBy("createdAt", "desc").get();
-
-    const products: Product[] = snapshot.docs.map(doc => {
-      const data = doc.data();
-
-      return {
-        id: doc.id,
-        name: data.name,
-        description: data.description,
-        image: data.image,
-        price: data.price,
-        inStock: data.inStock,
-        badge: data.badge,
-        isFeatured: data.isFeatured ?? false,
-        isHero: data.isHero ?? false,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt
-      };
-    });
-
-    // ✅ Use the serializer here
-    return { success: true, data: serializeProductArray(products) };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error fetching products";
-    return { success: false, error: message };
-  }
+export async function getAllProductsFromFirestore(
+  ...args: Parameters<typeof adminProducts.getAllProductsFromFirestore>
+) {
+  return adminProducts.getAllProductsFromFirestore(...args);
 }
 
-export async function addProductToFirestore(
-  data: Omit<Product, "id" | "createdAt" | "updatedAt">
-): Promise<{ success: true; id: string; product: SerializedProduct } | { success: false; error: string }> {
-  try {
-    const now = Timestamp.now();
-
-    const productData = {
-      ...data,
-      createdAt: now,
-      updatedAt: now
-    };
-
-    const docRef = await adminDb.collection("products").add(productData);
-
-    const fullProduct: Product = {
-      id: docRef.id,
-      ...productData
-    };
-
-    const serializedProduct = serializeProduct(fullProduct);
-
-    return {
-      success: true,
-      id: docRef.id,
-      product: serializedProduct
-    };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error occurred while adding product";
-
-    console.error("Error adding product:", message);
-    return { success: false, error: message };
-  }
+export async function addProductToFirestore(...args: Parameters<typeof adminProducts.addProductToFirestore>) {
+  return adminProducts.addProductToFirestore(...args);
 }
 
-export async function getProductByIdFromFirestore(id: string): Promise<GetProductByIdFromFirestoreResult> {
-  try {
-    const docRef = adminDb.collection("products").doc(id);
-    const doc = await docRef.get();
-
-    if (!doc.exists) {
-      return { success: false, error: "Product not found" };
-    }
-
-    const data = doc.data();
-
-    const product: Product = {
-      id: doc.id,
-      name: data?.name,
-      description: data?.description || "",
-      image: data?.image,
-      price: data?.price,
-      inStock: data?.inStock,
-      badge: data?.badge || "",
-      isFeatured: data?.isFeatured === true,
-      createdAt: data?.createdAt,
-      updatedAt: data?.updatedAt
-    };
-
-    return { success: true, product: serializeProduct(product) };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error fetching product by ID";
-    return { success: false, error: message };
-  }
+export async function getProductByIdFromFirestore(
+  ...args: Parameters<typeof adminProducts.getProductByIdFromFirestore>
+) {
+  return adminProducts.getProductByIdFromFirestore(...args);
 }
 
-/**
- * Update a product document in Firestore
- */
-type SafeUpdateProductInput = Omit<UpdateProductInput, "id" | "createdAt">;
-
-export async function updateProductInFirestore(
-  id: string,
-  updatedData: SafeUpdateProductInput
-): Promise<UpdateProductResult> {
-  try {
-    const docRef = adminDb.collection("products").doc(id);
-
-    await docRef.update({
-      ...updatedData,
-      updatedAt: Timestamp.now()
-    });
-
-    const updatedDoc = await docRef.get();
-    if (!updatedDoc.exists) {
-      return { success: false, error: "Product not found after update" };
-    }
-
-    const data = updatedDoc.data()!;
-    const fullProduct: Product = {
-      id: updatedDoc.id,
-      name: data.name,
-      description: data.description || "",
-      image: data.image,
-      price: data.price,
-      inStock: data.inStock,
-      badge: data.badge || "",
-      isFeatured: data.isFeatured === true,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt
-    };
-
-    return {
-      success: true,
-      product: serializeProduct(fullProduct)
-    };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error updating product";
-    return { success: false, error: message };
-  }
+export async function updateProductInFirestore(...args: Parameters<typeof adminProducts.updateProductInFirestore>) {
+  return adminProducts.updateProductInFirestore(...args);
 }
 
-export async function deleteProductFromFirestore(
-  productId: string
-): Promise<{ success: true } | { success: false; error: string }> {
-  try {
-    await adminDb.collection("products").doc(productId).delete();
-    return { success: true };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error deleting product";
-
-    console.error("Error deleting product:", message);
-    return { success: false, error: message };
-  }
+export async function deleteProductFromFirestore(...args: Parameters<typeof adminProducts.deleteProductFromFirestore>) {
+  return adminProducts.deleteProductFromFirestore(...args);
 }
 
-export async function getFeaturedProductsFromFirestore(): Promise<
-  { success: true; data: Product[] } | { success: false; error: string }
-> {
-  try {
-    const snapshot = await adminDb.collection("products").where("isFeatured", "==", true).get();
-
-    const products: Product[] = snapshot.docs.map(doc => {
-      const data = doc.data();
-
-      return {
-        id: doc.id,
-        name: data.name,
-        description: data.description || "",
-        image: data.image,
-        price: data.price,
-        inStock: data.inStock,
-        badge: data.badge || "",
-        isFeatured: data.isFeatured === true,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt
-      };
-    });
-
-    return { success: true, data: serializeProductArray(products) };
-  } catch (error) {
-    const message =
-      isFirebaseError(error) || error instanceof Error ? error.message : "Unknown error fetching featured products";
-    return { success: false, error: message };
-  }
+export async function getFeaturedProductsFromFirestore(
+  ...args: Parameters<typeof adminProducts.getFeaturedProductsFromFirestore>
+) {
+  return adminProducts.getFeaturedProductsFromFirestore(...args);
 }
 
-export async function getHeroSlidesFromFirestore(): Promise<
-  { success: true; data: HeroSlide[] } | { success: false; error: string }
-> {
-  try {
-    const snapshot = await adminDb.collection("products").where("isHero", "==", true).get();
-
-    const slides: HeroSlide[] = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        title: data.name,
-        description: data.description,
-        backgroundImage: data.image,
-        cta: "Shop Now",
-        ctaHref: `/products/${doc.id}`
-      };
-    });
-
-    return { success: true, data: slides };
-  } catch (error) {
-    const message =
-      isFirebaseError(error) || error instanceof Error ? error.message : "Unknown error fetching hero slides";
-    return { success: false, error: message };
-  }
+export async function getHeroSlidesFromFirestore(...args: Parameters<typeof adminProducts.getHeroSlidesFromFirestore>) {
+  return adminProducts.getHeroSlidesFromFirestore(...args);
+}
+// ================= Hero Slides =================
+export async function getHeroSlides(...args: Parameters<typeof adminProducts.getHeroSlidesFromFirestore>) {
+  return await adminProducts.getHeroSlidesFromFirestore(...args);
 }

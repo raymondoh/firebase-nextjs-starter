@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { deleteProductFromFirestore } from "@/firebase/admin/products";
+import { deleteProductFromFirestore } from "@/firebase/actions";
 
 export async function deleteProduct(productId: string): Promise<{ success: true } | { success: false; error: string }> {
   const result = await deleteProductFromFirestore(productId);

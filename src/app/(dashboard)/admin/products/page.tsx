@@ -5,7 +5,7 @@ import { DashboardShell, DashboardHeader } from "@/components";
 import { ProductsDataTable } from "@/components/dashboard/admin/ProductsDataTable";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getAllProductsFromFirestore } from "@/firebase/admin/products";
+import { getAllProductsFromFirestore } from "@/firebase/actions";
 
 export const metadata: Metadata = {
   title: "Product Management",

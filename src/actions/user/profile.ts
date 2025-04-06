@@ -5,7 +5,7 @@ import { adminAuth, adminDb } from "@/firebase/admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { profileUpdateSchema } from "@/schemas/user";
 import { convertTimestamps } from "@/firebase/utils/firestore";
-import { logActivity } from "@/firebase";
+import { logActivity } from "@/firebase/actions";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 import type { ProfileUpdateState } from "@/types/user/profile";

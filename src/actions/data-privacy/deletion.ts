@@ -6,7 +6,7 @@ import { serverTimestamp } from "@/firebase/admin/firestore";
 import { cookies } from "next/headers";
 import { accountDeletionSchema } from "@/schemas/data-privacy";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
-import { logActivity } from "@/firebase";
+import { logActivity } from "@/firebase/actions";
 import type { DeleteAccountState } from "@/types/data-privacy/deletion";
 import type { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 

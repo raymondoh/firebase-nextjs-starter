@@ -1,8 +1,8 @@
-// // src/actions/dashboard/activity-logs.ts
+// src/actions/dashboard/activity-logs.ts
 "use server";
 
 import { getUserActivityLogs, getAllActivityLogs } from "@/firebase/actions";
-import type { SerializedActivity, ActivityLogWithId } from "@/types/firebase/activity";
+import type { SerializedActivity } from "@/types/firebase/activity";
 import { serializeData } from "@/utils/serializeData";
 import { auth } from "@/auth";
 
@@ -23,32 +23,15 @@ export async function fetchActivityLogs({
     return { error: "Not authenticated" };
   }
 
-  const isAdmin = session.user.role === "admin";
-
-  const result = isAdmin
-    ? await getAllActivityLogs(limit, startAfter, type)
-    : await getUserActivityLogs(limit, startAfter, type);
+  const result =
+    session.user.role === "admin"
+      ? await getAllActivityLogs(limit, startAfter, type)
+      : await getUserActivityLogs(limit, startAfter, type);
 
   if (!result.success || !result.activities) {
     return { error: result.error || "Failed to fetch logs" };
   }
 
-  const serialized = serializeData(
-    result.activities.map((activity: ActivityLogWithId) => ({
-      id: activity.id,
-      userId: activity.userId,
-      userEmail: activity.userEmail ?? "Unknown",
-      type: activity.type,
-      description: activity.description,
-      status: activity.status,
-      timestamp: activity.timestamp,
-      ipAddress: activity.ipAddress ?? "",
-      location: activity.location ?? "",
-      device: activity.device ?? "",
-      deviceType: activity.deviceType ?? "",
-      metadata: activity.metadata ?? {}
-    }))
-  ) as SerializedActivity[];
-
-  return serialized;
+  // Directly serialize without redundant remapping
+  return serializeData(result.activities) as SerializedActivity[];
 }

@@ -1,8 +1,9 @@
+// src/actions/auth/email-verification.ts
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { serverTimestamp } from "@/firebase/admin/firestore";
-import { logActivity } from "@/firebase";
+import { logActivity } from "@/firebase/actions";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export async function updateEmailVerificationStatus(userId: string, verified: boolean) {

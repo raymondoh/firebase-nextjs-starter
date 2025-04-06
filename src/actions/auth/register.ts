@@ -3,7 +3,7 @@
 import bcryptjs from "bcryptjs";
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { serverTimestamp } from "@/firebase/admin/firestore";
-import { logActivity } from "@/firebase";
+import { logActivity } from "@/firebase/actions";
 import { registerSchema } from "@/schemas";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { RegisterState } from "@/types";
