@@ -1,3 +1,4 @@
+//src/schemas/auth/register.ts
 import { z } from "zod";
 
 // REGISTRATION

@@ -4,7 +4,7 @@ import {
   DashboardShell,
   DashboardHeader,
   AdminSystemPreview,
-  AdminAlertsPreview,
+  //AdminAlertsPreview,
   AdminUserPreview,
   AdminRecentActivityPreview
 } from "@/components";

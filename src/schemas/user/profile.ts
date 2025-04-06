@@ -1,3 +1,4 @@
+//src/schemas/user/index.ts
 import { z } from "zod";
 
 // Profile update schema

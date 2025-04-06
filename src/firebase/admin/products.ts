@@ -11,6 +11,7 @@ import type {
   HeroSlide
 } from "@/types/product";
 import { serializeProduct, serializeProductArray } from "@/utils/serializeProduct";
+import { productSchema } from "@/schemas/product/product";
 
 export async function getAllProductsFromFirestore(): Promise<
   { success: true; data: Product[] } | { success: false; error: string }
@@ -52,10 +53,16 @@ export async function addProductToFirestore(
   data: Omit<Product, "id" | "createdAt" | "updatedAt">
 ): Promise<{ success: true; id: string; product: SerializedProduct } | { success: false; error: string }> {
   try {
-    const now = Timestamp.now();
+    const parsed = productSchema.safeParse(data);
 
+    if (!parsed.success) {
+      console.error("❌ Invalid product data:", parsed.error.flatten());
+      return { success: false, error: "Invalid product data" };
+    }
+
+    const now = Timestamp.now();
     const productData = {
-      ...data,
+      ...parsed.data,
       createdAt: now,
       updatedAt: now
     };
@@ -124,6 +131,7 @@ export async function getProductByIdFromFirestore(id: string): Promise<GetProduc
 /**
  * Update a product document in Firestore
  */
+
 type SafeUpdateProductInput = Omit<UpdateProductInput, "id" | "createdAt">;
 
 export async function updateProductInFirestore(
@@ -131,10 +139,17 @@ export async function updateProductInFirestore(
   updatedData: SafeUpdateProductInput
 ): Promise<UpdateProductResult> {
   try {
+    const parsed = productSchema.partial().safeParse(updatedData); // allow partial updates
+
+    if (!parsed.success) {
+      console.error("❌ Invalid updated product data:", parsed.error.flatten());
+      return { success: false, error: "Invalid product update data" };
+    }
+
     const docRef = adminDb.collection("products").doc(id);
 
     await docRef.update({
-      ...updatedData,
+      ...parsed.data,
       updatedAt: Timestamp.now()
     });
 
@@ -167,6 +182,8 @@ export async function updateProductInFirestore(
       : error instanceof Error
       ? error.message
       : "Unknown error updating product";
+
+    console.error("Error updating product:", message);
     return { success: false, error: message };
   }
 }

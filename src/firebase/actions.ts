@@ -40,6 +40,7 @@ import type { User, UserRole } from "@/types/user";
 // import { serializeProduct, serializeProductArray } from "@/utils/serializeProduct";
 import * as adminActivity from "./admin/activity";
 import * as adminProducts from "./admin/products";
+import * as adminAuthUtils from "./admin/auth";
 
 // ================= User CRUD =================
 
@@ -386,3 +387,5 @@ export async function getHeroSlidesFromFirestore(...args: Parameters<typeof admi
 export async function getHeroSlides(...args: Parameters<typeof adminProducts.getHeroSlidesFromFirestore>) {
   return await adminProducts.getHeroSlidesFromFirestore(...args);
 }
+
+// ================= AminAuthUtils =================
