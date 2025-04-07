@@ -1,8 +1,4 @@
-import {
-  getAllProductsFromFirestore,
-  getFeaturedProductsFromFirestore,
-  getHeroSlidesFromFirestore
-} from "@/firebase/actions";
+import { getAllProducts, getFeaturedProducts, getHeroSlidesFromFirestore } from "@/firebase/actions";
 import { ProductCarousel } from "@/components/product-carousel";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { FeaturedProductsCarousel } from "@/components";
@@ -20,8 +16,8 @@ export const dynamic = "force-dynamic";
 // 👇 Wrap the page logic in a default export function
 export default async function ProductsPage() {
   const [allProductsRes, featuredRes, heroRes] = await Promise.all([
-    getAllProductsFromFirestore(),
-    getFeaturedProductsFromFirestore(),
+    getAllProducts(),
+    getFeaturedProducts(),
     getHeroSlidesFromFirestore()
   ]);
 

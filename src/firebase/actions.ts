@@ -1,47 +1,9 @@
-// src/firebase/actions.ts
 "use server";
-import { Timestamp } from "firebase-admin/firestore";
-import { adminDb, adminAuth } from "./admin/index";
-//import { Query, DocumentData } from "firebase-admin/firestore";
-import * as adminUsers from "./admin/user";
-import { auth } from "@/auth";
-import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
-import type {
-  GetUsersResult,
-  CreateUserDocumentResult,
-  GetUserProfileResult,
-  UpdateUserProfileResult,
-  SetUserRoleResult
-} from "@/types/firebase/firestore";
-// import type {
-//   GetProductByIdFromFirestoreResult,
-//   UpdateProductInput,
-//   UpdateProductResult,
-//   Product,
-//   SerializedProduct,
-//   HeroSlide
-// } from "@/types/product";
 
-// import type {
-//   GetUserActivityLogsResult,
-//   ActivityLogWithId,
-//   ActivityLogData,
-//   LogActivityResult
-// } from "@/types/firebase/activity";
-import type {
-  SetCustomClaimsResult,
-  VerifyAndCreateUserResult,
-  GetUserFromTokenResult,
-  SendResetPasswordEmailResult,
-  CustomClaims
-} from "@/types/firebase/auth";
-// import type { SerializedHeroSlide, GetHeroSlidesResult, GetHeroSlidesError } from "@/types/carousel/hero";
-import type { User, UserRole } from "@/types/user";
-// import { serializeProduct, serializeProductArray } from "@/utils/serializeProduct";
 import * as adminActivity from "./admin/activity";
-import * as adminProducts from "./admin/products";
+import * as adminProducts from "./admin/products/products";
+import * as adminUsers from "./admin/user";
 import * as adminAuthFunctions from "./admin/auth";
-import * as adminAuthUtils from "./admin/auth";
 
 // ================= User CRUD =================
 
@@ -49,228 +11,73 @@ export async function createUser(...args: Parameters<typeof adminAuthFunctions.c
   return await adminAuthFunctions.createUserInFirebase(...args);
 }
 
-export async function verifyAndCreateUser(token: string): Promise<VerifyAndCreateUserResult> {
-  try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
-
-    await createUserDocument(decodedToken.uid, {
-      id: decodedToken.uid,
-      email: decodedToken.email || "",
-      name: decodedToken.name || "",
-      image: decodedToken.picture || "",
-      role: "user"
-    });
-
-    return { success: true, uid: decodedToken.uid };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Invalid token";
-
-    return { success: false, error: message };
-  }
+export async function getUsers(...args: Parameters<typeof adminUsers.getUsers>) {
+  return await adminUsers.getUsers(...args);
 }
 
-export async function deleteUser(uid: string) {
-  try {
-    await adminAuth.deleteUser(uid);
-    return { success: true };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error deleting user";
-
-    return { success: false, error: message };
-  }
+export async function deleteUser(...args: Parameters<typeof adminAuthFunctions.deleteUser>) {
+  return await adminAuthFunctions.deleteUser(...args);
 }
 
-export async function updateUser(
-  uid: string,
-  properties: { displayName?: string; photoURL?: string; password?: string }
-) {
-  try {
-    const user = await adminAuth.updateUser(uid, properties);
-    return { success: true, data: user };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error updating user";
-
-    return { success: false, error: message };
-  }
+export async function getUser(...args: Parameters<typeof adminAuthFunctions.getUser>) {
+  return await adminAuthFunctions.getUser(...args);
 }
 
-// ===== User Functions =====
-export async function getCurrentUser(): Promise<{ success: true; data: User } | { success: false; error: string }> {
-  try {
-    const session = await auth();
-    if (!session?.user) {
-      return { success: false, error: "No authenticated user found" };
-    }
-
-    const role = await getUserRole(session.user.id);
-
-    return {
-      success: true,
-      data: {
-        id: session.user.id,
-        name: session.user.name || "",
-        email: session.user.email || "",
-        image: session.user.image || "",
-        role: role as UserRole
-      }
-    };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error getting current user";
-
-    return { success: false, error: message };
-  }
+export async function updateUser(...args: Parameters<typeof adminAuthFunctions.updateUser>) {
+  return await adminAuthFunctions.updateUser(...args);
 }
 
-export async function getUser(uid: string) {
-  try {
-    const user = await adminAuth.getUser(uid);
-    return { success: true, data: user };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error getting user";
-
-    return { success: false, error: message };
-  }
+export async function getUserByEmail(...args: Parameters<typeof adminAuthFunctions.getUserByEmail>) {
+  return await adminAuthFunctions.getUserByEmail(...args);
 }
 
-export async function getUserByEmail(email: string) {
-  try {
-    const user = await adminAuth.getUserByEmail(email);
-    return { success: true, data: user };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error getting user by email";
-
-    return { success: false, error: message };
-  }
+export async function getUserFromToken(...args: Parameters<typeof adminAuthFunctions.getUserFromToken>) {
+  return await adminAuthFunctions.getUserFromToken(...args);
 }
 
-export async function getUserFromToken(token: string): Promise<GetUserFromTokenResult> {
-  try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    return { success: true, user: decodedToken };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Invalid token";
-
-    return { success: false, error: message };
-  }
+export async function setCustomClaims(...args: Parameters<typeof adminAuthFunctions.setCustomClaims>) {
+  return await adminAuthFunctions.setCustomClaims(...args);
 }
 
-export async function getUsers(limit = 10, startAfter?: string): Promise<GetUsersResult> {
-  try {
-    return await adminUsers.getUsers(limit, startAfter);
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error fetching users";
-
-    return { success: false, error: message };
-  }
+export async function verifyIdToken(...args: Parameters<typeof adminAuthFunctions.verifyIdToken>) {
+  return await adminAuthFunctions.verifyIdToken(...args);
 }
 
-export async function createUserDocument(userId: string, userData: Partial<User>): Promise<CreateUserDocumentResult> {
-  try {
-    return await adminUsers.createUserDocument(userId, userData);
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error creating user document";
+// ================= User Profile & Role =================
 
-    return { success: false, error: message };
-  }
+export async function createUserDocument(...args: Parameters<typeof adminUsers.createUserDocument>) {
+  return await adminUsers.createUserDocument(...args);
 }
 
-export async function getUserProfile(userId: string): Promise<GetUserProfileResult> {
-  try {
-    return await adminUsers.getUserProfile(userId);
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error getting user profile";
-
-    return { success: false, error: message };
-  }
+export async function getUserProfile(...args: Parameters<typeof adminUsers.getUserProfile>) {
+  return await adminUsers.getUserProfile(...args);
 }
 
-export async function updateUserProfile(
-  userId: string,
-  updateData: { name?: string; picture?: string }
-): Promise<UpdateUserProfileResult> {
-  try {
-    return await adminUsers.updateUserProfile(userId, updateData);
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error updating profile";
-
-    return { success: false, error: message };
-  }
+export async function updateUserProfile(...args: Parameters<typeof adminUsers.updateUserProfile>) {
+  return await adminUsers.updateUserProfile(...args);
 }
 
-export async function getUserRole(userId: string): Promise<UserRole> {
-  try {
-    return await adminUsers.getUserRole(userId);
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error getting user role";
-
-    console.error("Error getting user role:", message);
-    return "user";
-  }
+export async function getUserRole(...args: Parameters<typeof adminUsers.getUserRole>) {
+  return await adminUsers.getUserRole(...args);
 }
 
-export async function setUserRole(userId: string, role: UserRole): Promise<SetUserRoleResult> {
-  try {
-    return await adminUsers.setUserRole(userId, role);
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error setting user role";
+export async function setUserRole(...args: Parameters<typeof adminUsers.setUserRole>) {
+  return await adminUsers.setUserRole(...args);
+}
 
-    return { success: false, error: message };
-  }
+// ================= User Authentication =================
+
+export async function verifyAndCreateUser(...args: Parameters<typeof adminAuthFunctions.verifyAndCreateUser>) {
+  return await adminAuthFunctions.verifyAndCreateUser(...args);
+}
+
+// ================= Current User =================
+export async function getCurrentUser(...args: Parameters<typeof adminUsers.getCurrentUser>) {
+  return await adminUsers.getCurrentUser(...args);
 }
 
 // ================= Activity Logs =================
+
 export async function getAllActivityLogs(...args: Parameters<typeof adminActivity.getAllActivityLogs>) {
   return adminActivity.getAllActivityLogs(...args);
 }
@@ -284,98 +91,43 @@ export async function logActivity(...args: Parameters<typeof adminActivity.logAc
 }
 
 // ================= Email =================
-export async function sendResetPasswordEmail(email: string): Promise<SendResetPasswordEmailResult> {
-  try {
-    const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
-      handleCodeInApp: true
-    };
 
-    await adminAuth.generatePasswordResetLink(email, actionCodeSettings);
-    return { success: true };
-  } catch (error: unknown) {
-    if (isFirebaseError(error) && error.code === "auth/user-not-found") {
-      return { success: true }; // Silent success for security reasons
-    }
-
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Failed to send reset email";
-
-    return { success: false, error: message };
-  }
-}
-
-export async function setCustomClaims(uid: string, claims: CustomClaims): Promise<SetCustomClaimsResult> {
-  try {
-    await adminAuth.setCustomUserClaims(uid, claims);
-    return { success: true };
-  } catch (error: unknown) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error setting custom claims";
-
-    return { success: false, error: message };
-  }
-}
-
-export async function verifyIdToken(token: string) {
-  try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    return { success: true, data: decodedToken };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Invalid ID token";
-
-    return { success: false, error: message };
-  }
+export async function sendResetPasswordEmail(...args: Parameters<typeof adminAuthFunctions.sendResetPasswordEmail>) {
+  return await adminAuthFunctions.sendResetPasswordEmail(...args);
 }
 
 // ================= Product =================
 
-export async function getAllProductsFromFirestore(
-  ...args: Parameters<typeof adminProducts.getAllProductsFromFirestore>
-) {
-  return adminProducts.getAllProductsFromFirestore(...args);
+export async function getAllProducts(...args: Parameters<typeof adminProducts.getAllProducts>) {
+  return adminProducts.getAllProducts(...args);
 }
 
-export async function addProductToFirestore(...args: Parameters<typeof adminProducts.addProductToFirestore>) {
-  return adminProducts.addProductToFirestore(...args);
+export async function addProduct(...args: Parameters<typeof adminProducts.addProduct>) {
+  return adminProducts.addProduct(...args);
 }
 
-export async function getProductByIdFromFirestore(
-  ...args: Parameters<typeof adminProducts.getProductByIdFromFirestore>
-) {
-  return adminProducts.getProductByIdFromFirestore(...args);
+export async function getProductById(...args: Parameters<typeof adminProducts.getProductById>) {
+  return adminProducts.getProductById(...args);
 }
 
-export async function updateProductInFirestore(...args: Parameters<typeof adminProducts.updateProductInFirestore>) {
-  return adminProducts.updateProductInFirestore(...args);
+export async function updateProduct(...args: Parameters<typeof adminProducts.updateProduct>) {
+  return adminProducts.updateProduct(...args);
+}
+export async function deleteUserAsAdmin(...args: Parameters<typeof adminAuthFunctions.deleteUserAsAdmin>) {
+  return await adminAuthFunctions.deleteUserAsAdmin(...args);
+}
+export async function deleteProduct(...args: Parameters<typeof adminProducts.deleteProduct>) {
+  return adminProducts.deleteProduct(...args);
 }
 
-export async function deleteProductFromFirestore(...args: Parameters<typeof adminProducts.deleteProductFromFirestore>) {
-  return adminProducts.deleteProductFromFirestore(...args);
+export async function getFeaturedProducts(...args: Parameters<typeof adminProducts.getFeaturedProducts>) {
+  return adminProducts.getFeaturedProducts(...args);
 }
 
-export async function getFeaturedProductsFromFirestore(
-  ...args: Parameters<typeof adminProducts.getFeaturedProductsFromFirestore>
-) {
-  return adminProducts.getFeaturedProductsFromFirestore(...args);
-}
+// ================= Hero Slides =================
 
 export async function getHeroSlidesFromFirestore(...args: Parameters<typeof adminProducts.getHeroSlidesFromFirestore>) {
   return adminProducts.getHeroSlidesFromFirestore(...args);
 }
-// ================= Hero Slides =================
-export async function getHeroSlides(...args: Parameters<typeof adminProducts.getHeroSlidesFromFirestore>) {
-  return await adminProducts.getHeroSlidesFromFirestore(...args);
-}
 
-// ================= AminAuthUtils =================
+// ================= Admin Auth Utilities =================

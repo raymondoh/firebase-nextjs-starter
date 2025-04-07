@@ -1,6 +1,6 @@
-// src/firebase/admin/products.ts
+// src/firebase/admin/products/products.ts
 import { Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "./index";
+import { adminDb } from "../index";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type {
   GetProductByIdFromFirestoreResult,
@@ -11,9 +11,9 @@ import type {
   HeroSlide
 } from "@/types/product";
 import { serializeProduct, serializeProductArray } from "@/utils/serializeProduct";
-import { productSchema } from "@/schemas/product/product";
+import { productSchema } from "@/schemas/products/product";
 
-export async function getAllProductsFromFirestore(): Promise<
+export async function getAllProducts(): Promise<
   { success: true; data: Product[] } | { success: false; error: string }
 > {
   try {
@@ -49,7 +49,7 @@ export async function getAllProductsFromFirestore(): Promise<
   }
 }
 
-export async function addProductToFirestore(
+export async function addProduct(
   data: Omit<Product, "id" | "createdAt" | "updatedAt">
 ): Promise<{ success: true; id: string; product: SerializedProduct } | { success: false; error: string }> {
   try {
@@ -93,7 +93,7 @@ export async function addProductToFirestore(
   }
 }
 
-export async function getProductByIdFromFirestore(id: string): Promise<GetProductByIdFromFirestoreResult> {
+export async function getProductById(id: string): Promise<GetProductByIdFromFirestoreResult> {
   try {
     const docRef = adminDb.collection("products").doc(id);
     const doc = await docRef.get();
@@ -134,10 +134,7 @@ export async function getProductByIdFromFirestore(id: string): Promise<GetProduc
 
 type SafeUpdateProductInput = Omit<UpdateProductInput, "id" | "createdAt">;
 
-export async function updateProductInFirestore(
-  id: string,
-  updatedData: SafeUpdateProductInput
-): Promise<UpdateProductResult> {
+export async function updateProduct(id: string, updatedData: SafeUpdateProductInput): Promise<UpdateProductResult> {
   try {
     const parsed = productSchema.partial().safeParse(updatedData); // allow partial updates
 
@@ -188,9 +185,7 @@ export async function updateProductInFirestore(
   }
 }
 
-export async function deleteProductFromFirestore(
-  productId: string
-): Promise<{ success: true } | { success: false; error: string }> {
+export async function deleteProduct(productId: string): Promise<{ success: true } | { success: false; error: string }> {
   try {
     await adminDb.collection("products").doc(productId).delete();
     return { success: true };
@@ -206,7 +201,7 @@ export async function deleteProductFromFirestore(
   }
 }
 
-export async function getFeaturedProductsFromFirestore(): Promise<
+export async function getFeaturedProducts(): Promise<
   { success: true; data: Product[] } | { success: false; error: string }
 > {
   try {

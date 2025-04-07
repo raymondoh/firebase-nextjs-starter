@@ -64,6 +64,7 @@ export {
   createUser,
   deleteUser,
   verifyIdToken,
+  deleteUserAsAdmin,
 
   // User functions
   getUsers,
@@ -79,12 +80,13 @@ export {
   getAllActivityLogs,
 
   // product functions
-  getAllProductsFromFirestore,
-  addProductToFirestore,
-  getProductByIdFromFirestore,
-  updateProductInFirestore,
-  deleteProductFromFirestore,
-  getFeaturedProductsFromFirestore
+  getAllProducts,
+  addProduct,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  getFeaturedProducts,
+  getHeroSlidesFromFirestore
 } from "./actions";
 
 // Helper functions to avoid naming conflicts

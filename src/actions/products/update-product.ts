@@ -2,8 +2,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { type UpdateProductInput, updateProductSchema } from "@/schemas/product/product";
-import { updateProductInFirestore } from "@/firebase/actions";
+import { type UpdateProductInput, updateProductSchema } from "@/schemas/products/product";
+import { updateProduct as updateProductInDb } from "@/firebase/actions";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 
 /**
@@ -21,7 +21,7 @@ export async function updateProduct(
       return { success: false, error: "Invalid product data: " + validated.error.message };
     }
 
-    const result = await updateProductInFirestore(productId, validated.data);
+    const result = await updateProductInDb(productId, validated.data);
 
     if (result.success) {
       revalidatePath("/dev/products");

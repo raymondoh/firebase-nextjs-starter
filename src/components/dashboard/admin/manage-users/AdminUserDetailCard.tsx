@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { User } from "@/types/user/common";
 import { toast } from "sonner";
-import { updateUser, deleteUser } from "@/actions/user/admin";
+import { updateUser } from "@/actions/user/admin";
+import { deleteUserAsAdmin } from "@/actions/auth";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -38,6 +40,7 @@ export function AdminUserDetailCard({ user }: AdminUserDetailCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<User>({ ...user });
+  const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +65,12 @@ export function AdminUserDetailCard({ user }: AdminUserDetailCardProps) {
   const handleDeleteUser = async () => {
     setIsLoading(true);
     try {
-      const result = await deleteUser(user.id);
+      if (!session?.user?.id) {
+        toast.error("You must be signed in to perform this action");
+        return;
+      }
+
+      const result = await deleteUserAsAdmin(user.id, session.user.id);
       if (result.success) {
         toast.success("User deleted successfully");
         router.push("/admin/users");

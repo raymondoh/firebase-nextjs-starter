@@ -5,7 +5,7 @@ import { DashboardShell, DashboardHeader } from "@/components";
 import { ProductsDataTable } from "@/components/dashboard/admin/ProductsDataTable";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getAllProductsFromFirestore } from "@/firebase/actions";
+import { getAllProducts } from "@/firebase/actions";
 
 export const metadata: Metadata = {
   title: "Product Management",
@@ -27,7 +27,7 @@ export default async function AdminProductsPage() {
   }
 
   // Fetch initial products data
-  const result = await getAllProductsFromFirestore();
+  const result = await getAllProducts();
   const products = result.success ? result.data : [];
 
   return (

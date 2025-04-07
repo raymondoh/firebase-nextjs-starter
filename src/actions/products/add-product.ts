@@ -2,8 +2,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { type CreateProductInput, createProductSchema } from "@/schemas/product/product";
-import { addProductToFirestore } from "@/firebase/actions";
+import { type CreateProductInput, createProductSchema } from "@/schemas/products/product";
+import { addProduct as addProductToDb } from "@/firebase/actions";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export async function addProduct(
@@ -21,7 +21,7 @@ export async function addProduct(
     }
 
     // ✅ Step 2: Call Firebase function with validated data
-    const result = await addProductToFirestore(validated.data);
+    const result = await addProductToDb(validated.data);
 
     if (result.success) {
       revalidatePath("/dev/products");

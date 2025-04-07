@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getProductByIdFromFirestore } from "@/firebase/admin/products";
+import { getProductById } from "@/firebase/admin/products/products";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const result = await getProductByIdFromFirestore(id);
+  const result = await getProductById(id);
 
   if (!result.success) {
     return notFound();

@@ -1,3 +1,4 @@
+// src/actions/data-privacy/deletion.ts
 "use server";
 
 import { auth, signOut } from "@/auth";

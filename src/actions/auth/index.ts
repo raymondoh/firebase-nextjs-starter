@@ -7,3 +7,4 @@ export * from "./debug";
 export * from "./firebase-auth";
 export * from "./email-verification";
 export * from "./password-reset";
+export * from "./delete";
