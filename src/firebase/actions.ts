@@ -40,23 +40,13 @@ import type { User, UserRole } from "@/types/user";
 // import { serializeProduct, serializeProductArray } from "@/utils/serializeProduct";
 import * as adminActivity from "./admin/activity";
 import * as adminProducts from "./admin/products";
+import * as adminAuthFunctions from "./admin/auth";
 import * as adminAuthUtils from "./admin/auth";
 
 // ================= User CRUD =================
 
-export async function createUser(properties: { email: string; password: string; displayName?: string }) {
-  try {
-    const user = await adminAuth.createUser(properties);
-    return { success: true, data: user };
-  } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error creating user";
-
-    return { success: false, error: message };
-  }
+export async function createUser(...args: Parameters<typeof adminAuthFunctions.createUserInFirebase>) {
+  return await adminAuthFunctions.createUserInFirebase(...args);
 }
 
 export async function verifyAndCreateUser(token: string): Promise<VerifyAndCreateUserResult> {

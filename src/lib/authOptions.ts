@@ -1,3 +1,4 @@
+//src/lib/authOptions.ts
 import type { NextAuthConfig } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { AdapterSession } from "@auth/core/adapters";

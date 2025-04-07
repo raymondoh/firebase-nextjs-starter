@@ -2,12 +2,74 @@
 
 import { auth } from "@/auth";
 import { adminAuth, adminDb } from "@/firebase/admin";
+import { createUser as createUserInFirebase, logActivity } from "@/firebase/actions";
 import { Timestamp } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
 import { convertTimestamps } from "@/firebase/utils/firestore";
 import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { User, UserRole, UserSearchState, UserRoleUpdateState } from "@/types/user/common";
+
+// CREATE USER
+/**
+ * Action to create a user (admin-only)
+ */
+
+interface CreateUserInput {
+  email: string;
+  password?: string;
+  name?: string;
+  role?: string;
+}
+
+export async function createUser({ email, password, name, role }: CreateUserInput) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    const result = await createUserInFirebase({
+      email,
+      password,
+      displayName: name,
+      createdBy: session.user.id,
+      role
+    });
+
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to create user" };
+    }
+
+    const uid = result.uid;
+
+    await logActivity({
+      userId: session.user.id,
+      type: "admin-action",
+      description: `Created a new user (${email})`,
+      status: "success",
+      metadata: {
+        createdUserId: uid,
+        createdUserEmail: email,
+        createdUserRole: role || "user"
+      }
+    });
+
+    console.log("✅ NEW USER CREATED:", uid);
+
+    revalidatePath("/admin/users");
+
+    return { success: true, userId: uid };
+  } catch (error) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error";
+
+    return { success: false, error: message };
+  }
+}
 
 // FETCH USERS (admin only)
 export async function fetchUsers(limit = 10, offset = 0) {
@@ -190,60 +252,5 @@ export async function updateUser(userId: string, userData: Partial<User>) {
   } catch (error) {
     console.error("Error updating user:", error);
     return { success: false, error: "Failed to update user" };
-  }
-}
-
-// CREATE USER
-export async function createUser(userData: Partial<User>) {
-  const session = await auth();
-  if (!session?.user?.id) return { success: false, error: "Not authenticated" };
-
-  try {
-    const adminDoc = await adminDb.collection("users").doc(session.user.id).get();
-    const adminData = adminDoc.data();
-    if (!adminData || adminData.role !== "admin") {
-      return { success: false, error: "Unauthorized. Admin access required." };
-    }
-
-    const newUserData = {
-      ...userData,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
-      status: "active"
-    };
-
-    const userRef = await adminDb.collection("users").add(newUserData);
-    revalidatePath("/admin/users");
-
-    return { success: true, userId: userRef.id };
-  } catch (error) {
-    console.error("Error creating user:", error);
-    return { success: false, error: "Failed to create user" };
-  }
-}
-
-// DELETE USER
-export async function deleteUser(userId: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { success: false, error: "Not authenticated" };
-
-  try {
-    const adminDoc = await adminDb.collection("users").doc(session.user.id).get();
-    const adminData = adminDoc.data();
-    if (!adminData || adminData.role !== "admin") {
-      return { success: false, error: "Unauthorized. Admin access required." };
-    }
-
-    if (userId === session.user.id) {
-      return { success: false, error: "You cannot delete your own account" };
-    }
-
-    await adminDb.collection("users").doc(userId).delete();
-    revalidatePath("/admin/users");
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    return { success: false, error: "Failed to delete user" };
   }
 }

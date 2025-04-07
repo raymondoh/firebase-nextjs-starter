@@ -30,6 +30,7 @@ export function AdminUserCreateDialog({ onSuccess, children }: AdminUserCreateDi
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    password: "",
     role: "user"
   });
 
@@ -46,7 +47,7 @@ export function AdminUserCreateDialog({ onSuccess, children }: AdminUserCreateDi
       const result = await createUser(formData);
       if (result.success) {
         toast.success("User created successfully");
-        setFormData({ name: "", email: "", role: "user" });
+        setFormData({ name: "", email: "", password: "", role: "user" });
         setIsOpen(false);
         onSuccess?.();
       } else {
@@ -68,7 +69,7 @@ export function AdminUserCreateDialog({ onSuccess, children }: AdminUserCreateDi
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Create New User</DialogTitle>
           <DialogDescription>Add a new user to your application.</DialogDescription>
@@ -98,6 +99,19 @@ export function AdminUserCreateDialog({ onSuccess, children }: AdminUserCreateDi
                 onChange={e => handleChange("email", e.target.value)}
                 className="col-span-3"
               />
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="password" className="text-right">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={e => handleChange("password", e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">
