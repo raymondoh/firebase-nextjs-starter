@@ -9,6 +9,7 @@ export { formatDate as formatServerDate } from "./date-server";
 export * from "./firebase-error";
 export * from "./get-initials";
 export * from "./getDisplayName";
+export * from "./hashPassword";
 export * from "./serializeData";
 export * from "./serializeProduct";
 export * from "./serializeUser";

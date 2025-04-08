@@ -2,7 +2,6 @@
 "use server";
 
 import { adminAuth, adminDb, adminStorage } from "@/firebase/admin";
-
 import { logActivity } from "@/firebase/actions";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 

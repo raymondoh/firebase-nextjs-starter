@@ -1,3 +1,4 @@
+//src/actions/auth/password.ts
 "use server";
 
 import bcryptjs from "bcryptjs";
@@ -9,6 +10,8 @@ import { forgotPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { ForgotPasswordState, UpdatePasswordState } from "@/types/auth/password";
 import type { UserData } from "@/types";
+import { logPasswordResetActivity } from "./password-reset";
+import { hashPassword } from "@/utils/hashPassword";
 
 /**
  * Helper to safely extract a string value from FormData
@@ -21,6 +24,7 @@ function getFormValue(formData: FormData, key: string): string | null {
 /**
  * REQUEST PASSWORD RESET
  */
+
 export async function requestPasswordReset(
   prevState: ForgotPasswordState,
   formData: FormData
@@ -36,10 +40,18 @@ export async function requestPasswordReset(
     const actionCodeSettings = { url: resetUrl };
 
     await adminAuth.generatePasswordResetLink(email, actionCodeSettings);
+
+    // ✅ Log the reset request activity (non-blocking)
+    try {
+      await logPasswordResetActivity(email);
+    } catch (logError) {
+      console.warn("Warning: Failed to log password reset activity:", logError);
+    }
+
     return { success: true };
   } catch (error: unknown) {
     if (isFirebaseError(error) && error.code === "auth/user-not-found") {
-      return { success: true }; // Don't reveal user existence
+      return { success: true }; // 🔒 Don't reveal user existence
     }
 
     return {
@@ -59,8 +71,7 @@ export async function syncPasswordWithFirestore(
   try {
     const userRecord = await adminAuth.getUserByEmail(email);
 
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
+    const hashedPassword = await hashPassword(password); // ✅ use utility instead of inline bcrypt logic
 
     await adminDb.collection("users").doc(userRecord.uid).update({
       passwordHash: hashedPassword,
@@ -79,6 +90,7 @@ export async function syncPasswordWithFirestore(
 /**
  * UPDATE PASSWORD FOR LOGGED-IN USER
  */
+
 export async function updatePassword(prevState: UpdatePasswordState, formData: FormData): Promise<UpdatePasswordState> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
@@ -110,8 +122,7 @@ export async function updatePassword(prevState: UpdatePasswordState, formData: F
       return { success: false, error: "Current password is incorrect" };
     }
 
-    const salt = await bcryptjs.genSalt(10);
-    const newPasswordHash = await bcryptjs.hash(newPassword, salt);
+    const newPasswordHash = await hashPassword(newPassword); // ✅ use utility instead of inline hash
 
     await adminAuth.updateUser(session.user.id, { password: newPassword });
 

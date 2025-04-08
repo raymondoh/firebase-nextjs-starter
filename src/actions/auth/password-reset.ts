@@ -1,10 +1,11 @@
+//src/actions/auth/password-reset.ts
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { serverTimestamp } from "@/firebase/admin/firestore";
 import { logActivity } from "@/firebase/actions";
-import bcryptjs from "bcryptjs";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import { hashPassword } from "@/utils/hashPassword";
 
 /**
  * Logs a password reset activity
@@ -87,26 +88,30 @@ export async function getUserIdByEmail(email: string) {
 /**
  * Updates password hash in Firestore
  */
+
 export async function updatePasswordHash(userId: string, newPassword: string) {
   if (!userId || !newPassword) {
     return { success: false, error: "User ID and new password are required" };
   }
 
   try {
-    const salt = await bcryptjs.genSalt(10);
-    const passwordHash = await bcryptjs.hash(newPassword, salt);
+    const passwordHash = await hashPassword(newPassword); // ✅ Use shared utility
 
     await adminDb.collection("users").doc(userId).update({
       passwordHash,
       updatedAt: serverTimestamp()
     });
 
-    await logActivity({
-      userId,
-      type: "password_reset_completed",
-      description: "Password reset completed",
-      status: "success"
-    });
+    try {
+      await logActivity({
+        userId,
+        type: "password_reset_completed",
+        description: "Password reset completed",
+        status: "success"
+      });
+    } catch (logError) {
+      console.warn(`[PASSWORD_RESET] Password updated, but failed to log activity:`, logError);
+    }
 
     console.log(`[PASSWORD_RESET] Password hash updated for user: ${userId}`);
     return { success: true };

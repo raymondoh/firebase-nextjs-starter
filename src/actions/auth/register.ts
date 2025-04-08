@@ -1,14 +1,13 @@
 "use server";
 
-import bcryptjs from "bcryptjs";
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { serverTimestamp } from "@/firebase/admin/firestore";
 import { logActivity } from "@/firebase/actions";
 import { registerSchema } from "@/schemas";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import { hashPassword } from "@/utils/hashPassword";
 import type { RegisterState } from "@/types";
 
-// REGISTRATION
 export async function registerUser(prevState: RegisterState, formData: FormData): Promise<RegisterState> {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
@@ -28,9 +27,8 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
   }
 
   try {
-    // Hash the password
-    const salt = await bcryptjs.genSalt(10);
-    const passwordHash = await bcryptjs.hash(password, salt);
+    // ✅ Hash the password
+    const passwordHash = await hashPassword(password);
 
     // Create the user in Firebase Auth
     let userRecord;
@@ -53,10 +51,11 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
         };
       }
 
+      const message = isFirebaseError(error) ? firebaseError(error) : "Failed to create user";
       return {
         success: false,
-        message: isFirebaseError(error) ? firebaseError(error) : "Failed to create user",
-        error: isFirebaseError(error) ? firebaseError(error) : "Failed to create user",
+        message,
+        error: message,
         requiresVerification: false,
         password: ""
       };
@@ -83,15 +82,18 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
         emailVerified: false,
         createdAt: serverTimestamp()
       });
-    // ✅ Registration activity is logged here and should not be duplicated elsewhere.
 
-    // Log activity
-    await logActivity({
-      userId: userRecord.uid,
-      type: "register",
-      description: "Account created, email verification required",
-      status: "success"
-    });
+    // ✅ Safely log activity
+    try {
+      await logActivity({
+        userId: userRecord.uid,
+        type: "register",
+        description: "Account created, email verification required",
+        status: "success"
+      });
+    } catch (logError) {
+      console.error("Failed to log registration activity:", logError);
+    }
 
     return {
       success: true,
@@ -104,11 +106,12 @@ export async function registerUser(prevState: RegisterState, formData: FormData)
     };
   } catch (error: unknown) {
     console.error("Registration error:", error);
+    const message = isFirebaseError(error) ? firebaseError(error) : "Registration failed";
 
     return {
       success: false,
       message: "An error occurred during registration. Please try again.",
-      error: isFirebaseError(error) ? firebaseError(error) : "Registration failed",
+      error: message,
       requiresVerification: false,
       password: ""
     };

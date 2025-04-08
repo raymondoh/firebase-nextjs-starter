@@ -33,8 +33,12 @@ export default async function ProductsPage() {
       </div>
 
       {/* All Products */}
-      <div className="container max-w-7xl mx-auto mt-10">
-        <ProductCarousel products={allProductsRes.data} showTitle={false} />
+      <div className="container max-w-4xl mx-auto mt-10">
+        <ProductCarousel
+          products={allProductsRes.data}
+          showTitle={false}
+          itemsPerView={{ sm: 1, md: 1, lg: 2, xl: 2 }}
+        />
       </div>
 
       {/* Featured Products */}
