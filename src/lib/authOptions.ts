@@ -205,8 +205,12 @@ export const authOptions: NextAuthConfig = {
   events: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        const email = user.email ?? "unknown";
-        await logGoogleActivity(user.id ?? "unknown-id", email, user.name);
+        try {
+          const email = user.email ?? "unknown";
+          await logGoogleActivity(user.id ?? "unknown-id", email, user.name);
+        } catch (error) {
+          console.error("Error logging Google sign-in:", error);
+        }
       }
     },
     // }

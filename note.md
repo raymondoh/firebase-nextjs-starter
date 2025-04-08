@@ -1,3 +1,4 @@
+Uncaught SyntaxError: Invalid or unexpected token
 Failed to load resource: the server responded with a status of 400 ()
 
 @tailwind base;
