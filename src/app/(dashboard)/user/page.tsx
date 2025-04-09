@@ -67,7 +67,7 @@ export default async function UserDashboardOverviewPage() {
       <div className="w-full max-w-8xl mx-auto max-w-8xl flex flex-col lg:grid lg:grid-cols-2 gap-4 md:gap-8">
         {/* Account summary in its own container */}
         <div className="w-full min-w-0 overflow-hidden">
-          <UserAccountPreview userData={serializedUserData} />
+          <UserAccountPreview serializedUserData={serializedUserData} isLoading={!serializedUserData} />
         </div>
 
         {/* Activity preview in its own scrollable container */}

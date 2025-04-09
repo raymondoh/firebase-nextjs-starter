@@ -28,7 +28,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/components/dashboard/admin/admin-profile/AdminProfileForm.Xtsx",
     "src/firebase/security/firestore.rules"
   ],
   "exclude": ["node_modules"]

@@ -5,11 +5,17 @@ import { cookies } from "next/headers";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { auth } from "@/auth";
+import { headers } from "next/headers";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   try {
     // Basic authentication check
     const session = await auth();
+    const headersList = headers();
+    const pathname = headersList.get("x-invoke-path") || "";
+
+    const isAdminRoute = pathname.includes("/dashboard/admin");
+    const isUserRoute = pathname.includes("/dashboard/user");
 
     console.log("Dashboard Layout - Session data:", {
       exists: !!session,
@@ -24,6 +30,17 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     }
 
     const role = session.user?.role;
+
+    // Role-based access control
+    if (role === "admin" && isUserRoute) {
+      console.warn("Admin trying to access user route — redirecting to /dashboard/admin");
+      redirect("/dashboard/admin");
+    }
+
+    if (role === "user" && isAdminRoute) {
+      console.warn("User trying to access admin route — redirecting to /error");
+      redirect("/error");
+    }
 
     // Role-based redirects
     if (role !== "admin" && role !== "user") {

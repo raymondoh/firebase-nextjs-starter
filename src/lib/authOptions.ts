@@ -10,8 +10,15 @@ import { cert } from "firebase-admin/app";
 import { adminAuth, adminDb } from "@/firebase/admin";
 import { getFirestore } from "firebase-admin/firestore";
 import { logActivity } from "@/firebase";
-import { logGoogleActivity } from "@/firebase/analytics/log-google-activity";
+//import { logGoogleActivity } from "@/firebase/analytics/log-google-activity";
+import { serverTimestamp } from "@/firebase/admin/firestore";
 
+type ExtendedUser = {
+  id?: string;
+  sub?: string;
+  email?: string;
+  name?: string;
+};
 const firebaseAdminConfig = {
   credential: cert({
     projectId: process.env.FIREBASE_PROJECT_ID,
@@ -204,15 +211,50 @@ export const authOptions: NextAuthConfig = {
   },
   events: {
     async signIn({ user, account }) {
+      const googleUser = user as ExtendedUser;
+
       if (account?.provider === "google") {
+        //const uid = user.id || (user as unknown as { sub?: string }).sub || "unknown-id";
+        const uid = googleUser.id || googleUser.sub || "unknown-id";
+        const email = user.email ?? "unknown@example.com";
+        const displayName = user.name ?? email.split("@")[0];
+
+        const userDocRef = adminDb.collection("users").doc(uid);
+        const userDoc = await userDocRef.get();
+
+        // Only create user in Firestore if it doesn't exist
+        if (!userDoc.exists) {
+          await userDocRef.set({
+            email,
+            name: displayName,
+            role: "user",
+            emailVerified: true,
+            createdAt: serverTimestamp()
+          });
+        }
+
         try {
-          const email = user.email ?? "unknown";
-          await logGoogleActivity(user.id ?? "unknown-id", email, user.name);
-        } catch (error) {
-          console.error("Error logging Google sign-in:", error);
+          await logActivity({
+            userId: uid,
+            type: "google_login",
+            description: "Signed in with Google",
+            status: "success"
+          });
+        } catch (err) {
+          console.error("Activity logging failed for Google login:", err);
         }
       }
     },
+    // async signIn({ user, account }) {
+    //   if (account?.provider === "google") {
+    //     try {
+    //       const email = user.email ?? "unknown";
+    //       await logGoogleActivity(user.id ?? "unknown-id", email, user.name);
+    //     } catch (error) {
+    //       console.error("Error logging Google sign-in:", error);
+    //     }
+    //   }
+    // },
     // }
     async signOut(
       message: { session: void | AdapterSession | null | undefined } | { token: JWT | null }
