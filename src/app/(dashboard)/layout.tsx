@@ -1,4 +1,4 @@
-// src/app/dashboard/layout.tsx
+// src/app/(dashboard)/layout.tsx
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
@@ -11,11 +11,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   try {
     // Basic authentication check
     const session = await auth();
-    const headersList = headers();
+    const headersList = await headers();
     const pathname = headersList.get("x-invoke-path") || "";
 
-    const isAdminRoute = pathname.includes("/dashboard/admin");
-    const isUserRoute = pathname.includes("/dashboard/user");
+    const isAdminRoute = pathname.includes("/admin");
+    const isUserRoute = pathname.includes("/user");
 
     console.log("Dashboard Layout - Session data:", {
       exists: !!session,
@@ -33,13 +33,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
     // Role-based access control
     if (role === "admin" && isUserRoute) {
-      console.warn("Admin trying to access user route — redirecting to /dashboard/admin");
-      redirect("/dashboard/admin");
+      console.warn("Admin trying to access user route — redirecting to /admin");
+      redirect("/admin"); // Corrected path without dashboard prefix
     }
 
     if (role === "user" && isAdminRoute) {
-      console.warn("User trying to access admin route — redirecting to /error");
-      redirect("/error");
+      console.warn("User trying to access admin route — redirecting to /not-authorized");
+      redirect("/not-authorized"); // Consistent with our approach
     }
 
     // Role-based redirects
@@ -80,6 +80,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     );
   } catch (error) {
     console.error("Error in DashboardLayout:", error);
-    redirect("/error");
+    redirect("/not-authorized"); // Updated for consistency
   }
 }

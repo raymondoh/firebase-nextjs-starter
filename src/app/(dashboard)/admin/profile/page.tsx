@@ -1,61 +1,54 @@
-import type { Metadata } from "next";
+//import type { User } from "@/types/user";
+import { getCurrentUser } from "@/firebase/actions";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
 import { UserProfileForm } from "@/components/auth/UserProfileForm";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import { adminDb } from "@/firebase/admin";
-
-export const metadata: Metadata = {
-  title: "Admin Profile - Admin",
-  description: "Manage your admin account settings and profile information."
-};
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default async function AdminProfilePage() {
-  // Get the session server-side
-  const session = await auth();
+  // Run these in parallel for better performance
+  const [session, userResult] = await Promise.all([auth(), getCurrentUser()]);
 
-  // Redirect if not authenticated
+  // Check authentication
   if (!session?.user) {
     redirect("/login");
   }
 
-  // Check if user has admin role
-  const userId = session.user.id;
-  let isAdmin = false;
+  // Check if the user is an admin
+  if (session.user.role !== "admin") {
+    redirect("/not-authorized"); // Redirect non-admin users to not-authorized page
+  }
 
-  try {
-    // Fetch the user document from Firestore to check admin status
-    const userDoc = await adminDb.collection("users").doc(userId).get();
+  // Extract the user data or handle error
+  const user = userResult.success ? userResult.data : null;
+  const error = userResult.success ? null : userResult.error;
 
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      isAdmin = userData?.role === "admin";
-    }
-
-    // Redirect if not an admin
-    if (!isAdmin) {
-      redirect("/user/dashboard");
-    }
-  } catch (error) {
-    console.error("Error checking admin status:", error);
-    redirect("/user/dashboard");
+  // If we couldn't get the user data, show an error page
+  if (!user) {
+    redirect("/error");
   }
 
   return (
     <DashboardShell>
-      <DashboardHeader heading="Admin Profile" text="Manage your admin account settings and profile information" />
+      <DashboardHeader heading="Admin Profile" text="Update your admin account settings" />
       <Separator className="mb-8" />
 
-      {/* Added w-full and overflow-hidden */}
-      <div className="w-full max-w-4xl overflow-hidden">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold">Personal Information</h2>
-            <p className="text-muted-foreground">Update your personal details and profile picture.</p>
-          </div>
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-          <UserProfileForm isAdmin />
+      <div className="w-full max-w-4xl overflow-hidden">
+        <div className="profile-form-container">
+          <h2 className="text-xl font-semibold mb-4">Admin Information</h2>
+          <p className="text-muted-foreground mb-6">Update your name, bio, and profile image.</p>
+
+          <UserProfileForm user={user} isLoading={!user} isAdmin={true} />
         </div>
       </div>
     </DashboardShell>

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, startTransition, useActionState } from "react";
-
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-//import { useFormState } from "react-dom";
+import {} from "react";
 import { Upload, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -19,28 +18,29 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { updateUserProfile } from "@/actions/user";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { ProfileUpdateState } from "@/types/user";
-import type { User } from "@/types/user";
 import { getInitials } from "@/utils/get-initials";
 import { uploadFile } from "@/utils/uploadFile";
 import { validateFileSize } from "@/utils/validateFileSize";
 import { SubmitButton } from "@/components/shared/SubmitButton";
+import type { User } from "@/types/user";
 import { UserProfileSkeleton } from "./UserProfileSkeleton";
-
 interface UnifiedProfileFormProps {
+  userData?: User | null;
   id?: string;
   onCancel?: () => void;
   redirectAfterSuccess?: string;
   isAdmin?: boolean;
-  user: User | null;
   isLoading?: boolean;
+  user?: User | null; // Add this line to accept the user prop
 }
 
 export function UserProfileForm({
+  userData,
+  isLoading,
+  user,
   id,
   onCancel,
   redirectAfterSuccess,
-  user,
-  isLoading = false,
   isAdmin = false
 }: UnifiedProfileFormProps) {
   const { data: session, status, update: updateSessionFn } = useSession();
@@ -156,7 +156,10 @@ export function UserProfileForm({
     }
   };
 
-  if (status === "loading" || isLoading || !user || !formReady) {
+  // if (status === "loading" || !formReady) {
+  //   return null;
+  // }
+  if (status === "loading" || !formReady) {
     return <UserProfileSkeleton />;
   }
 

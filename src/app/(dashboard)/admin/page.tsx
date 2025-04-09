@@ -41,8 +41,9 @@ export default async function AdminDashboardOverviewPage() {
     }
 
     // Redirect if not an admin
+    // Redirect if not an admin
     if (!isAdmin) {
-      redirect("/user/dashboard");
+      redirect("/not-authorized");
     }
   } catch (error) {
     console.error("Error checking admin status:", error);
