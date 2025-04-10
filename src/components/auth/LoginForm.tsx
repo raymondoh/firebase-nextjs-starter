@@ -13,7 +13,9 @@ import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { signInWithCustomToken } from "firebase/auth";
 import { auth } from "@/firebase/client";
-import { loginUser, signInWithFirebase } from "@/actions/auth";
+import { loginUser } from "@/actions/auth";
+import { signInWithNextAuth } from "@/firebase/client/next-auth";
+
 import type { LoginState } from "@/types/auth";
 import { GoogleAuthButton } from "@/components";
 import { CloseButton } from "@/components";
@@ -76,7 +78,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         signInWithCustomToken(auth, state.data.customToken)
           .then(async userCredential => {
             const idToken = await userCredential.user.getIdToken();
-            const signInResult = await signInWithFirebase({ idToken });
+            //const signInResult = await signInWithFirebase({ idToken });
+            const signInResult = await signInWithNextAuth({ idToken });
 
             if (!signInResult.success) throw new Error("Failed to sign in with NextAuth");
 

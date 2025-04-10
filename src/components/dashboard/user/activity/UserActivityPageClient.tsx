@@ -203,13 +203,14 @@
 // }
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { ActivityPageClient } from "./ActivityLogClient";
-import { auth } from "@/auth";
+//import { UserActivityPageClient } from "./UserActivityLogClient";
+//import { UserActivityLogClient } from "./UserActivityLogClient";
+//import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
 import type { SerializedActivity } from "@/types/firebase/activity";
 
-export default async function ActivityPageclient() {
+export default async function UserActivityPageclient() {
   const session = await auth();
 
   if (!session?.user) {
@@ -225,7 +226,7 @@ export default async function ActivityPageclient() {
       <Separator className="mb-8" />
 
       <div className="w-full max-w-full overflow-hidden">
-        <ActivityLogClient initialLogs={initialLogs} />
+        {/* <UserActivityLogClient initialLogs={initialLogs} />{" "} */}
       </div>
     </DashboardShell>
   );

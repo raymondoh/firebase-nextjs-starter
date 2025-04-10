@@ -63,6 +63,7 @@ export async function getAllActivityLogs(
       ...(log as ActivityLogWithId),
       userEmail: userEmailsMap[log.userId] ?? ""
     }));
+    console.log("[getAllActivityLogs] Logs fetched:", logs.length);
 
     return { success: true, activities };
   } catch (error) {

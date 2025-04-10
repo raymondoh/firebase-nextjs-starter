@@ -7,12 +7,13 @@ import {
   AdminSystemPreview,
   //AdminAlertsPreview,
   AdminUserPreview,
-  AdminRecentActivityPreview
+  AdminActivityPreview
 } from "@/components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { adminDb } from "@/firebase/admin";
 import { serializeData } from "@/utils";
+import type { SerializedActivity } from "@/types/firebase";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -22,9 +23,13 @@ export const metadata: Metadata = {
 export default async function AdminDashboardOverviewPage() {
   // Get the session server-side
   const session = await auth();
+  // const result = await fetchActivityLogs({ limit: 10 });
+  // const logs: SerializedActivity[] = Array.isArray(result) ? result : [];
   const result = await fetchActivityLogs({ limit: 10 });
-  const logs: SerializedActivity[] = Array.isArray(result) ? result : [];
+  console.log("[AdminDashboardOverviewPage] fetchActivityLogs result:", result);
+  const logs: SerializedActivity[] = result.success && Array.isArray(result.activities) ? result.activities : [];
 
+  console.log("[AdminDashboardOverviewPage] Logs length:", logs.length);
   // Redirect if not authenticated
   if (!session?.user) {
     redirect("/login");
@@ -87,6 +92,7 @@ export default async function AdminDashboardOverviewPage() {
     // Get total activities
     const activitiesSnapshot = await adminDb.collection("activities").count().get();
     systemStats.totalActivities = activitiesSnapshot.data().count;
+    console.log("ACTIVITIES:", activitiesSnapshot.data().count);
   } catch (error) {
     console.error("Error fetching system stats:", error);
     // Continue with default values if fetch fails
@@ -123,7 +129,7 @@ export default async function AdminDashboardOverviewPage() {
 
         {/* Admin Activity Log */}
         <div className="w-full min-w-0 overflow-hidden">
-          <AdminRecentActivityPreview
+          <AdminActivityPreview
             activities={logs}
             limit={5}
             showFilters={false}

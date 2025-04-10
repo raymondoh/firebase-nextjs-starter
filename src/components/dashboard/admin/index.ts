@@ -2,7 +2,7 @@
 export { AdminAlertsPreview } from "./overview-page/AdminAlertsPreview";
 export { AdminSystemPreview } from "./overview-page/AdminSystemPreview";
 export { AdminUserPreview } from "./overview-page/AdminUserPreview";
-export { AdminRecentActivityPreview } from "./overview-page/AdminRecentActivityPreview";
+export { AdminActivityPreview } from "./overview-page/AdminActivityPreview";
 
 // Admin Activity page
 export { AdminActivityPageClient } from "./activity-page/AdminActivityPageClient";

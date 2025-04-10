@@ -168,7 +168,7 @@ export function VerifyEmailForm() {
           </CardContent>
           <CardFooter className="flex justify-center">
             <Button asChild>
-              <Link href="/auth/verify-email">Resend Verification Email</Link>
+              <Link href="/verify-email">Resend Verification Email</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -206,7 +206,7 @@ export function VerifyEmailForm() {
           </Button>
           <p className="text-xs text-center text-muted-foreground">
             Didn&apos;t receive an email? Check your spam folder or{" "}
-            <Link href="/auth/verify-email" className="underline underline-offset-4 hover:text-primary">
+            <Link href="/verify-email" className="underline underline-offset-4 hover:text-primary">
               try resending the verification email
             </Link>
           </p>

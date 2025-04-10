@@ -25,7 +25,8 @@ export default async function AdminActivityPage() {
 
   // ✅ Fetch initial logs on the server
   const result = await fetchActivityLogs({ limit: 10 });
-  const logs: SerializedActivity[] = Array.isArray(result) ? result : [];
+  const logs: SerializedActivity[] = result.success && Array.isArray(result.activities) ? result.activities : [];
+  console.log("[AdminActivityPage] Logs length:", logs.length);
 
   return (
     <DashboardShell>

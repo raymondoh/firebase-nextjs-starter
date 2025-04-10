@@ -12,7 +12,7 @@ import { db } from "@/firebase/client";
 import type { AdminActivityLogWrapperProps } from "@/types/dashboard";
 import { getDisplayName } from "@/utils/getDisplayName";
 
-export function AdminRecentActivityPreview({
+export function AdminActivityPreview({
   activities,
   limit = 5,
   showHeader = true,
@@ -74,9 +74,20 @@ export function AdminRecentActivityPreview({
           </div>
         ) : (
           enrichedActivities.map(activity => (
-            <div key={activity.id} className="flex justify-between items-center text-sm">
-              <div className="font-medium">{activity.displayName}</div>
-              <div className="text-muted-foreground">{formatDate(activity.timestamp)}</div>
+            <div key={activity.id} className="flex flex-col space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">
+                  {activity.displayName}
+                  {activity.userEmail && (
+                    <span className="block text-xs text-muted-foreground">{activity.userEmail}</span>
+                  )}
+                </span>
+                <span className="text-xs text-muted-foreground">{formatDate(activity.timestamp)}</span>
+              </div>
+              <p className="text-xs">{activity.description}</p>
+              {/* {activity.metadata?.details && (
+                <p className="text-xs text-muted-foreground">{activity.metadata.details}</p>
+              )} */}
             </div>
           ))
         )}

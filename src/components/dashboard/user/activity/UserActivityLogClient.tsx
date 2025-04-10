@@ -10,7 +10,11 @@ import { Search, RefreshCw } from "lucide-react";
 import { formatDate } from "@/utils/date-client";
 import type { ActivityLogClientProps } from "@/types/dashboard/activity";
 
-export function ActivityLogClient({ activities, showFilters = true, isRefreshing = false }: ActivityLogClientProps) {
+export function UserActivityLogClient({
+  activities,
+  showFilters = true,
+  isRefreshing = false
+}: ActivityLogClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string | null>(null);
 

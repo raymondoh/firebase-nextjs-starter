@@ -19,7 +19,8 @@ import { useSession } from "next-auth/react";
 import { auth } from "@/firebase/client";
 import { signInWithCustomToken, sendEmailVerification } from "firebase/auth";
 import { getVerificationSettings } from "@/firebase/client/auth";
-import { signInWithFirebase } from "@/actions/auth/firebase-auth";
+//import { signInWithFirebase } from "@/actions/auth/firebase-auth";
+import { signInWithNextAuth } from "@/firebase/client/next-auth";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { CloseButton } from "@/components";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
@@ -144,7 +145,8 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
         signInWithCustomToken(auth, loginState.data.customToken)
           .then(async userCredential => {
             const idToken = await userCredential.user.getIdToken();
-            const signInResult = await signInWithFirebase({ idToken });
+            //const signInResult = await signInWithFirebase({ idToken });
+            const signInResult = await signInWithNextAuth(idToken);
 
             if (!signInResult.success) throw new Error("NextAuth sign-in failed");
             toast.success("You're now logged in!");

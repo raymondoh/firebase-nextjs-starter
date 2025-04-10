@@ -6,19 +6,23 @@ import { loginSchema } from "@/schemas/auth";
 import type { LoginResponse } from "@/types/auth/login";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
-export async function loginUser(prevState: LoginResponse | null, formData: FormData): Promise<LoginResponse> {
+export async function loginUser(_prevState: LoginResponse | null, formData: FormData): Promise<LoginResponse> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const isRegistration = formData.get("isRegistration") === "true";
   const skipSession = formData.get("skipSession") === "true";
 
-  const validationResult = loginSchema.safeParse({ email, password });
-  if (!validationResult.success) {
-    const message = validationResult.error.issues[0]?.message || "Invalid form data";
-    return { success: false, message };
+  // Step 1: Validate input
+  const validation = loginSchema.safeParse({ email, password });
+  if (!validation.success) {
+    return {
+      success: false,
+      message: validation.error.issues[0]?.message || "Invalid form data"
+    };
   }
 
   try {
+    // Step 2: Get user record from Firebase Auth
     const userRecord = await adminAuth.getUserByEmail(email);
     const isEmailVerified = userRecord.emailVerified;
 
@@ -29,6 +33,7 @@ export async function loginUser(prevState: LoginResponse | null, formData: FormD
       };
     }
 
+    // Step 3: Validate Firestore password hash
     const userDoc = await adminDb.collection("users").doc(userRecord.uid).get();
     const userData = userDoc.data();
 
@@ -41,6 +46,7 @@ export async function loginUser(prevState: LoginResponse | null, formData: FormD
       return { success: false, message: "Invalid email or password" };
     }
 
+    // Step 4: Return custom token for client-side Firebase sign in
     const customToken = await adminAuth.createCustomToken(userRecord.uid);
 
     return {
@@ -55,12 +61,9 @@ export async function loginUser(prevState: LoginResponse | null, formData: FormD
       }
     };
   } catch (error: unknown) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as { code?: string }).code === "auth/user-not-found"
-    ) {
+    const code = (error as { code?: string })?.code;
+
+    if (code === "auth/user-not-found") {
       return { success: false, message: "Invalid email or password" };
     }
 
@@ -68,10 +71,9 @@ export async function loginUser(prevState: LoginResponse | null, formData: FormD
       return { success: false, message: firebaseError(error) };
     }
 
-    if (error instanceof Error) {
-      return { success: false, message: error.message || "Authentication failed" };
-    }
-
-    return { success: false, message: "An unexpected error occurred. Please try again." };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "An unexpected error occurred. Please try again."
+    };
   }
 }

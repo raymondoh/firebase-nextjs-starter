@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { UserRecentActivityPreview } from "@/components/dashboard/user/overview/UserRecentActivityPreview";
+//import { UserRecentActivityPreview } from "@/components/dashboard/user/overview/UserRecentActivityPreview";
 import { UserAccountPreview } from "@/components/dashboard/user/overview/UserAccountPreview";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -72,13 +72,13 @@ export default async function UserDashboardOverviewPage() {
 
         {/* Activity preview in its own scrollable container */}
         <div className="w-full min-w-0 overflow-hidden">
-          <UserRecentActivityPreview
+          {/* <UserRecentActivityPreview
             limit={5}
             showFilters={false}
             showHeader={true}
             showViewAll={true}
             viewAllUrl="/user/activity"
-          />
+          /> */}
         </div>
       </div>
     </DashboardShell>

@@ -1,6 +1,6 @@
 // ActivityPage
-export { ActivityPageClient } from "./activity/ActivityPageClient";
-//export { ActivityLogClient as ActivityLog } from "./activity/ActivityLogClient";
+//export { UserActivityPageClient } from "./activity/UserActivityPageClient";
+//export UserActivityLogClient as   from "./activity/UserActivityLogClient";
 
 // Data Page
 export { AccountDeletion } from "./data-privacy/AccountDeletion";
