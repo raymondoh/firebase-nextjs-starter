@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import { sendPasswordResetEmail } from "firebase/auth";
-import { logPasswordResetActivity } from "@/actions/auth/password-reset";
+import { logPasswordResetActivity } from "@/actions/auth/reset-password";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import { SubmitButton } from "@/components/shared/SubmitButton";
 
@@ -34,7 +34,7 @@ export function ForgotPasswordForm() {
       };
 
       await sendPasswordResetEmail(auth, email, actionCodeSettings);
-      await logPasswordResetActivity(email);
+      await logPasswordResetActivity({ email });
 
       setIsSubmitted(true);
       toast.success("Password reset email sent. Please check your inbox.");

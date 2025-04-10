@@ -10,7 +10,7 @@ import { forgotPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { ForgotPasswordState, UpdatePasswordState } from "@/types/auth/password";
 import type { UserData } from "@/types";
-import { logPasswordResetActivity } from "./password-reset";
+import { logPasswordResetActivity } from "./reset-password";
 import { hashPassword } from "@/utils/hashPassword";
 
 /**

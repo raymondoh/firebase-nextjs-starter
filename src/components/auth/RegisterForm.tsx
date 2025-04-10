@@ -93,13 +93,13 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
           loginFormData.append("isRegistration", "true");
           loginFormData.append("skipSession", "true");
 
-          if (state.role) loginFormData.append("role", state.role);
-          if (state.userId) loginFormData.append("id", state.userId);
+          if (state.data?.role) loginFormData.append("role", state.data.role);
+          if (state.data?.userId) loginFormData.append("id", state.data.userId);
 
           const loginResult = await loginUser(null, loginFormData);
 
-          if (loginResult?.success && loginResult.customToken) {
-            const userCredential = await signInWithCustomToken(auth, loginResult.customToken);
+          if (loginResult?.success && loginResult.data?.customToken) {
+            const userCredential = await signInWithCustomToken(auth, loginResult.data.customToken);
             const user = userCredential.user;
 
             if (user && !verificationEmailSent.current) {
@@ -140,11 +140,12 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
     if (loginState?.success && !isRedirecting.current) {
       isRedirecting.current = true;
 
-      if (loginState.customToken) {
-        signInWithCustomToken(auth, loginState.customToken)
+      if (loginState.data?.customToken) {
+        signInWithCustomToken(auth, loginState.data.customToken)
           .then(async userCredential => {
             const idToken = await userCredential.user.getIdToken();
-            const signInResult = await signInWithFirebase(idToken);
+            const signInResult = await signInWithFirebase({ idToken });
+
             if (!signInResult.success) throw new Error("NextAuth sign-in failed");
             toast.success("You're now logged in!");
             await update();
@@ -249,19 +250,6 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
             <p className="text-sm text-muted-foreground">Re-enter your password to confirm.</p>
           </div>
 
-          {/* <Button
-            type="submit"
-            className="w-full"
-            disabled={isPending || isLoggingIn || isLoginPending || isRedirecting.current || isGoogleSigningIn}>
-            {isPending || isLoggingIn || isLoginPending ? (
-              <>
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                Preparing...
-              </>
-            ) : (
-              "Register"
-            )}
-          </Button> */}
           <SubmitButton
             disabled={isPending || isLoggingIn || isLoginPending || isRedirecting.current || isGoogleSigningIn}
             loadingText="Creating account..."

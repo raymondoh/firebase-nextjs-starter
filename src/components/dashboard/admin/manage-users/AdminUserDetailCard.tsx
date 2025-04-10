@@ -70,7 +70,8 @@ export function AdminUserDetailCard({ user }: AdminUserDetailCardProps) {
         return;
       }
 
-      const result = await deleteUserAsAdmin(user.id, session.user.id);
+      const result = await deleteUserAsAdmin({ userId: user.id, adminId: session.user.id });
+
       if (result.success) {
         toast.success("User deleted successfully");
         router.push("/admin/users");

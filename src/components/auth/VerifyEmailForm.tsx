@@ -52,7 +52,7 @@ export function VerifyEmailForm() {
             await user.reload();
             if (user.emailVerified) {
               try {
-                await updateEmailVerificationStatus(user.uid, true);
+                await updateEmailVerificationStatus({ userId: user.uid, verified: true });
               } catch (firestoreError) {
                 console.error("Error updating Firestore:", firestoreError);
               }
@@ -73,7 +73,8 @@ export function VerifyEmailForm() {
                 try {
                   await user.reload();
                   if (user.emailVerified) {
-                    await updateEmailVerificationStatus(user.uid, true);
+                    await updateEmailVerificationStatus({ userId: user.uid, verified: true });
+
                     setIsRedirecting(true);
                     router.push("/verify-success");
                     return;
@@ -83,7 +84,8 @@ export function VerifyEmailForm() {
                 }
               } else if (userId) {
                 try {
-                  await updateEmailVerificationStatus(userId, true);
+                  await updateEmailVerificationStatus({ userId, verified: true });
+
                   setIsRedirecting(true);
                   router.push("/verify-success");
                   return;

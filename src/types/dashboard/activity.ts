@@ -40,12 +40,12 @@ export interface SystemAlert {
 //
 
 export interface AdminActivityLogWrapperProps {
+  activities: SerializedActivity[]; // ✅ Required prop for rendering logs
   limit?: number;
   showFilters?: boolean;
   showHeader?: boolean;
   showViewAll?: boolean;
   viewAllUrl?: string;
-
   className?: string;
 }
 
@@ -68,4 +68,15 @@ export interface ActivityLogClientProps {
   activities: SerializedActivity[];
   showFilters: boolean;
   isRefreshing?: boolean;
+}
+export interface FetchActivityLogsParams {
+  limit?: number;
+  startAfter?: string;
+  type?: string;
+}
+
+export interface FetchActivityLogsResponse {
+  success: boolean;
+  activities?: SerializedActivity[];
+  error?: string;
 }

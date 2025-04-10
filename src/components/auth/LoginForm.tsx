@@ -64,7 +64,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       action(formData);
     });
   };
-
   useEffect(() => {
     if (state?.success && !hasToastShown.current && !isRedirecting.current) {
       setErrorMessage(null);
@@ -73,11 +72,11 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
       toast.success("Login successful!");
 
-      if (state.customToken) {
-        signInWithCustomToken(auth, state.customToken)
+      if (state.data?.customToken) {
+        signInWithCustomToken(auth, state.data.customToken)
           .then(async userCredential => {
             const idToken = await userCredential.user.getIdToken();
-            const signInResult = await signInWithFirebase(idToken);
+            const signInResult = await signInWithFirebase({ idToken });
 
             if (!signInResult.success) throw new Error("Failed to sign in with NextAuth");
 
@@ -107,7 +106,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       toast.error(state.message);
     }
   }, [state, router, update, componentId]);
-
+  // for testing
+  useEffect(() => {
+    console.log("LoginForm state:", state);
+  }, [state]);
   return (
     <Card className={className} {...props}>
       <div className="relative">

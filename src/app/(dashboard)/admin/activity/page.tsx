@@ -4,6 +4,8 @@ import { DashboardShell, DashboardHeader } from "@/components";
 import { AdminActivityPageClient } from "@/components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { fetchActivityLogs } from "@/actions/dashboard/activity-logs"; // ✅ move it here
+import type { SerializedActivity } from "@/types/firebase/activity";
 
 export const metadata: Metadata = {
   title: "Activity Log - Admin",
@@ -21,14 +23,17 @@ export default async function AdminActivityPage() {
     redirect("/not-authorized");
   }
 
+  // ✅ Fetch initial logs on the server
+  const result = await fetchActivityLogs({ limit: 10 });
+  const logs: SerializedActivity[] = Array.isArray(result) ? result : [];
+
   return (
     <DashboardShell>
       <DashboardHeader heading="Activity Log" text="View all recent activity across the platform." />
       <Separator className="mb-8" />
 
-      {/* Added a container with overflow handling */}
       <div className="w-full max-w-full overflow-hidden">
-        <AdminActivityPageClient />
+        <AdminActivityPageClient initialLogs={logs} /> {/* ✅ pass logs as prop */}
       </div>
     </DashboardShell>
   );

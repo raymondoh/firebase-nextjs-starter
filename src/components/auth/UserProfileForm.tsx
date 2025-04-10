@@ -17,12 +17,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { updateUserProfile } from "@/actions/user";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
-import type { ProfileUpdateState } from "@/types/user";
+import type { ProfileUpdateState, UserRoleUpdateState } from "@/types/user";
 import { getInitials } from "@/utils/get-initials";
 import { uploadFile } from "@/utils/uploadFile";
 import { validateFileSize } from "@/utils/validateFileSize";
 import { SubmitButton } from "@/components/shared/SubmitButton";
-import type { User } from "@/types/user";
+import type { User, UserRole } from "@/types/user";
 import { UserProfileSkeleton } from "./UserProfileSkeleton";
 interface UnifiedProfileFormProps {
   userData?: User | null;

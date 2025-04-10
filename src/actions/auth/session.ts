@@ -1,5 +1,5 @@
 "use server";
-
+import type { Session } from "next-auth";
 import { auth } from "@/auth";
 import { cookies } from "next/headers";
 
@@ -9,7 +9,10 @@ import { cookies } from "next/headers";
 // The validateSession function is used to check if the session is valid, including whether the user is authenticated and the session token is valid.
 
 // Get current session info
-export async function getSessionInfo() {
+export async function getSessionInfo(): Promise<{
+  isAuthenticated: boolean;
+  user: Session["user"] | null;
+}> {
   const session = await auth();
   return {
     isAuthenticated: !!session?.user,
@@ -20,7 +23,7 @@ export async function getSessionInfo() {
 // Check if session is valid
 export async function validateSession() {
   const session = await auth();
-  const cookieStore = await cookies(); // Await the promise here!
+  const cookieStore = cookies(); // Await the promise here!
   const sessionToken = cookieStore.get("next-auth.session-token");
 
   return {

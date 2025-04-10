@@ -5,10 +5,10 @@ import { signIn } from "@/auth";
 import { adminAuth } from "@/firebase/admin";
 import { logActivity } from "@/firebase/actions";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import type { SignInWithFirebaseInput, SignInWithFirebaseResponse } from "@/types/auth/firebase-auth";
 
-export async function signInWithFirebase(idToken: string) {
+export async function signInWithFirebase({ idToken }: SignInWithFirebaseInput): Promise<SignInWithFirebaseResponse> {
   try {
-    // Decode the Firebase ID token to extract UID
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     const userId = decodedToken.uid;
 
@@ -25,7 +25,12 @@ export async function signInWithFirebase(idToken: string) {
         status: "failed",
         metadata: { error: result.error }
       });
-      throw new Error(result.error);
+
+      return {
+        success: false,
+        error: result.error,
+        message: "Firebase credential login failed"
+      };
     }
 
     return { success: true };
@@ -38,7 +43,6 @@ export async function signInWithFirebase(idToken: string) {
 
     console.error("Sign in error:", message);
 
-    // Best-effort UID extraction for failed decoding
     let uid = "unknown";
     try {
       const decoded = await adminAuth.verifyIdToken(idToken);
@@ -55,6 +59,10 @@ export async function signInWithFirebase(idToken: string) {
       metadata: { error: message }
     });
 
-    return { success: false, error: message };
+    return {
+      success: false,
+      error: message,
+      message: "An error occurred during sign-in"
+    };
   }
 }

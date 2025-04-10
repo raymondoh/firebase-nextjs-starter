@@ -1,26 +1,18 @@
-// src/actions/dashboard/activity-logs.ts
-"use server";
-
 import { getUserActivityLogs, getAllActivityLogs } from "@/firebase/actions";
-import type { SerializedActivity } from "@/types/firebase/activity";
-import { serializeData } from "@/utils/serializeData";
+import type { serializeData } from "@/utils/serializeData";
 import { auth } from "@/auth";
-
-interface FetchActivityLogsParams {
-  limit?: number;
-  startAfter?: string;
-  type?: string;
-}
+import type { FetchActivityLogsParams, FetchActivityLogsResponse } from "@/types/dashboard/activity";
+import type { SerializedActivity } from "@/types/firebase/activity";
 
 export async function fetchActivityLogs({
   limit = 5,
   startAfter,
   type
-}: FetchActivityLogsParams): Promise<SerializedActivity[] | { error: string }> {
+}: FetchActivityLogsParams): Promise<FetchActivityLogsResponse> {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return { error: "Not authenticated" };
+    return { success: false, error: "Not authenticated" };
   }
 
   const result =
@@ -29,9 +21,14 @@ export async function fetchActivityLogs({
       : await getUserActivityLogs(limit, startAfter, type);
 
   if (!result.success || !result.activities) {
-    return { error: result.error || "Failed to fetch logs" };
+    return { success: false, error: result.error || "Failed to fetch logs" };
   }
 
-  // Directly serialize without redundant remapping
-  return serializeData(result.activities) as SerializedActivity[];
+  // ⚠️ You may want to enrich logs here (e.g., add displayName or userEmail) before casting
+  const serialized = serializeData(result.activities) as SerializedActivity[];
+
+  return {
+    success: true,
+    activities: serialized
+  };
 }

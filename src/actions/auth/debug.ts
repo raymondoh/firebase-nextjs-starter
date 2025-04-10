@@ -1,4 +1,5 @@
-// /actions/auth/debug.ts
+// src/actions/dev/debug-password.ts
+// ONLY FOR LOCAL DEV TESTING
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin";
@@ -7,6 +8,9 @@ import { auth } from "@/auth";
 import { UserRecord } from "firebase-admin/auth";
 import { DocumentSnapshot } from "firebase-admin/firestore";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+if (process.env.NODE_ENV === "production") {
+  throw new Error("This function is not available in production");
+}
 
 export async function debugPasswordVerification(email: string, password: string) {
   const session = await auth();

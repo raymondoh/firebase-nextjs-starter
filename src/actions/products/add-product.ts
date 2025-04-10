@@ -5,10 +5,9 @@ import { revalidatePath } from "next/cache";
 import { type CreateProductInput, createProductSchema } from "@/schemas/products/product";
 import { addProduct as addProductToDb } from "@/firebase/actions";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import type { AddProductResult } from "@/types/product/result";
 
-export async function addProduct(
-  data: CreateProductInput
-): Promise<{ success: true; id: string } | { success: false; error: string }> {
+export async function addProduct(data: CreateProductInput): Promise<AddProductResult> {
   try {
     // ✅ Step 1: Validate incoming data with the dedicated creation schema
     const validated = createProductSchema.safeParse(data);

@@ -1,14 +1,15 @@
-// types/auth/login.ts
-//import { ActionResponse } from "../common";
+import { ActionResponse } from "../common/response";
 import { UserRole } from "../user/common";
 
-export type LoginState = {
-  success?: boolean;
-  message?: string;
-  error?: string;
-  userId?: string;
-  email?: string;
-  role?: UserRole; // Use UserRole enum here
-  customToken?: string;
-  emailVerified?: boolean;
-} | null;
+export interface LoginData {
+  userId: string;
+  email: string;
+  role: UserRole;
+  customToken: string;
+  emailVerified: boolean;
+}
+
+export type LoginResponse = ActionResponse<LoginData>;
+
+// This is the client-side state (optional, for use with useActionState)
+export type LoginState = LoginResponse | null;

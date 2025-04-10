@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
 import { Separator } from "@/components/ui/separator";
 import {
   DashboardShell,
@@ -21,6 +22,8 @@ export const metadata: Metadata = {
 export default async function AdminDashboardOverviewPage() {
   // Get the session server-side
   const session = await auth();
+  const result = await fetchActivityLogs({ limit: 10 });
+  const logs: SerializedActivity[] = Array.isArray(result) ? result : [];
 
   // Redirect if not authenticated
   if (!session?.user) {
@@ -121,7 +124,8 @@ export default async function AdminDashboardOverviewPage() {
         {/* Admin Activity Log */}
         <div className="w-full min-w-0 overflow-hidden">
           <AdminRecentActivityPreview
-            limit={5} // takes precedence
+            activities={logs}
+            limit={5}
             showFilters={false}
             showHeader={true}
             showViewAll={true}

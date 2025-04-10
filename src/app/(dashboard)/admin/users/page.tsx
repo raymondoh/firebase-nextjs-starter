@@ -48,19 +48,6 @@ export default async function AdminUsersPage() {
 
   const serializedUsers = serializeUserArray(initialUsers);
 
-  //   return (
-  //     <DashboardShell>
-  //       <DashboardHeader heading="Manage Users" text="View and manage all users in your application." />
-  //       <Separator className="mb-8" />
-
-  //       <AdminUsersDataTable<SerializedUser, unknown>
-  //         columns={columns}
-  //         initialData={serializedUsers}
-  //         totalUsers={totalUsers}
-  //       />
-  //     </DashboardShell>
-  //   );
-  // }
   return (
     <DashboardShell>
       <DashboardHeader heading="User Management" text="View and manage users in your application." />

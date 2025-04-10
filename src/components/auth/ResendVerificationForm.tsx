@@ -12,6 +12,7 @@ import { auth } from "@/firebase/client";
 import { sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import { SubmitButton } from "@/components/shared/SubmitButton";
+import { logActivity } from "@/firebase/actions";
 
 export function ResendVerificationForm() {
   const [email, setEmail] = useState("");
@@ -40,6 +41,13 @@ export function ResendVerificationForm() {
 
       // Send verification email
       await sendEmailVerification(user);
+      await logActivity({
+        userId: user.uid,
+        type: "email_verification_resent",
+        description: "User requested new verification email",
+        status: "success",
+        metadata: { email }
+      });
       toast.success("Verification email sent! Please check your inbox and spam folder.");
     } catch (error: unknown) {
       console.error("Error resending verification:", error);

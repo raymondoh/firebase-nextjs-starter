@@ -12,13 +12,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
-import { updatePasswordHash, getUserIdByEmail } from "@/actions/auth/password-reset";
+import { updatePasswordHash, getUserIdByEmail } from "@/actions/auth/reset-password";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import { SubmitButton } from "@/components/shared/SubmitButton";
 
 export function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [status, setStatus] = useState<"verifying" | "ready" | "submitting" | "success" | "error">("verifying");
   const [errorMessage, setErrorMessage] = useState("");
   const [email, setEmail] = useState("");
@@ -41,18 +42,14 @@ export function ResetPasswordForm() {
           const email = await verifyPasswordResetCode(auth, code);
           setEmail(email);
 
-          try {
-            const result = await getUserIdByEmail(email);
-            if (result.success && result.userId) {
-              setUserId(result.userId);
-            }
-          } catch (err) {
-            console.error("Error getting user ID:", err);
+          const result = await getUserIdByEmail({ email });
+
+          if (result.success && result.userId) {
+            setUserId(result.userId);
           }
 
           setStatus("ready");
         } catch (err) {
-          console.error("Error verifying reset code:", err);
           const msg = isFirebaseError(err) ? firebaseError(err) : "Invalid or expired password reset link";
           setErrorMessage(msg);
           setStatus("error");
@@ -67,7 +64,6 @@ export function ResetPasswordForm() {
       setStatus("error");
     }
   }, [searchParams, router]);
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -87,19 +83,11 @@ export function ResetPasswordForm() {
       await confirmPasswordReset(auth, oobCode, password);
 
       if (userId) {
-        try {
-          await updatePasswordHash(userId, password);
-        } catch (hashErr) {
-          console.error("Error updating Firestore hash:", hashErr);
-        }
+        await updatePasswordHash({ userId, newPassword: password });
       } else if (email) {
-        try {
-          const result = await getUserIdByEmail(email);
-          if (result.success && result.userId) {
-            await updatePasswordHash(result.userId, password);
-          }
-        } catch (idErr) {
-          console.error("Error getting user ID fallback:", idErr);
+        const result = await getUserIdByEmail({ email });
+        if (result.success && result.userId) {
+          await updatePasswordHash({ userId: result.userId, newPassword: password });
         }
       }
 
@@ -110,7 +98,6 @@ export function ResetPasswordForm() {
         router.push("/login");
       }, 3000);
     } catch (err) {
-      console.error("Error resetting password:", err);
       const msg = isFirebaseError(err) ? firebaseError(err) : "Failed to reset password";
       setErrorMessage(msg);
       setStatus("error");
@@ -118,73 +105,33 @@ export function ResetPasswordForm() {
     }
   };
 
-  if (status === "verifying") {
-    return (
-      <div className="container flex items-center justify-center min-h-screen py-12">
-        <Card className="max-w-md w-full">
-          <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
-              <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-                <LoaderCircle className="h-10 w-10 text-primary animate-spin" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl text-center">Verifying Link...</CardTitle>
-            <CardDescription className="text-center">Please wait while we verify your reset link.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
   if (status === "success") {
     return (
-      <div className="container flex items-center justify-center min-h-screen py-12">
-        <Card className="max-w-md w-full">
-          <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
-              <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle className="h-10 w-10 text-green-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl text-center">Password Reset Successful!</CardTitle>
-            <CardDescription className="text-center">Your password has been reset successfully.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p>You can now log in with your new password.</p>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button asChild>
-              <Link href="/login">Continue to Login</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+      <CenteredCard
+        icon={<CheckCircle className="h-10 w-10 text-green-600" />}
+        title="Password Reset Successful!"
+        description="Your password has been reset successfully."
+        footer={
+          <Button asChild>
+            <Link href="/login">Continue to Login</Link>
+          </Button>
+        }
+      />
     );
   }
 
   if (status === "error") {
     return (
-      <div className="container flex items-center justify-center min-h-screen py-12">
-        <Card className="max-w-md w-full">
-          <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
-              <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center">
-                <XCircle className="h-10 w-10 text-red-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl text-center">Reset Link Invalid</CardTitle>
-            <CardDescription className="text-center">{errorMessage}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p>The password reset link may have expired or been used already.</p>
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button asChild>
-              <Link href="/forgot-password">Request New Reset Link</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+      <CenteredCard
+        icon={<XCircle className="h-10 w-10 text-red-600" />}
+        title="Reset Link Invalid"
+        description={errorMessage}
+        footer={
+          <Button asChild>
+            <Link href="/forgot-password">Request New Reset Link</Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -202,60 +149,22 @@ export function ResetPasswordForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your new password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">Password must be at least 8 characters long.</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your new password"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-            {/* <Button type="submit" className="w-full" disabled={status === "submitting"}>
-              {status === "submitting" ? (
-                <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  Resetting...
-                </>
-              ) : (
-                "Reset Password"
-              )}
-            </Button> */}
+            <PasswordInput
+              id="password"
+              label="New Password"
+              value={password}
+              onChange={setPassword}
+              show={showPassword}
+              toggleShow={() => setShowPassword(prev => !prev)}
+            />
+            <PasswordInput
+              id="confirmPassword"
+              label="Confirm New Password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              show={showConfirmPassword}
+              toggleShow={() => setShowConfirmPassword(prev => !prev)}
+            />
             <SubmitButton isLoading={status === "submitting"} loadingText="Resetting..." className="w-full">
               Reset Password
             </SubmitButton>
@@ -270,6 +179,75 @@ export function ResetPasswordForm() {
           </div>
         </CardFooter>
       </Card>
+    </div>
+  );
+}
+
+// 🔧 Extracted for reuse
+function CenteredCard({
+  icon,
+  title,
+  description,
+  footer
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  footer?: React.ReactNode;
+}) {
+  return (
+    <div className="container flex items-center justify-center min-h-screen py-12">
+      <Card className="max-w-md w-full">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-center mb-4">
+            <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">{icon}</div>
+          </div>
+          <CardTitle className="text-2xl text-center">{title}</CardTitle>
+          <CardDescription className="text-center">{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="text-center space-y-4" />
+        {footer && <CardFooter className="flex justify-center">{footer}</CardFooter>}
+      </Card>
+    </div>
+  );
+}
+
+function PasswordInput({
+  id,
+  label,
+  value,
+  onChange,
+  show,
+  toggleShow
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  show: boolean;
+  toggleShow: () => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          type={show ? "text" : "password"}
+          placeholder={label}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          required
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+          onClick={toggleShow}>
+          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </Button>
+      </div>
     </div>
   );
 }

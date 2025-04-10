@@ -1,20 +1,16 @@
-// src/actions/products/update-product.ts
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { type UpdateProductInput, updateProductSchema } from "@/schemas/products/product";
 import { updateProduct as updateProductInDb } from "@/firebase/actions";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+import type { UpdateProductResult } from "@/types/product";
 
 /**
  * Server action to update a product
  */
-export async function updateProduct(
-  productId: string,
-  data: UpdateProductInput
-): Promise<{ success: true } | { success: false; error: string }> {
+export async function updateProduct(productId: string, data: UpdateProductInput): Promise<UpdateProductResult> {
   try {
-    // ✅ Validate with the dedicated update schema
     const validated = updateProductSchema.safeParse(data);
 
     if (!validated.success) {

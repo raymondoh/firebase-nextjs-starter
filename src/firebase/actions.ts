@@ -18,6 +18,10 @@ export async function getUsers(...args: Parameters<typeof adminUsers.getUsers>) 
 export async function deleteUser(...args: Parameters<typeof adminAuthFunctions.deleteUser>) {
   return await adminAuthFunctions.deleteUser(...args);
 }
+// Move this up under User CRUD
+export async function deleteUserAsAdmin(...args: Parameters<typeof adminAuthFunctions.deleteUserAsAdmin>) {
+  return await adminAuthFunctions.deleteUserAsAdmin(...args);
+}
 
 export async function getUser(...args: Parameters<typeof adminAuthFunctions.getUser>) {
   return await adminAuthFunctions.getUser(...args);
@@ -113,9 +117,7 @@ export async function getProductById(...args: Parameters<typeof adminProducts.ge
 export async function updateProduct(...args: Parameters<typeof adminProducts.updateProduct>) {
   return adminProducts.updateProduct(...args);
 }
-export async function deleteUserAsAdmin(...args: Parameters<typeof adminAuthFunctions.deleteUserAsAdmin>) {
-  return await adminAuthFunctions.deleteUserAsAdmin(...args);
-}
+
 export async function deleteProduct(...args: Parameters<typeof adminProducts.deleteProduct>) {
   return adminProducts.deleteProduct(...args);
 }

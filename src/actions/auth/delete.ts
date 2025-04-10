@@ -1,17 +1,16 @@
-// src/actions/auth/delete.ts
 "use server";
 
 import { adminAuth, adminDb, adminStorage } from "@/firebase/admin";
 import { logActivity } from "@/firebase/actions";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+import type { ActionResponse } from "@/types";
 
-/**
- * Admin-initiated user deletion.
- */
-export async function deleteUserAsAdmin(
-  userId: string,
-  adminId: string
-): Promise<{ success: true } | { success: false; error: string }> {
+export interface DeleteUserAsAdminInput {
+  userId: string;
+  adminId: string;
+}
+
+export async function deleteUserAsAdmin({ userId, adminId }: DeleteUserAsAdminInput): Promise<ActionResponse> {
   try {
     // 1. Delete Firestore user document
     await adminDb.collection("users").doc(userId).delete();
@@ -31,15 +30,13 @@ export async function deleteUserAsAdmin(
       }
     }
 
-    // 4. Optionally log activity
+    // 4. Log admin activity
     await logActivity({
       userId: adminId,
       type: "admin_deleted_user",
       description: `Deleted user account (${userId})`,
       status: "success",
-      metadata: {
-        deletedUserId: userId
-      }
+      metadata: { deletedUserId: userId }
     });
 
     return { success: true };
