@@ -66,7 +66,8 @@ export interface ActivityLogProps {
 
 export interface ActivityLogClientProps {
   activities: SerializedActivity[];
-  showFilters: boolean;
+  showFilters?: boolean;
+
   isRefreshing?: boolean;
 }
 export interface FetchActivityLogsParams {

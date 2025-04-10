@@ -97,9 +97,15 @@ export function AdminActivityLogClient({
             ) : (
               filteredActivities.map(activity => (
                 <TableRow key={activity.id}>
+                  {/* <TableCell className="whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span className="font-medium">sss{getDisplayName(activity.name)}</span>
+                      <span className="text-xs text-muted-foreground">{activity.userEmail ?? "Unknown"}</span>
+                    </div>
+                  </TableCell> */}
                   <TableCell className="whitespace-nowrap">
                     <div className="flex flex-col">
-                      <span className="font-medium">{getDisplayName(activity.name)}</span>
+                      <span className="font-medium">{getDisplayName(activity.name, activity.userEmail, "User")}</span>
                       <span className="text-xs text-muted-foreground">{activity.userEmail ?? "Unknown"}</span>
                     </div>
                   </TableCell>
