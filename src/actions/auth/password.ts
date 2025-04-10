@@ -9,7 +9,7 @@ import { logActivity } from "@/firebase/actions";
 import { forgotPasswordSchema, updatePasswordSchema } from "@/schemas/auth";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { ForgotPasswordState, UpdatePasswordState } from "@/types/auth/password";
-import type { UserData } from "@/types";
+import type { UserData } from "@/types/user";
 import { logPasswordResetActivity } from "./reset-password";
 import { hashPassword } from "@/utils/hashPassword";
 
@@ -43,7 +43,7 @@ export async function requestPasswordReset(
 
     // ✅ Log the reset request activity (non-blocking)
     try {
-      await logPasswordResetActivity(email);
+      await logPasswordResetActivity({ email });
     } catch (logError) {
       console.warn("Warning: Failed to log password reset activity:", logError);
     }

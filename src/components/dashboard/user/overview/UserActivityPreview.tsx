@@ -103,9 +103,10 @@ interface UserActivityPreviewProps {
   showHeader?: boolean;
   showViewAll?: boolean;
   viewAllUrl?: string;
+  showFilters?: boolean;
 }
 
-export function UserRecentActivityPreview({
+export function UserActivityPreview({
   activities,
   limit = 5,
   loading = false,

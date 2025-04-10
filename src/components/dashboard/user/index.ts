@@ -1,6 +1,6 @@
 // ActivityPage
-//export { UserActivityPageClient } from "./activity/UserActivityPageClient";
-//export UserActivityLogClient as   from "./activity/UserActivityLogClient";
+export { UserActivityLogClient } from "./activity/UserActivityLogClient";
+export { UserActivityPageClient } from "./activity/UserActivityPageClient";
 
 // Data Page
 export { AccountDeletion } from "./data-privacy/AccountDeletion";
@@ -10,7 +10,7 @@ export { DataExport } from "./data-privacy/DataExport";
 export { AccountSummary } from "./overview/AccountSummary";
 export { ActivityLogClient } from "./overview/ActivityLogClient";
 export { UserAccountPreview } from "./overview/UserAccountPreview";
-export { UserRecentActivityPreview } from "./overview/UserRecentActivityPreview";
+export { UserActivityPreview } from "./overview/UserActivityPreview";
 
 // User Profile page
 //export { UserProfileForm } from "./profile/UserProfileForm";// now in auth folder

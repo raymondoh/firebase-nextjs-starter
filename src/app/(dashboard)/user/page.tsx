@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-//import { UserRecentActivityPreview } from "@/components/dashboard/user/overview/UserRecentActivityPreview";
+import { UserActivityPreview } from "@/components";
 import { UserAccountPreview } from "@/components/dashboard/user/overview/UserAccountPreview";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -8,6 +8,7 @@ import { adminDb } from "@/firebase/admin";
 import { parseServerDate } from "@/utils/date-server";
 import type { User, SerializedUser } from "@/types/user";
 import { serializeUser } from "@/utils/serializeUser";
+import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
 
 export default async function UserDashboardOverviewPage() {
   const session = await auth();
@@ -18,6 +19,10 @@ export default async function UserDashboardOverviewPage() {
 
   const userId = session.user.id;
   const sessionUser = session.user as User;
+
+  // fetch activity logs
+  const result = await fetchActivityLogs({ limit: 5 });
+  const logs = result.success && Array.isArray(result.activities) ? result.activities : [];
 
   // Start with session values and fallback structure
   let userData: User = {
@@ -72,13 +77,14 @@ export default async function UserDashboardOverviewPage() {
 
         {/* Activity preview in its own scrollable container */}
         <div className="w-full min-w-0 overflow-hidden">
-          {/* <UserRecentActivityPreview
+          <UserActivityPreview
+            activities={logs}
             limit={5}
             showFilters={false}
             showHeader={true}
             showViewAll={true}
             viewAllUrl="/user/activity"
-          /> */}
+          />
         </div>
       </div>
     </DashboardShell>

@@ -25,8 +25,17 @@ export async function fetchActivityLogs({
   }
 
   // ⚠️ You may want to enrich logs here (e.g., add displayName or userEmail) before casting
-  const serialized = serializeData(result.activities) as SerializedActivity[];
-  const logs: SerializedActivity[] = Array.isArray(result.activities) ? result.activities : [];
+  //const serialized = serializeData(result.activities) as SerializedActivity[];
+  // ⚠️ You may want to enrich logs here (e.g., add displayName or userEmail) before casting
+  const serialized = serializeData(
+    result.activities.map(log => ({
+      ...log,
+      name: "" // or log.name ?? "" if it might exist
+    }))
+  ) as SerializedActivity[];
+  //const logs: SerializedActivity[] = Array.isArray(result.activities) ? result.activities : [];
+  const logs: SerializedActivity[] = Array.isArray(serialized) ? serialized : [];
+
   console.log("[AdminDashboardOverviewPage] Logs length:", logs.length);
 
   return {

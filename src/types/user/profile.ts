@@ -19,3 +19,7 @@ export interface GetProfileResponse extends ActionResponse {
 export interface UpdateUserProfileResponse extends ActionResponse {
   user?: User;
 }
+export interface ProfileUpdateState {
+  success: boolean;
+  error?: string;
+}

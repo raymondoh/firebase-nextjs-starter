@@ -146,7 +146,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
           .then(async userCredential => {
             const idToken = await userCredential.user.getIdToken();
             //const signInResult = await signInWithFirebase({ idToken });
-            const signInResult = await signInWithNextAuth(idToken);
+            const signInResult = await signInWithNextAuth({ idToken });
 
             if (!signInResult.success) throw new Error("NextAuth sign-in failed");
             toast.success("You're now logged in!");

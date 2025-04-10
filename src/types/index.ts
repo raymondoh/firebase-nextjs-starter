@@ -23,17 +23,16 @@ export type {
   // Common user types
   User,
   UserRole,
-  UserActionResponse,
+  //UserActionResponse,
 
   // Profile types
   ProfileUpdateState,
 
   // Admin types
-  UserSearchState,
-  UserRoleUpdateState,
+  UserSearchState
+  //UserRoleUpdateState
 
   // Firestore data
-  UserData
 } from "./user";
 
 // Data privacy types

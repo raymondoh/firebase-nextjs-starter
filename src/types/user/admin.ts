@@ -45,6 +45,18 @@ export interface UserSearchState extends ActionResponse {
   total?: number;
 }
 
-export interface UserRoleUpdateState extends ActionResponse {
-  message?: string;
+// export interface UserRoleUpdateState extends ActionResponse {
+//   message?: string;
+// }
+// src/types/user.ts (or wherever your user types live)
+
+export interface UserData {
+  passwordHash?: string;
+  name?: string;
+  email?: string;
+  role?: "user" | "admin";
+  createdAt?: unknown;
+  updatedAt?: unknown;
+  lastLoginAt?: unknown;
+  // Add any other fields your user documents store
 }
