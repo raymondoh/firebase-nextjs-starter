@@ -7,7 +7,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
 import { cert } from "firebase-admin/app";
-import { adminAuth } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import { syncUserWithFirebase } from "./syncUserWithFirebase";
 import type { UserRole } from "@/types/user";
 
@@ -156,19 +156,40 @@ export const authOptions: NextAuthConfig = {
 
     async session({ session, token }) {
       console.log("Session callback called with token:", token);
+
       const isValidRole = (role: unknown): role is UserRole => role === "admin" || role === "user";
 
       if (token && session.user) {
-        session.user.id = token.uid as string;
-        session.user.email = token.email as string;
-        session.user.name = token.name as string;
+        try {
+          const [authUser, firestoreDoc] = await Promise.all([
+            adminAuth.getUser(token.uid as string),
+            adminDb
+              .collection("users")
+              .doc(token.uid as string)
+              .get()
+          ]);
 
-        session.user.role = isValidRole(token.role) ? token.role : "user";
+          const firestoreData = firestoreDoc.data();
 
-        session.user.image = token.picture as string | undefined;
-        session.user.bio = token.bio as string | undefined;
+          session.user.id = token.uid as string;
+          session.user.email = authUser.email || token.email!;
+          session.user.name = authUser.displayName || firestoreData?.name || token.name || "";
+          session.user.image = authUser.photoURL || firestoreData?.picture || token.picture;
+          session.user.bio = firestoreData?.bio || token.bio || "";
+          session.user.role = isValidRole(firestoreData?.role) ? firestoreData.role : "user";
 
-        console.log(`Setting user role in session to: ${session.user.role}`);
+          console.log("🔁 Refreshed user data from Firebase Auth and Firestore");
+        } catch (err) {
+          console.warn("[Session callback] Failed to refresh session from Firebase:", err);
+
+          // Fallback to token values if Firebase fetch fails
+          session.user.id = token.uid as string;
+          session.user.email = token.email as string;
+          session.user.role = isValidRole(token.role) ? token.role : "user";
+          session.user.name = token.name as string;
+          session.user.image = token.picture as string | undefined;
+          session.user.bio = token.bio as string | undefined;
+        }
       }
 
       console.log("Returning session:", session);

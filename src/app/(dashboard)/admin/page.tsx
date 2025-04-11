@@ -11,7 +11,7 @@ import {
 } from "@/components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { adminDb } from "@/firebase/admin";
+import { adminDb } from "@/firebase/admin/firebase-admin-init";
 import { serializeData } from "@/utils";
 import type { SerializedActivity } from "@/types/firebase";
 

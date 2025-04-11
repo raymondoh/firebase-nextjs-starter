@@ -1,6 +1,6 @@
 "use server";
 
-import { adminAuth, adminDb, adminStorage } from "@/firebase/admin";
+import { adminAuth, adminDb, adminStorage } from "@/firebase/admin/firebase-admin-init";
 import { logActivity } from "@/firebase/actions";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { ActionResponse } from "@/types";

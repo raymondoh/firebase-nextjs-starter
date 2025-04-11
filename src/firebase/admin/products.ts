@@ -1,6 +1,6 @@
 // src/firebase/admin/products/products.ts
 import { Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "../index";
+import { adminDb } from "./firebase-admin-init";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type {
   GetProductByIdFromFirestoreResult,

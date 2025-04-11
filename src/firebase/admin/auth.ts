@@ -1,6 +1,6 @@
 // src/firebase/admin/auth.ts
 
-import { adminAuth, adminDb, adminStorage } from "@/firebase/admin";
+import { adminAuth, adminDb, adminStorage } from "@/firebase/admin/firebase-admin-init";
 import type { GetUserFromTokenResult, SetCustomClaimsResult, CustomClaims } from "@/types/firebase/auth";
 import type { VerifyAndCreateUserResult, SendResetPasswordEmailResult } from "@/types/firebase/auth";
 import { Timestamp } from "firebase-admin/firestore";

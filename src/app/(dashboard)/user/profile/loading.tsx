@@ -5,10 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function UserProfileLoading() {
   return (
     <DashboardShell>
-      <DashboardHeader heading="Profile" text="Manage your account settings and profile information" />
+      <DashboardHeader heading="Admin Profile" text="Manage your admin account settings and profile information" />
       <Separator className="mb-8" />
 
-      <div className="max-w-4xl ml-0">
+      <div className="max-w-4xl">
         <div className="space-y-6">
           <div>
             <Skeleton className="h-8 w-48 mb-2" />

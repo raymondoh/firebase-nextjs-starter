@@ -2,7 +2,7 @@
 // ONLY FOR LOCAL DEV TESTING
 "use server";
 
-import { adminAuth, adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import bcryptjs from "bcryptjs";
 import { auth } from "@/auth";
 import { UserRecord } from "firebase-admin/auth";

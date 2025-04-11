@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardShell, DashboardHeader } from "@/components";
 import { Separator } from "@/components/ui/separator";
 
-export default function AdminDashboardLoading() {
+export default function UserDashboardLoading() {
   return (
     <DashboardShell>
       <DashboardHeader heading="Admin Dashboard" text="Loading overview..." />

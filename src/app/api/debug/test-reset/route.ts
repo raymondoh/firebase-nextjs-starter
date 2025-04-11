@@ -1,6 +1,6 @@
 // IMPORTANT: REMOVE THIS FILE BEFORE PRODUCTION
 import { NextResponse } from "next/server";
-import { adminAuth, adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import bcryptjs from "bcryptjs";
 
 export async function GET(request: Request) {

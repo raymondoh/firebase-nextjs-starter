@@ -13,4 +13,11 @@ export { AdminUserCreateDialog } from "./manage-users/AdminUserCreateDialog";
 export { AdminUsersDataTable } from "./manage-users/AdminUsersDataTable";
 export { AdminUserDetailCard } from "./manage-users/AdminUserDetailCard";
 
+// products
+
+export { ProductDialog } from "./products/ProductDialog";
+export { ProductForm } from "./products/ProductForm";
+export { ProductsDataTable } from "./products/ProductsDataTable";
+export { UpdateProductForm } from "./products/UpdateProductForm";
+
 export { columns } from "./columns";

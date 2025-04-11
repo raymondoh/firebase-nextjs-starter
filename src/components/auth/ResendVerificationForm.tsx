@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { auth } from "@/firebase/client";
+import { auth } from "@/firebase/client/firebase-client-init";
 import { sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import { SubmitButton } from "@/components/shared/SubmitButton";
@@ -111,16 +111,7 @@ export function ResendVerificationForm() {
                 required
               />
             </div>
-            {/* <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                "Resend Verification Email"
-              )}
-            </Button> */}
+
             <SubmitButton isLoading={isLoading} loadingText="Sending..." className="w-full">
               Resend Verification Email
             </SubmitButton>

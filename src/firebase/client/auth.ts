@@ -2,7 +2,7 @@
 
 "use client";
 
-import { auth } from "@/firebase/client";
+import { auth } from "@/firebase/client/firebase-client-init";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import {
   sendEmailVerification,

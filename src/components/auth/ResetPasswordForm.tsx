@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { auth } from "@/firebase/client";
+import { auth } from "@/firebase/client/firebase-client-init";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { updatePasswordHash, getUserIdByEmail } from "@/actions/auth/reset-password";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";

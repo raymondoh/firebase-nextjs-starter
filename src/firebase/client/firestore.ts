@@ -1,7 +1,7 @@
 // firebase/client/firestore.ts
 "use client";
 
-import { db } from "./index";
+import { db } from "./firebase-client-init";
 import {
   collection,
   doc,

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getProductById } from "@/firebase/admin/products/products";
+import { getProductById } from "@/firebase/admin/products";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

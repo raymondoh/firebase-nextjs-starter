@@ -2,7 +2,7 @@
 "use server";
 
 import { signIn } from "@/auth";
-import { adminAuth } from "@/firebase/admin";
+import { adminAuth } from "@/firebase/admin/firebase-admin-init";
 import { logActivity } from "@/firebase/actions";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { SignInWithFirebaseInput, SignInWithFirebaseResponse } from "@/types/auth/firebase-auth";

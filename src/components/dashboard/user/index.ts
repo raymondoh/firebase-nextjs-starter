@@ -1,5 +1,5 @@
 // ActivityPage
-export { UserActivityLogClient } from "./activity/UserActivityLogClient";
+export { UserActivityLogTable } from "./activity/UserActivityLogTable";
 export { UserActivityPageClient } from "./activity/UserActivityPageClient";
 
 // Data Page

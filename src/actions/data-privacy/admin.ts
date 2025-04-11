@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { adminDb } from "@/firebase/admin";
+import { adminDb } from "@/firebase/admin/firebase-admin-init";
 import { processAccountDeletion } from "./deletion";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { ProcessDeletionsResult } from "@/types/data-privacy/deletion";

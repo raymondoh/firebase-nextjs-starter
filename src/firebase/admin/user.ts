@@ -214,7 +214,7 @@
 // }
 "use server";
 
-import { adminDb, adminAuth } from "./index";
+import { adminDb, adminAuth } from "./firebase-admin-init";
 import { auth } from "@/auth";
 import { Timestamp, DocumentSnapshot } from "firebase-admin/firestore"; // Import DocumentSnapshot
 

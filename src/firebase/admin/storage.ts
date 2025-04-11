@@ -1,7 +1,7 @@
 // firebase/admin/storage.ts
 "use server";
 
-import { adminStorage } from "./index";
+import { adminStorage } from "./firebase-admin-init";
 
 /**
  * Get a reference to a file in storage

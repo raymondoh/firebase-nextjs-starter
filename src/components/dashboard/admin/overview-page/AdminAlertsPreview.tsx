@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
-import { db } from "@/firebase/client";
+import { db } from "@/firebase/client/firebase-client-init";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SystemAlert } from "@/types/dashboard";

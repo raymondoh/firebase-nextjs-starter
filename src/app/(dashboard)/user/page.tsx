@@ -4,7 +4,7 @@ import { UserActivityPreview } from "@/components";
 import { UserAccountPreview } from "@/components/dashboard/user/overview/UserAccountPreview";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { adminDb } from "@/firebase/admin";
+import { adminDb } from "@/firebase/admin/firebase-admin-init";
 import { parseServerDate } from "@/utils/date-server";
 import type { User, SerializedUser } from "@/types/user";
 import { serializeUser } from "@/utils/serializeUser";

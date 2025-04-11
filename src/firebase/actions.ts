@@ -1,7 +1,7 @@
 "use server";
 
 import * as adminActivity from "./admin/activity";
-import * as adminProducts from "./admin/products/products";
+import * as adminProducts from "./admin/products";
 import * as adminUsers from "./admin/user";
 import * as adminAuthFunctions from "./admin/auth";
 

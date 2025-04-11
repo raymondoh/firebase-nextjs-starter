@@ -2,7 +2,7 @@
 "use server";
 
 import { auth, signOut } from "@/auth";
-import { adminAuth, adminDb, adminStorage } from "@/firebase/admin";
+import { adminAuth, adminDb, adminStorage } from "@/firebase/admin/firebase-admin-init";
 import { serverTimestamp } from "@/firebase/admin/firestore";
 import { cookies } from "next/headers";
 import { accountDeletionSchema } from "@/schemas/data-privacy";

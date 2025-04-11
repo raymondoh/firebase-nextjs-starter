@@ -2,7 +2,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { adminStorage } from "@/firebase/admin";
+import { adminStorage } from "@/firebase/admin/firebase-admin-init";
 
 export async function POST(request: NextRequest) {
   try {

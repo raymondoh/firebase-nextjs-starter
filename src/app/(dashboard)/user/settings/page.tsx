@@ -6,7 +6,7 @@ import { ChangePasswordForm } from "@/components/dashboard/user/settings/ChangeP
 import { NotificationForm } from "@/components/dashboard/user/settings/NotificationForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default function SettingsPage() {
+export default function UserSettingsPage() {
   return (
     <DashboardShell>
       <DashboardHeader heading="Settings" text="Manage your account settings and security preferences" />

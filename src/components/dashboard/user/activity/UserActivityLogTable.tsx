@@ -10,11 +10,7 @@ import { Search, RefreshCw } from "lucide-react";
 import { formatDate } from "@/utils/date-client";
 import type { ActivityLogClientProps } from "@/types/dashboard/activity";
 
-export function UserActivityLogClient({
-  activities,
-  showFilters = true,
-  isRefreshing = false
-}: ActivityLogClientProps) {
+export function UserActivityLogTable({ activities, showFilters = true, isRefreshing = false }: ActivityLogClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string | null>(null);
 
@@ -52,6 +48,7 @@ export function UserActivityLogClient({
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
+
           <Select value={filterType || ""} onValueChange={value => setFilterType(value === "all" ? null : value)}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Filter by type" />
@@ -65,6 +62,7 @@ export function UserActivityLogClient({
               ))}
             </SelectContent>
           </Select>
+
           <Button variant="outline" className="sm:w-[100px]" onClick={() => setSearchTerm("")}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Reset
@@ -76,7 +74,7 @@ export function UserActivityLogClient({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="whitespace-nowrap">Activity</TableHead>
+              <TableHead className="min-w-[200px]">Activity</TableHead>
               <TableHead className="whitespace-nowrap">Type</TableHead>
               <TableHead className="whitespace-nowrap">Status</TableHead>
               <TableHead className="whitespace-nowrap">Time</TableHead>

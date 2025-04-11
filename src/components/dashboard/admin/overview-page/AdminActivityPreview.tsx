@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatClientDate as formatDate } from "@/utils";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/firebase/client";
+import { db } from "@/firebase/client/firebase-client-init";
 //import type { SerializedActivity } from "@/types/firebase/activity";
 import type { AdminActivityLogWrapperProps } from "@/types/dashboard";
 import { getDisplayName } from "@/utils/getDisplayName";

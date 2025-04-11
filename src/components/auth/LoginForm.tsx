@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { signInWithCustomToken } from "firebase/auth";
-import { auth } from "@/firebase/client";
+import { auth } from "@/firebase/client/firebase-client-init";
 import { loginUser } from "@/actions/auth";
 import { signInWithNextAuth } from "@/firebase/client/next-auth";
 

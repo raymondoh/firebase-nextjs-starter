@@ -1,43 +1,45 @@
+// src/app/(dashboard)/user/activity/loading.tsx
 import { DashboardShell, DashboardHeader } from "@/components";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export default function AdminProfileLoading() {
+export default function AdminActivityLoading() {
   return (
     <DashboardShell>
-      <DashboardHeader heading="Admin Profile" text="Manage your admin account settings and profile information" />
+      <DashboardHeader heading="Admin Activity Log" text="View all user actions and system events." />
+
       <Separator className="mb-8" />
 
-      <div className="max-w-4xl">
-        <div className="space-y-6">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-96" />
-          </div>
-
-          <div className="space-y-8">
-            <div className="space-y-6">
-              <div className="flex flex-col gap-6 md:flex-row md:items-center">
-                <Skeleton className="h-24 w-24 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-5 w-40" />
-                  <Skeleton className="h-4 w-60" />
-                  <Skeleton className="h-10 w-24" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-20" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-4 w-40" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-20" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-4 w-60" />
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full overflow-hidden rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Activity</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Time</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell>
+                  <Skeleton className="h-4 w-[180px]" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-[120px]" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-[80px]" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-[100px]" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </DashboardShell>
   );

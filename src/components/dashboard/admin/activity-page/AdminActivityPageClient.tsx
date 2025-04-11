@@ -120,7 +120,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AdminActivityLogClient } from "./AdminActivityLogClient";
 import type { SerializedActivity } from "@/types/firebase/activity";
-
 import { clientFetchActivityLogs } from "@/actions/client/fetch-activity"; // instead of server-only import
 
 interface AdminActivityPageClientProps {

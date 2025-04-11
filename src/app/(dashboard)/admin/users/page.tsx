@@ -6,7 +6,7 @@ import { DashboardShell, DashboardHeader, columns } from "@/components";
 import { AdminUsersDataTable } from "@/components/dashboard/admin";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { adminDb } from "@/firebase/admin";
+import { adminDb } from "@/firebase/admin/firebase-admin-init";
 import { fetchUsers } from "@/actions/user/admin";
 import type { SerializedUser } from "@/types/user";
 import { serializeUserArray } from "@/utils/serializeUser";

@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { ProductsDataTable } from "@/components/dashboard/admin/ProductsDataTable";
+import { ProductsDataTable } from "@/components/dashboard/admin/products/ProductsDataTable";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getAllProducts } from "@/firebase/actions";

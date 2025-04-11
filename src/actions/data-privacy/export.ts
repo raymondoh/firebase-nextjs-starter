@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { adminDb, adminStorage } from "@/firebase/admin";
+import { adminDb, adminStorage } from "@/firebase/admin/firebase-admin-init";
 
 import { exportDataSchema } from "@/schemas/data-privacy";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";

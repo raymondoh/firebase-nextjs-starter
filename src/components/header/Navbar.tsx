@@ -117,7 +117,7 @@ export const Navbar = () => {
           </div>
         )}
       </div>
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-2">
         <ModeToggle />
         {!isMobile && status !== "loading" && !session?.user ? (
           <div className="flex items-center gap-6">

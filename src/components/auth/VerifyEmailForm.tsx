@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Mail, ArrowRight, LoaderCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { auth } from "@/firebase/client";
+import { auth } from "@/firebase/client/firebase-client-init";
 import { applyActionCode } from "firebase/auth";
 import { updateEmailVerificationStatus } from "@/actions/auth/email-verification";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";

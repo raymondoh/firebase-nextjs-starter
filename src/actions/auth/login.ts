@@ -1,7 +1,7 @@
 "use server";
 
 import bcryptjs from "bcryptjs";
-import { adminAuth, adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import { loginSchema } from "@/schemas/auth";
 import type { LoginResponse } from "@/types/auth/login";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";

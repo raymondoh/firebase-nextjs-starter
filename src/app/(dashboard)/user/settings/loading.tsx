@@ -1,43 +1,45 @@
 import { DashboardShell, DashboardHeader } from "@/components";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-export default function AdminProfileLoading() {
+export default function UserSettingsLoading() {
   return (
     <DashboardShell>
-      <DashboardHeader heading="Admin Profile" text="Manage your admin account settings and profile information" />
+      <DashboardHeader heading="Settings" text="Manage your account settings and security preferences" />
       <Separator className="mb-8" />
 
-      <div className="max-w-4xl">
-        <div className="space-y-6">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-96" />
-          </div>
+      <div className="w-full max-w-4xl overflow-hidden">
+        <Tabs defaultValue="security" className="w-full">
+          <TabsList className="mb-8 w-full sm:w-auto">
+            <TabsTrigger value="security" className="flex-1 sm:flex-initial px-5">
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex-1 sm:flex-initial px-5">
+              Notifications
+            </TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-8">
-            <div className="space-y-6">
-              <div className="flex flex-col gap-6 md:flex-row md:items-center">
-                <Skeleton className="h-24 w-24 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-5 w-40" />
-                  <Skeleton className="h-4 w-60" />
-                  <Skeleton className="h-10 w-24" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-20" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-4 w-40" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-20" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-4 w-60" />
-              </div>
+          <TabsContent value="security" className="space-y-6">
+            <div className="profile-form-container">
+              <Skeleton className="h-6 w-48 mb-2" />
+              <Skeleton className="h-4 w-80 mb-4" />
+              <Skeleton className="h-10 w-full mb-2" />
+              <Skeleton className="h-10 w-full mb-2" />
+              <Skeleton className="h-10 w-32" />
             </div>
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-6">
+            <div className="profile-form-container">
+              <Skeleton className="h-6 w-60 mb-2" />
+              <Skeleton className="h-4 w-80 mb-4" />
+              <Skeleton className="h-10 w-full mb-2" />
+              <Skeleton className="h-10 w-full mb-2" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardShell>
   );

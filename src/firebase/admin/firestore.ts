@@ -1,7 +1,7 @@
 // firebase/admin/firestore.ts
 import "server-only"; // Add this to prevent client imports
 
-import { adminDb } from "./index";
+import { adminDb } from "./firebase-admin-init";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 
 //

@@ -1,5 +1,5 @@
 // src/firebase/admin/activity.ts
-import { adminAuth, adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import { Timestamp, Query, DocumentData } from "firebase-admin/firestore";
 import { auth } from "@/auth";
 

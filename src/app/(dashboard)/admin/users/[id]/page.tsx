@@ -3,7 +3,7 @@ import { AdminUserDetailCard } from "@/components/dashboard/admin";
 import { Separator } from "@/components/ui/separator";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { adminDb } from "@/firebase/admin";
+import { adminDb } from "@/firebase/admin/firebase-admin-init";
 import { serializeData } from "@/utils/serializeData";
 import type { Timestamp } from "firebase-admin/firestore";
 

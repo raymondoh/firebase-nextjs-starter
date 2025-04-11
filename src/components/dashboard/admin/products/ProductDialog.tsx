@@ -1,6 +1,6 @@
 "use client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ProductForm } from "@/components/dashboard/admin/ProductForm";
+import { ProductForm } from "@/components/dashboard/admin/products/ProductForm";
 
 interface ProductDialogProps {
   open: boolean;

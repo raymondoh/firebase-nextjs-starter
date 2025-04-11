@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { UpdateProductForm } from "@/components/dashboard/admin/UpdateProductForm";
+import { UpdateProductForm } from "@/components/dashboard/admin/products/UpdateProductForm";
 import { auth } from "@/auth";
 import { getProductById } from "@/actions/products";
 
