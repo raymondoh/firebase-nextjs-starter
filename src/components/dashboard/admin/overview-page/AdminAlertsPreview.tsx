@@ -1,4 +1,3 @@
-// src/components/dashboard/admin/overview-page/AdminAlertsPreview
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,65 +5,45 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
-import { db } from "@/firebase/client/firebase-client-init";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SystemAlert } from "@/types/dashboard";
-import { parseDate } from "@/utils/date-client";
-import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export function AdminAlertsPreview() {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchAlerts() {
-      try {
-        const alertsQuery = query(
-          collection(db, "systemAlerts"),
-          where("resolved", "==", false),
-          orderBy("timestamp", "desc"),
-          limit(3)
-        );
-
-        const snapshot = await getDocs(alertsQuery);
-        const alertsData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            title: data.title,
-            description: data.description,
-            severity: data.severity,
-            timestamp: parseDate(data.timestamp),
-            resolved: data.resolved
-          };
-        });
-
-        setAlerts(alertsData);
-      } catch (error) {
-        if (isFirebaseError(error)) {
-          console.error("Error fetching users:", firebaseError(error));
-        } else {
-          console.error("Error fetching users:", "An unexpected error occurred.");
-        }
-
-        setAlerts([
-          {
-            id: "sample1",
-            title: "System Maintenance",
-            description: "Scheduled maintenance on March 15, 2023 at 2:00 AM UTC",
-            severity: "info",
-            timestamp: new Date(),
-            resolved: false
-          }
-        ]);
-      } finally {
-        setLoading(false);
+    // Static dummy data
+    const dummyAlerts: SystemAlert[] = [
+      {
+        id: "sample1",
+        title: "System Maintenance",
+        description: "Scheduled maintenance on March 15, 2023 at 2:00 AM UTC",
+        severity: "info",
+        timestamp: new Date(),
+        resolved: false
+      },
+      {
+        id: "sample2",
+        title: "Security Update",
+        description: "Critical security update scheduled for March 20, 2023",
+        severity: "warning",
+        timestamp: new Date(),
+        resolved: false
+      },
+      {
+        id: "sample3",
+        title: "New Feature Release",
+        description: "New feature release planned for next week",
+        severity: "success",
+        timestamp: new Date(),
+        resolved: false
       }
-    }
+    ];
 
-    fetchAlerts();
+    setAlerts(dummyAlerts);
+    setLoading(false);
   }, []);
 
   function getSeverityIcon(severity: SystemAlert["severity"]) {

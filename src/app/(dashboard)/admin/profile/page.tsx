@@ -43,10 +43,10 @@ export default async function AdminProfilePage() {
         </Alert>
       )}
 
-      <div className="w-full max-w-4xl overflow-hidden">
+      <div className="w-full max-w-7xl overflow-hidden">
         <div className="profile-form-container">
-          <h2 className="text-xl font-semibold mb-4">Admin Information</h2>
-          <p className="text-muted-foreground mb-6">Update your name, bio, and profile image.</p>
+          {/* <h2 className="text-xl font-semibold mb-4">Admin Information</h2>
+          <p className="text-muted-foreground mb-6">Update your name, bio, and profile image.</p> */}
 
           <UserProfileForm user={user} isLoading={!user} isAdmin={true} />
         </div>

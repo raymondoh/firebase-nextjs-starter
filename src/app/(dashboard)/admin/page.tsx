@@ -5,7 +5,7 @@ import {
   DashboardShell,
   DashboardHeader,
   AdminSystemPreview,
-  //AdminAlertsPreview,
+  AdminAlertsPreview,
   AdminUserPreview,
   AdminActivityPreview
 } from "@/components";
@@ -117,7 +117,10 @@ export default async function AdminDashboardOverviewPage() {
         </div>
 
         {/* System Alerts */}
-        <div className="w-full min-w-0 overflow-hidden">{/* <AdminAlertsPreview /> */}</div>
+        <div className="w-full min-w-0 overflow-hidden">
+          {" "}
+          <AdminAlertsPreview />{" "}
+        </div>
       </div>
 
       {/* Bottom row - 2 columns with reduced gap on mobile */}
