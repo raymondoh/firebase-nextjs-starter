@@ -66,49 +66,92 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       action(formData);
     });
   };
+  // useEffect(() => {
+  //   if (state?.success && !hasToastShown.current && !isRedirecting.current) {
+  //     setErrorMessage(null);
+  //     hasToastShown.current = true;
+  //     isRedirecting.current = true;
+
+  //     toast.success("Login successful!");
+
+  //     if (state.data?.customToken) {
+  //       signInWithCustomToken(auth, state.data.customToken)
+  //         .then(async userCredential => {
+  //           const idToken = await userCredential.user.getIdToken();
+  //           //const signInResult = await signInWithFirebase({ idToken });
+  //           const signInResult = await signInWithNextAuth({ idToken });
+
+  //           if (!signInResult.success) throw new Error("Failed to sign in with NextAuth");
+
+  //           await update();
+  //           router.push("/");
+  //         })
+  //         .catch((error: unknown) => {
+  //           console.error(`[${componentId}] Error exchanging token:`, error);
+
+  //           if (isFirebaseError(error)) {
+  //             toast.error(firebaseError(error));
+  //           } else {
+  //             toast.error("An error occurred during login. Please try again.");
+  //           }
+
+  //           hasToastShown.current = false;
+  //           isRedirecting.current = false;
+  //         });
+  //     } else {
+  //       update().then(() => {
+  //         setTimeout(() => router.push("/"), 500);
+  //       });
+  //     }
+  //   } else if (state?.message && !state.success && !hasToastShown.current) {
+  //     setErrorMessage(state.message);
+  //     hasToastShown.current = true;
+  //     toast.error(state.message);
+  //   }
+  // }, [state, router, update, componentId]);
   useEffect(() => {
-    if (state?.success && !hasToastShown.current && !isRedirecting.current) {
-      setErrorMessage(null);
+    if (!state || hasToastShown.current) return;
+
+    if (state.success) {
+      toast.success("Login successful!");
       hasToastShown.current = true;
       isRedirecting.current = true;
 
-      toast.success("Login successful!");
-
-      if (state.data?.customToken) {
-        signInWithCustomToken(auth, state.data.customToken)
-          .then(async userCredential => {
+      const handleRedirect = async () => {
+        try {
+          if (state.data?.customToken) {
+            const userCredential = await signInWithCustomToken(auth, state.data.customToken);
             const idToken = await userCredential.user.getIdToken();
-            //const signInResult = await signInWithFirebase({ idToken });
             const signInResult = await signInWithNextAuth({ idToken });
 
             if (!signInResult.success) throw new Error("Failed to sign in with NextAuth");
 
             await update();
-            router.push("/");
-          })
-          .catch((error: unknown) => {
-            console.error(`[${componentId}] Error exchanging token:`, error);
+          } else {
+            await update();
+          }
 
-            if (isFirebaseError(error)) {
-              toast.error(firebaseError(error));
-            } else {
-              toast.error("An error occurred during login. Please try again.");
-            }
+          router.push("/");
+        } catch (error) {
+          console.error(`[${componentId}] Error exchanging token:`, error);
 
-            hasToastShown.current = false;
-            isRedirecting.current = false;
-          });
-      } else {
-        update().then(() => {
-          setTimeout(() => router.push("/"), 500);
-        });
-      }
-    } else if (state?.message && !state.success && !hasToastShown.current) {
+          toast.error(
+            isFirebaseError(error) ? firebaseError(error) : "An error occurred during login. Please try again."
+          );
+
+          hasToastShown.current = false;
+          isRedirecting.current = false;
+        }
+      };
+
+      handleRedirect();
+    } else if (state.message) {
       setErrorMessage(state.message);
       hasToastShown.current = true;
       toast.error(state.message);
     }
   }, [state, router, update, componentId]);
+
   // for testing
   useEffect(() => {
     console.log("LoginForm state:", state);

@@ -1,4 +1,3 @@
-// src/actions/auth/email-verification.ts
 "use server";
 
 import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
@@ -23,16 +22,9 @@ export async function updateEmailVerificationStatus({
   try {
     const userRecord = await adminAuth.getUser(userId);
 
-    if (!userRecord) {
-      return {
-        success: false,
-        error: "User not found"
-      };
-    }
-
     if (verified && !userRecord.emailVerified) {
       console.warn(
-        `[updateEmailVerificationStatus] Warning: Firestore marked email verified, but Firebase Auth is not`
+        "[updateEmailVerificationStatus] Warning: Firestore marked email verified, but Firebase Auth is not"
       );
     }
 
@@ -49,15 +41,16 @@ export async function updateEmailVerificationStatus({
       metadata: { emailVerified: verified }
     });
 
+    console.log(`[updateEmailVerificationStatus] SUCCESS - userId: ${userId}`);
     return { success: true };
-  } catch (error: unknown) {
+  } catch (error) {
     const message = isFirebaseError(error)
       ? firebaseError(error)
       : error instanceof Error
       ? error.message
       : "Unexpected error";
 
-    console.error("[updateEmailVerificationStatus] error:", message);
+    console.error("[updateEmailVerificationStatus] ERROR:", message);
     return {
       success: false,
       error: message

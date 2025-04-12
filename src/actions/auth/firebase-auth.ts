@@ -1,4 +1,3 @@
-// src/actions/auth/firebase-auth.ts
 "use server";
 
 import { signIn } from "@/auth";
@@ -8,9 +7,11 @@ import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { SignInWithFirebaseInput, SignInWithFirebaseResponse } from "@/types/auth/firebase-auth";
 
 export async function signInWithFirebase({ idToken }: SignInWithFirebaseInput): Promise<SignInWithFirebaseResponse> {
+  let uid = "unknown";
+
   try {
     const decodedToken = await adminAuth.verifyIdToken(idToken);
-    const userId = decodedToken.uid;
+    uid = decodedToken.uid;
 
     const result = await signIn("credentials", {
       idToken,
@@ -19,7 +20,7 @@ export async function signInWithFirebase({ idToken }: SignInWithFirebaseInput): 
 
     if (result?.error) {
       await logActivity({
-        userId,
+        userId: uid,
         type: "login",
         description: "Firebase credential login failed",
         status: "failed",
@@ -41,15 +42,7 @@ export async function signInWithFirebase({ idToken }: SignInWithFirebaseInput): 
       ? error.message
       : "Unknown sign-in error";
 
-    console.error("Sign in error:", message);
-
-    let uid = "unknown";
-    try {
-      const decoded = await adminAuth.verifyIdToken(idToken);
-      uid = decoded.uid;
-    } catch (verifyError) {
-      console.warn("Could not verify ID token to extract UID:", verifyError);
-    }
+    console.error("[signInWithFirebase] Error:", message);
 
     await logActivity({
       userId: uid,

@@ -37,7 +37,7 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
     const userDoc = await adminDb.collection("users").doc(userRecord.uid).get();
     const userData = userDoc.data();
 
-    if (!userData || !userData.passwordHash) {
+    if (!userData?.passwordHash) {
       return { success: false, message: "Invalid email or password" };
     }
 
@@ -60,20 +60,18 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
         emailVerified: isEmailVerified
       }
     };
-  } catch (error: unknown) {
-    const code = (error as { code?: string })?.code;
-
-    if (code === "auth/user-not-found") {
-      return { success: false, message: "Invalid email or password" };
-    }
-
+  } catch (error) {
     if (isFirebaseError(error)) {
+      if (error.code === "auth/user-not-found") {
+        return { success: false, message: "Invalid email or password" };
+      }
+
       return { success: false, message: firebaseError(error) };
     }
 
     return {
       success: false,
-      message: error instanceof Error ? error.message : "An unexpected error occurred. Please try again."
+      message: error instanceof Error ? error.message : "Unexpected login error. Please try again."
     };
   }
 }

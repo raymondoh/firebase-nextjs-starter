@@ -12,6 +12,7 @@ import type { ForgotPasswordState, UpdatePasswordState } from "@/types/auth/pass
 import type { UserData } from "@/types/user";
 import { logPasswordResetActivity } from "./reset-password";
 import { hashPassword } from "@/utils/hashPassword";
+import type { ActionResponse } from "@/types";
 
 /**
  * Helper to safely extract a string value from FormData
@@ -64,14 +65,10 @@ export async function requestPasswordReset(
 /**
  * SYNC PASSWORD WITH FIRESTORE (used after reset to update local hash)
  */
-export async function syncPasswordWithFirestore(
-  email: string,
-  password: string
-): Promise<{ success: boolean; error?: string }> {
+export async function syncPasswordWithFirestore(email: string, password: string): Promise<ActionResponse> {
   try {
     const userRecord = await adminAuth.getUserByEmail(email);
-
-    const hashedPassword = await hashPassword(password); // ✅ use utility instead of inline bcrypt logic
+    const hashedPassword = await hashPassword(password);
 
     await adminDb.collection("users").doc(userRecord.uid).update({
       passwordHash: hashedPassword,
@@ -79,7 +76,7 @@ export async function syncPasswordWithFirestore(
     });
 
     return { success: true };
-  } catch (error: unknown) {
+  } catch (error) {
     return {
       success: false,
       error: isFirebaseError(error) ? firebaseError(error) : "Failed to sync password"

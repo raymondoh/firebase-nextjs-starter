@@ -20,13 +20,16 @@ export async function deleteUserAsAdmin({ userId, adminId }: DeleteUserAsAdminIn
 
     // 3. Delete user profile image from Firebase Storage
     const profileImage = adminStorage.bucket().file(`users/${userId}/profile.jpg`);
+
     try {
       await profileImage.delete();
-    } catch (error) {
-      if (typeof error === "object" && error !== null && "code" in error && (error as { code?: number }).code === 404) {
+    } catch (err) {
+      const is404 = typeof err === "object" && err !== null && "code" in err && (err as { code?: number }).code === 404;
+
+      if (is404) {
         console.log("Profile image not found, skipping.");
       } else {
-        console.warn("Storage deletion issue:", error);
+        console.warn("⚠️ Storage deletion issue:", err);
       }
     }
 
@@ -41,11 +44,12 @@ export async function deleteUserAsAdmin({ userId, adminId }: DeleteUserAsAdminIn
 
     return { success: true };
   } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unknown error deleting user";
+    let message = "Unknown error deleting user.";
+    if (isFirebaseError(error)) {
+      message = firebaseError(error);
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
 
     console.error("❌ Admin user deletion failed:", error);
     return { success: false, error: message };

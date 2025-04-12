@@ -45,7 +45,6 @@ export function ForgotPasswordForm() {
       if (isFirebaseError(err)) {
         if (err.code === "auth/user-not-found") {
           setIsSubmitted(true);
-          toast.success("Password reset email sent. Please check your inbox.");
           return;
         }
 

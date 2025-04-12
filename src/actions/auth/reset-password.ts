@@ -36,13 +36,10 @@ export async function logPasswordResetActivity({ email }: LogPasswordResetInput)
 
     return { success: true };
   } catch (error: unknown) {
-    const message = isFirebaseError(error) && error.code !== "auth/user-not-found" ? firebaseError(error) : undefined;
-
-    if (message) {
-      console.error("[PASSWORD_RESET] Error logging activity:", message);
+    if (isFirebaseError(error) && error.code !== "auth/user-not-found") {
+      console.error("[PASSWORD_RESET] Error logging activity:", firebaseError(error));
     }
-
-    return { success: true }; // Do not expose failure
+    return { success: true }; // Silent fail
   }
 }
 

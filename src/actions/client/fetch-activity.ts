@@ -7,18 +7,21 @@ export async function clientFetchActivityLogs({
   startAfter,
   type
 }: FetchActivityLogsParams): Promise<FetchActivityLogsResponse> {
-  const params = new URLSearchParams();
+  try {
+    const params = new URLSearchParams();
+    params.set("limit", String(limit));
+    if (startAfter) params.set("startAfter", startAfter);
+    if (type) params.set("type", type);
 
-  params.set("limit", String(limit));
-  if (startAfter) params.set("startAfter", startAfter);
-  if (type) params.set("type", type);
+    const res = await fetch(`/api/activity-logs?${params.toString()}`);
+    if (!res.ok) {
+      return { success: false, error: "Failed to fetch logs" };
+    }
 
-  const res = await fetch(`/api/activity-logs?${params.toString()}`);
-
-  if (!res.ok) {
-    return { success: false, error: "Failed to fetch logs" };
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("clientFetchActivityLogs error:", error);
+    return { success: false, error: "Unexpected client error occurred." };
   }
-
-  const data = await res.json();
-  return data;
 }

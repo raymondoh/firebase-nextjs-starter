@@ -9,14 +9,13 @@ import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 
 export async function debugPasswordVerification(email: string, password: string) {
   if (process.env.NODE_ENV === "production") {
-    console.error("Debug functions should not be called in production");
-    return { success: false, message: "Not available in production" };
+    return { success: false, message: "This debug function is not available in production." };
   }
 
   const session = await auth();
 
-  if (!session?.user?.role || session.user.role !== "admin") {
-    return { success: false, message: "Unauthorized" };
+  if (session?.user?.role !== "admin") {
+    return { success: false, message: "Unauthorized access." };
   }
 
   try {
@@ -25,7 +24,7 @@ export async function debugPasswordVerification(email: string, password: string)
     const userData = userDoc.data() as { passwordHash?: string } | undefined;
 
     if (!userData?.passwordHash) {
-      return { success: false, message: "No password hash found for user" };
+      return { success: false, message: "No password hash found for this user." };
     }
 
     const isPasswordValid = await bcryptjs.compare(password, userData.passwordHash);
@@ -33,16 +32,17 @@ export async function debugPasswordVerification(email: string, password: string)
     return {
       success: true,
       isPasswordValid,
-      message: isPasswordValid ? "Password verification successful" : "Password verification failed"
+      message: isPasswordValid ? "Password verification successful." : "Incorrect password."
     };
   } catch (error) {
-    const message = isFirebaseError(error)
-      ? firebaseError(error)
-      : error instanceof Error
-      ? error.message
-      : "Unexpected error occurred";
+    let message = "An unexpected error occurred.";
+    if (isFirebaseError(error)) {
+      message = firebaseError(error);
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
 
-    console.error("Debug error:", error);
+    console.error("[debugPasswordVerification] Error:", error);
 
     return {
       success: false,
