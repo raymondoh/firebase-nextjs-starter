@@ -2,6 +2,9 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
+// This layout uses auth() or headers(), so force dynamic rendering
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 

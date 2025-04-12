@@ -7,6 +7,9 @@ import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { auth } from "@/auth";
 import { headers } from "next/headers";
 
+// This layout uses auth() or headers(), so force dynamic rendering
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   try {
     // Basic authentication check
