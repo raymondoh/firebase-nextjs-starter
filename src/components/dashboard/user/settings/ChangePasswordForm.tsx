@@ -177,5 +177,19 @@
 import React from "react";
 
 export function ChangePasswordForm() {
-  return <div>ChangePasswordForm</div>;
+  return (
+    <div>
+      ChangePasswordForm
+      <p>
+        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Temporibus incidunt ullam quae voluptatum doloremque,
+        minus iure impedit. Repudiandae perferendis molestiae consequatur facilis, error harum voluptas debitis nesciunt
+        eaque amet repellat pariatur reprehenderit veritatis quo ex cupiditate cum earum enim itaque eveniet nam iure?
+        Veritatis voluptate explicabo tempora commodi. Eos quisquam quis ad adipisci. Officiis dicta deserunt,
+        cupiditate incidunt quo perferendis ea sit id animi quisquam. Culpa facere quod ducimus numquam inventore earum
+        exercitationem laboriosam. Earum voluptatem laboriosam molestias aperiam tenetur inventore sit, ipsa, illo velit
+        quia praesentium repudiandae reprehenderit itaque distinctio, similique porro corporis. Unde porro suscipit
+        explicabo facilis ad!
+      </p>
+    </div>
+  );
 }
