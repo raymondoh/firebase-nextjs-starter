@@ -1,3 +1,4 @@
+//src/(auth)/login.tsx
 import { LoginForm } from "@/components";
 
 import type { Metadata } from "next";

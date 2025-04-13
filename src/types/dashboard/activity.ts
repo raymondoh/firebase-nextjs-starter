@@ -81,3 +81,10 @@ export interface FetchActivityLogsResponse {
   activities?: SerializedActivity[];
   error?: string;
 }
+export interface ActivityLogInput {
+  userId: string;
+  type: "login" | "register" | "error" | "update" | "delete" | string;
+  description: string;
+  status: "success" | "error" | "info";
+  metadata?: Record<string, any>; // optional additional context
+}

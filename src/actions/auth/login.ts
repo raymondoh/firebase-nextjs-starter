@@ -48,6 +48,7 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
 
     // Step 4: Return custom token for client-side Firebase sign in
     const customToken = await adminAuth.createCustomToken(userRecord.uid);
+    console.log("[loginUser] Returning customToken:", customToken);
 
     return {
       success: true,

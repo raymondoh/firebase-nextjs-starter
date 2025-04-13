@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState, useState, useEffect, startTransition, useRef } from "react";
+import React, { useState, useEffect, useRef, useTransition, startTransition, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
@@ -15,7 +15,6 @@ import { signInWithCustomToken } from "firebase/auth";
 import { auth } from "@/firebase/client/firebase-client-init";
 import { loginUser } from "@/actions/auth";
 import { signInWithNextAuth } from "@/firebase/client/next-auth";
-
 import type { LoginState } from "@/types/auth";
 import { GoogleAuthButton } from "@/components";
 import { CloseButton } from "@/components";
@@ -31,13 +30,12 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formKey, setFormKey] = useState("0");
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
 
   const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null, formKey);
 
   const hasToastShown = useRef(false);
   const isRedirecting = useRef(false);
-  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
-
   const componentId = useRef(`login-form-${Math.random().toString(36).substring(7)}`).current;
 
   useEffect(() => {
@@ -56,59 +54,15 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
     formData.append("isRegistration", "false");
-
     startTransition(() => {
       action(formData);
     });
   };
-  // useEffect(() => {
-  //   if (state?.success && !hasToastShown.current && !isRedirecting.current) {
-  //     setErrorMessage(null);
-  //     hasToastShown.current = true;
-  //     isRedirecting.current = true;
 
-  //     toast.success("Login successful!");
-
-  //     if (state.data?.customToken) {
-  //       signInWithCustomToken(auth, state.data.customToken)
-  //         .then(async userCredential => {
-  //           const idToken = await userCredential.user.getIdToken();
-  //           //const signInResult = await signInWithFirebase({ idToken });
-  //           const signInResult = await signInWithNextAuth({ idToken });
-
-  //           if (!signInResult.success) throw new Error("Failed to sign in with NextAuth");
-
-  //           await update();
-  //           router.push("/");
-  //         })
-  //         .catch((error: unknown) => {
-  //           console.error(`[${componentId}] Error exchanging token:`, error);
-
-  //           if (isFirebaseError(error)) {
-  //             toast.error(firebaseError(error));
-  //           } else {
-  //             toast.error("An error occurred during login. Please try again.");
-  //           }
-
-  //           hasToastShown.current = false;
-  //           isRedirecting.current = false;
-  //         });
-  //     } else {
-  //       update().then(() => {
-  //         setTimeout(() => router.push("/"), 500);
-  //       });
-  //     }
-  //   } else if (state?.message && !state.success && !hasToastShown.current) {
-  //     setErrorMessage(state.message);
-  //     hasToastShown.current = true;
-  //     toast.error(state.message);
-  //   }
-  // }, [state, router, update, componentId]);
   useEffect(() => {
     if (!state || hasToastShown.current) return;
 
@@ -119,24 +73,31 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
       const handleRedirect = async () => {
         try {
-          if (state.data?.customToken) {
-            const userCredential = await signInWithCustomToken(auth, state.data.customToken);
-            const idToken = await userCredential.user.getIdToken();
-            const signInResult = await signInWithNextAuth({ idToken });
-
-            if (!signInResult.success) throw new Error("Failed to sign in with NextAuth");
-
-            await update();
-          } else {
-            await update();
+          if (!navigator.onLine) {
+            throw new Error("You are offline");
           }
 
+          if (!auth || !state.data?.customToken) {
+            throw new Error("Missing auth or customToken");
+          }
+
+          const userCredential = await signInWithCustomToken(auth, state.data.customToken);
+          const idToken = await userCredential.user.getIdToken();
+          const signInResult = await signInWithNextAuth({ idToken });
+
+          if (!signInResult.success) throw new Error("NextAuth sign-in failed");
+
+          await update();
           router.push("/");
         } catch (error) {
-          console.error(`[${componentId}] Error exchanging token:`, error);
+          console.error(`[${componentId}] Error during redirect:`, error);
 
           toast.error(
-            isFirebaseError(error) ? firebaseError(error) : "An error occurred during login. Please try again."
+            isFirebaseError(error)
+              ? firebaseError(error)
+              : error instanceof Error
+              ? error.message
+              : "An error occurred during login"
           );
 
           hasToastShown.current = false;
@@ -152,10 +113,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     }
   }, [state, router, update, componentId]);
 
-  // for testing
-  useEffect(() => {
-    console.log("LoginForm state:", state);
-  }, [state]);
   return (
     <Card className={className} {...props}>
       <div className="relative">
@@ -217,16 +174,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             </div>
           </div>
 
-          {/* <Button type="submit" className="w-full" disabled={isPending || isRedirecting.current || isGoogleSigningIn}>
-            {isPending || isRedirecting.current ? (
-              <>
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                {isRedirecting.current ? "Redirecting..." : "Logging in..."}
-              </>
-            ) : (
-              "Login"
-            )}
-          </Button> */}
           <SubmitButton
             isLoading={isPending || isRedirecting.current || isGoogleSigningIn}
             loadingText={isRedirecting.current ? "Redirecting..." : "Logging in..."}

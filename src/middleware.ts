@@ -21,20 +21,20 @@ export async function middleware(request: NextRequest) {
   const nonce = crypto.randomUUID();
   const isDev = process.env.NODE_ENV === "development";
   const csp = `
-    default-src 'self';
-    script-src 'self' ${
-      isDev ? "'unsafe-inline' 'unsafe-eval'" : `'nonce-${nonce}'`
-    } https://apis.google.com https://*.gstatic.com https://*.firebaseio.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' data: https://*.googleusercontent.com https://*.google.com;
-    font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://*.googleapis.com https://firestore.googleapis.com https://*.firebaseio.com;
-    frame-src 'self' https://*.firebaseapp.com https://accounts.google.com;
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    upgrade-insecure-requests;
-  `
+  default-src 'self';
+  script-src 'self' ${
+    isDev ? "'unsafe-inline' 'unsafe-eval'" : `'nonce-${nonce}'`
+  } https://apis.google.com https://*.gstatic.com https://*.firebaseio.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  img-src 'self' data: https://*.googleusercontent.com https://*.google.com;
+  font-src 'self' https://fonts.gstatic.com;
+  connect-src 'self' https://securetoken.googleapis.com https://accounts.google.com https://*.googleapis.com https://firestore.googleapis.com https://*.firebaseio.com;
+  frame-src 'self' https://*.firebaseapp.com https://accounts.google.com;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  upgrade-insecure-requests;
+`
     .replace(/\s{2,}/g, " ")
     .trim();
 

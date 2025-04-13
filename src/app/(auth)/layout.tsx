@@ -1,3 +1,4 @@
+//src/app/(auth)/layout.tsx
 import type React from "react";
 
 //import { Toaster } from "@/components/ui/sonner";

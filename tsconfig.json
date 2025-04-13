@@ -28,7 +28,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/firebase/security/firestore.rules"
+    "src/firebase/security/firestore.rules",
+    "src/app/(dashboard)/user/layout.tsxX",
+    "src/app/(dashboard)/admin/layout.tsx",
+    "src/app/(dashboard)/layout.tsx"
   ],
   "exclude": ["node_modules"]
 }

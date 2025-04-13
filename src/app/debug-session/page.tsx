@@ -40,7 +40,7 @@ export default async function DebugSessionPage() {
         </div>
       </div>
 
-      <ClientSessionDebug />
+      {process.env.NODE_ENV === "development" && <ClientSessionDebug />}
     </div>
   );
 }

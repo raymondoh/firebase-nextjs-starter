@@ -237,21 +237,17 @@
 //     }
 //   }
 // };
-
+////////////////////////////////////////////
 // src/lib/authOptions.ts
 import type { NextAuthConfig } from "next-auth";
-//import type { JWT } from "next-auth/jwt";
-//import type { AdapterSession } from "@auth/core/adapters";
 import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
 import { cert } from "firebase-admin/app";
 import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
-//import { verifyFirebaseCredentials } from "./auth/verifyCredentials";
 import { syncUserWithFirebase } from "./auth/syncUserWithFirebase";
 import type { AdapterUser } from "next-auth/adapters";
-
 import { handleProviderSync } from "./auth/sync";
 import type { UserRole } from "@/types/user";
 type ExtendedUser = AdapterUser & {
@@ -416,3 +412,4 @@ export const authOptions: NextAuthConfig = {
     }
   }
 };
+////////////////////////////////////////////////

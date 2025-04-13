@@ -1,8 +1,9 @@
+// src/components/debug/client-session.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
 
-export function ClientSessionDebug() {
+function ClientSessionDebugDevOnly() {
   const { data: session, status } = useSession();
 
   return (
@@ -21,3 +22,5 @@ export function ClientSessionDebug() {
     </div>
   );
 }
+
+export const ClientSessionDebug = process.env.NODE_ENV === "development" ? ClientSessionDebugDevOnly : () => null;

@@ -34,7 +34,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
     const role = session.user?.role;
 
-    // Role-based access control
+    // // Role-based access control
     if (role === "admin" && isUserRoute) {
       console.warn("Admin trying to access user route — redirecting to /admin");
       redirect("/admin"); // Corrected path without dashboard prefix

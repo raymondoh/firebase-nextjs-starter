@@ -1,3 +1,4 @@
+//src/lib/auth/syncUserWithFirebase.ts
 import { syncUserWithFirebase as syncUser } from "./syncUserWithFirebase";
 import type { AdapterUser } from "next-auth/adapters";
 import type { Account } from "next-auth";
