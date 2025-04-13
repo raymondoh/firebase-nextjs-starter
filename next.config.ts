@@ -1,5 +1,5 @@
+// next.config.ts
 import type { NextConfig } from "next";
-import type { Configuration } from "webpack";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -8,25 +8,21 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true
   },
   reactStrictMode: true,
-  webpack: (config: Configuration) => {
-    config.resolve = {
-      ...config.resolve,
-      fallback: {
-        ...config.resolve?.fallback,
-        net: false,
-        tls: false,
-        fs: false,
-        http2: false,
-        http: false,
-        https: false,
-        zlib: false,
-        child_process: false
-      }
+  webpack: config => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      net: false,
+      tls: false,
+      fs: false,
+      http2: false,
+      http: false,
+      https: false,
+      zlib: false,
+      child_process: false
     };
 
-    // ✅ Exclude src/dev from production builds
     if (!isDev) {
-      config.module?.rules?.push({
+      config.module.rules.push({
         test: /\.(js|ts|tsx)$/,
         include: /src\/dev/,
         use: {
@@ -55,34 +51,35 @@ const nextConfig: NextConfig = {
     ]
   },
   async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block"
-          },
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN"
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff"
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin"
-          },
-          {
-            key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
-          }
-        ]
-      }
+    const securityHeaders = [
+      { key: "X-XSS-Protection", value: "1; mode=block" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }
     ];
+
+    if (!isDev) {
+      securityHeaders.push({
+        key: "Content-Security-Policy",
+        value: `
+          default-src 'self';
+          script-src 'self' 'unsafe-inline' https://apis.google.com https://*.gstatic.com https://*.firebaseio.com;
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          img-src 'self' data: https://*.googleusercontent.com https://*.google.com;
+          font-src 'self' https://fonts.gstatic.com;
+          connect-src 'self' https://*.googleapis.com https://firestore.googleapis.com https://*.firebaseio.com;
+          frame-src 'self' https://*.firebaseapp.com https://accounts.google.com;
+          object-src 'none';
+          base-uri 'self';
+          form-action 'self';
+          upgrade-insecure-requests;
+        `
+          .replace(/\s{2,}/g, " ")
+          .trim()
+      });
+    }
+
+    return [{ source: "/(.*)", headers: securityHeaders }];
   }
 };
 
