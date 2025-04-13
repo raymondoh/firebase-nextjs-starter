@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AdminUsersDataTable } from "./manage-users/AdminUsersDataTable";
-import { columns } from "./columns";
+import { columns } from "./manage-users/columns";
 import { fetchUsers } from "@/actions/user/admin";
 import type { User, SerializedUser } from "@/types/user/common";
 import { serializeUser } from "@/utils/serializeUser";

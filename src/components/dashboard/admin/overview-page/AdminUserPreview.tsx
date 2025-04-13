@@ -9,7 +9,8 @@ import { db } from "@/firebase/client/firebase-client-init";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { formatClientDate as formatDate } from "@/utils";
+import { formatDate } from "@/utils/date";
+
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import { PreviewUser } from "@/types/user";
 
@@ -103,7 +104,7 @@ export function AdminUserPreview({ limit: userLimit = 5 }: UserManagementPreview
                       {user.name || user.email?.split("@")[0] || "Unknown"}
                     </p>
                     <p className="text-xs text-muted-foreground">{user.email || "No email"}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(user.createdAt)}</p>
+                    <p className="text-xs text-muted-foreground"> {formatDate(user.lastLoginAt, { relative: true })}</p>
                   </div>
                 </div>
                 <Badge variant={user.role === "admin" ? "default" : "outline"}>{user.role}</Badge>

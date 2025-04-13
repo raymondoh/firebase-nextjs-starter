@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, RefreshCw } from "lucide-react";
-import { formatDate } from "@/utils/date-client";
+import { formatDate } from "@/utils/date";
+
 import type { ActivityLogClientProps } from "@/types/dashboard/activity";
 
 export function UserActivityLogTable({ activities, showFilters = true, isRefreshing = false }: ActivityLogClientProps) {
@@ -95,7 +96,9 @@ export function UserActivityLogTable({ activities, showFilters = true, isRefresh
                   <TableCell className="whitespace-nowrap">
                     <Badge variant={getBadgeVariant(activity.status)}>{activity.status}</Badge>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">{formatDate(activity.timestamp)}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {formatDate(activity.timestamp, { relative: true })}
+                  </TableCell>
                 </TableRow>
               ))
             )}

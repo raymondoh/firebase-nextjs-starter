@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, RefreshCw } from "lucide-react";
-import { formatDate } from "@/utils/date-client";
+import { formatDate } from "@/utils/date";
+
 import type { ActivityLogClientProps } from "@/types/dashboard/activity";
 
 export function ActivityLogClient({ activities, showFilters = true, isRefreshing = false }: ActivityLogClientProps) {

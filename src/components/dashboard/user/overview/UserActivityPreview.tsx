@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatClientDate as formatDate } from "@/utils";
+import { formatDate } from "@/utils/date";
 import Link from "next/link";
 import type { SerializedActivity } from "@/types/firebase/activity";
 
@@ -52,7 +52,9 @@ export function UserActivityPreview({
               <div key={activity.id} className="flex flex-col space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">{activity.description}</span>
-                  <span className="text-xs text-muted-foreground">{formatDate(activity.timestamp)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDate(activity.timestamp, { relative: true })}
+                  </span>
                 </div>
                 {activity.metadata?.details && (
                   <p className="text-xs text-muted-foreground">{activity.metadata.details}</p>

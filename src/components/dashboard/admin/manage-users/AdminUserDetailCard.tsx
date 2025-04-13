@@ -30,7 +30,7 @@ import {
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 // import from server version (which supports AdminTimestamp)
-import { formatDate as formatServerDate } from "@/utils/date-server";
+import { formatDate } from "@/utils/date";
 
 export interface AdminUserDetailCardProps {
   user: User;
@@ -275,16 +275,21 @@ export function AdminUserDetailCard({ user }: AdminUserDetailCardProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium">Created At</h4>
-                  <p className="text-sm text-muted-foreground">{formatServerDate(formData.createdAt)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDate((formData.createdAt as any)?.toDate?.() ?? formData.createdAt, { relative: true })}
+                  </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium">Last Login</h4>
-                  <p className="text-sm text-muted-foreground">{formatServerDate(formData.lastLoginAt)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDate(formData.lastLoginAt, { relative: true })}
+                  </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium">Last Updated</h4>
-                  <p className="text-sm text-muted-foreground">{formatServerDate(formData.updatedAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(formData.updatedAt, { relative: true })}</p>
                 </div>
+
                 <div>
                   <h4 className="text-sm font-medium">IP Address</h4>
                   <p className="text-sm text-muted-foreground">Not available</p>

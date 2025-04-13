@@ -1,11 +1,13 @@
-// Client date utils
-export { formatDate as formatClientDate, parseDate } from "./date-client";
+// utils/index.ts
 
-// Server date utils
-export { formatDate as formatServerDate } from "./date-server";
+// If you're using `date.ts` (client-side Day.js utils)
+export { formatDate as formatDateClient } from "./date";
 
-// Other utils
+// If you're using `date-server.ts` (server-safe formatting)
+export { formatDate as formatDateServer, toDate } from "./date-server";
 
+// Other utilities
+export * from "./dayjs";
 export * from "./firebase-error";
 export * from "./get-initials";
 export * from "./getDisplayName";

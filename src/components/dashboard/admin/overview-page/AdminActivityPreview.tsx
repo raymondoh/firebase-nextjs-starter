@@ -5,10 +5,9 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatClientDate as formatDate } from "@/utils";
+import { formatDate } from "@/utils/date";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/firebase/client/firebase-client-init";
-//import type { SerializedActivity } from "@/types/firebase/activity";
 import type { AdminActivityLogWrapperProps } from "@/types/dashboard";
 import { getDisplayName } from "@/utils/getDisplayName";
 
@@ -82,7 +81,9 @@ export function AdminActivityPreview({
                     <span className="block text-xs text-muted-foreground">{activity.userEmail}</span>
                   )}
                 </span>
-                <span className="text-xs text-muted-foreground">{formatDate(activity.timestamp)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDate(activity.timestamp, { relative: true })}
+                </span>
               </div>
               <p className="text-xs">{activity.description}</p>
               {/* {activity.metadata?.details && (

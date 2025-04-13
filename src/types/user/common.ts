@@ -43,15 +43,19 @@ export interface User {
   status?: UserStatus;
 }
 
+// types/user.ts
+
 export interface SerializedUser extends Omit<User, "createdAt" | "lastLoginAt" | "updatedAt"> {
   createdAt?: string;
   lastLoginAt?: string;
   updatedAt?: string;
 }
+
 export interface PreviewUser {
   id: string;
   name?: string | null;
   email?: string | null;
   role?: string;
   createdAt?: Date | string;
+  lastLoginAt?: Date | string; // ✅ Add this
 }

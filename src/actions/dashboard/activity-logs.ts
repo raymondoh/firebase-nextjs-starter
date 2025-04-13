@@ -20,9 +20,11 @@ export async function fetchActivityLogs({
       ? await getAllActivityLogs(limit, startAfter, type)
       : await getUserActivityLogs(limit, startAfter, type);
   console.log("[AdminDashboardOverviewPage] Result:", result);
+
   if (!result.success || !result.activities) {
     return { success: false, error: result.error || "Failed to fetch logs" };
   }
+  console.log("Raw activity timestamp sample:", result.activities[0]?.timestamp);
 
   // ⚠️ You may want to enrich logs here (e.g., add displayName or userEmail) before casting
   //const serialized = serializeData(result.activities) as SerializedActivity[];
@@ -33,6 +35,8 @@ export async function fetchActivityLogs({
       name: "" // or log.name ?? "" if it might exist
     }))
   ) as SerializedActivity[];
+  console.log("Raw activity timestamp sample:", result.activities[0]?.timestamp);
+
   //const logs: SerializedActivity[] = Array.isArray(result.activities) ? result.activities : [];
   const logs: SerializedActivity[] = Array.isArray(serialized) ? serialized : [];
 

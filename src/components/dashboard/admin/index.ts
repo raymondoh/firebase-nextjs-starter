@@ -20,4 +20,4 @@ export { ProductForm } from "./products/ProductForm";
 export { ProductsDataTable } from "./products/ProductsDataTable";
 export { UpdateProductForm } from "./products/UpdateProductForm";
 
-export { columns } from "./columns";
+export { columns } from "./manage-users/columns";

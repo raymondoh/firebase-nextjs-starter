@@ -49,3 +49,4 @@ export function formatDate(date: SupportedServerDate): string {
 
   return dateObj.toLocaleDateString();
 }
+export { toDate };

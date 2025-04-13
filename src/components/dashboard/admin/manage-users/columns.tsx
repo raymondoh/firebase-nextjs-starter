@@ -8,8 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 //import type { User } from "@/types/user/common";
 import Link from "next/link";
 import type { SerializedUser } from "@/types/user/common";
-
-import { formatClientDate as formatDate } from "@/utils";
+import { formatDate } from "@/utils/date";
 
 // Helper function to get initials from name or email
 function getInitials(name: string | undefined | null, email: string | undefined | null): string {
@@ -104,7 +103,7 @@ export const columns: ColumnDef<SerializedUser>[] = [
     },
     cell: ({ row }) => {
       const date = row.original.createdAt;
-      return <span className="text-muted-foreground text-sm">{formatDate(date)}</span>;
+      return <span className="text-muted-foreground text-sm">{date ? formatDate(date) : "Unknown"}</span>;
     }
   },
   {
@@ -112,9 +111,12 @@ export const columns: ColumnDef<SerializedUser>[] = [
     header: "Last Login",
     cell: ({ row }) => {
       const date = row.original.lastLoginAt;
-      return <span className="text-muted-foreground text-sm">{formatDate(date)}</span>;
+      return (
+        <span className="text-muted-foreground text-sm">{date ? formatDate(date, { relative: true }) : "N/A"}</span>
+      );
     }
   },
+
   {
     id: "actions",
     cell: ({ row }) => {
