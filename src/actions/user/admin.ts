@@ -1,12 +1,11 @@
-// //src/actions/user/admin.ts
+// // //src/actions/user/admin.ts
 
 // "use server";
 
 // import { auth } from "@/auth";
 // import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
+// import { serverTimestamp } from "@/firebase/admin/firestore";
 // import { createUser as createUserInFirebase, logActivity } from "@/firebase/actions";
-// import { Timestamp } from "firebase-admin/firestore";
-// import { revalidatePath } from "next/cache";
 // import { convertTimestamps } from "@/firebase/utils/firestore";
 // import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 // import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
@@ -15,12 +14,11 @@
 //   CreateUserResponse,
 //   FetchUsersResponse,
 //   SearchUsersResponse,
-//   //UpdateUserInput,
 //   UpdateUserResponse,
-//   //UpdateUserRoleInput,
 //   UpdateUserRoleResponse
 // } from "@/types/user";
 // import type { User, UserRole } from "@/types/user/common";
+// import { revalidatePath } from "next/cache";
 
 // export async function createUser({ email, password, name, role }: CreateUserInput): Promise<CreateUserResponse> {
 //   const session = await auth();
@@ -83,7 +81,7 @@
 //       const data = doc.data() as Partial<User>;
 
 //       const convert = (ts: unknown): Date | undefined =>
-//         ts && typeof ts === "object" && "toDate" in ts ? (ts as Timestamp).toDate() : undefined;
+//         ts && typeof ts === "object" && "toDate" in ts ? (ts as { toDate: () => Date }).toDate() : undefined;
 
 //       return {
 //         id: doc.id,
@@ -187,7 +185,7 @@
 //     if (!["user", "admin"].includes(role)) return { success: false, error: "Role must be either 'user' or 'admin'" };
 //     if (userId === session.user.id) return { success: false, error: "You cannot change your own role" };
 
-//     await adminDb.collection("users").doc(userId).update({ role, updatedAt: Timestamp.now() });
+//     await adminDb.collection("users").doc(userId).update({ role, updatedAt: serverTimestamp() });
 //     return { success: true, message: `User role updated to ${role}` };
 //   } catch (error) {
 //     const message = isFirebaseError(error) ? firebaseError(error) : "Failed to update user role";
@@ -206,7 +204,7 @@
 
 //     const updateData = {
 //       ...userData,
-//       updatedAt: Timestamp.now()
+//       updatedAt: serverTimestamp()
 //     };
 
 //     Object.keys(updateData).forEach(key => {
@@ -228,9 +226,8 @@
 
 import { auth } from "@/auth";
 import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
-import { serverTimestamp } from "@/firebase/admin/firestore";
+import { serverTimestamp } from "@/utils/date-server";
 import { createUser as createUserInFirebase, logActivity } from "@/firebase/actions";
-import { convertTimestamps } from "@/firebase/utils/firestore";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
 import type {
@@ -241,8 +238,9 @@ import type {
   UpdateUserResponse,
   UpdateUserRoleResponse
 } from "@/types/user";
-import type { User, UserRole } from "@/types/user/common";
+import type { User, SerializedUser, UserRole } from "@/types/user/common";
 import { revalidatePath } from "next/cache";
+import { serializeUser } from "@/utils/serializeUser";
 
 export async function createUser({ email, password, name, role }: CreateUserInput): Promise<CreateUserResponse> {
   const session = await auth();
@@ -289,6 +287,7 @@ export async function fetchUsers(limit = 10, offset = 0): Promise<FetchUsersResp
   }
 
   try {
+    // Check for admin privileges
     const userDoc = await adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
 
@@ -301,23 +300,21 @@ export async function fetchUsers(limit = 10, offset = 0): Promise<FetchUsersResp
     const totalSnapshot = await adminDb.collection("users").count().get();
     const total = totalSnapshot.data().count;
 
-    const users: User[] = usersSnapshot.docs.map(doc => {
+    // Build raw user data and serialize it
+    const users: SerializedUser[] = usersSnapshot.docs.map(doc => {
       const data = doc.data() as Partial<User>;
-
-      const convert = (ts: unknown): Date | undefined =>
-        ts && typeof ts === "object" && "toDate" in ts ? (ts as { toDate: () => Date }).toDate() : undefined;
-
-      return {
+      const rawUser: User = {
         id: doc.id,
         name: data.name ?? null,
         email: data.email ?? null,
         role: data.role ?? "user",
         emailVerified: data.emailVerified ?? false,
         status: data.status ?? "active",
-        createdAt: convert(data.createdAt),
-        lastLoginAt: convert(data.lastLoginAt),
-        updatedAt: convert(data.updatedAt)
+        createdAt: data.createdAt ?? undefined,
+        lastLoginAt: data.lastLoginAt ?? undefined,
+        updatedAt: data.updatedAt ?? undefined
       };
+      return serializeUser(rawUser);
     });
 
     return { success: true, users, total };
@@ -357,31 +354,34 @@ export async function searchUsers(_: SearchUsersResponse, formData: FormData): P
     const totalSnapshot = await adminDb.collection("users").count().get();
     const total = totalSnapshot.data().count;
 
-    const users: User[] = await Promise.all(
+    const users: SerializedUser[] = await Promise.all(
       usersSnapshot.docs.map(async doc => {
-        const userData = doc.data();
+        const data = doc.data() as Partial<User>;
+        let rawUser: User = {
+          id: doc.id,
+          name: data.name || "",
+          email: data.email || "",
+          role: data.role || "user",
+          image: data.picture || "",
+          bio: data.bio || "",
+          emailVerified: data.emailVerified ?? false,
+          status: data.status ?? "active",
+          createdAt: data.createdAt ?? undefined,
+          lastLoginAt: data.lastLoginAt ?? undefined,
+          updatedAt: data.updatedAt ?? undefined
+        };
         try {
           const authUser = await adminAuth.getUser(doc.id);
-          return {
-            name: authUser.displayName || userData.name,
+          rawUser = {
+            ...rawUser,
+            name: authUser.displayName || rawUser.name,
             email: authUser.email,
-            image: authUser.photoURL || userData.picture,
-            role: userData.role || "user",
-            bio: userData.bio || "",
-            ...(convertTimestamps(userData) as Partial<User>),
-            id: doc.id
+            image: authUser.photoURL || rawUser.image
           };
         } catch {
-          return {
-            name: userData.name || "",
-            email: userData.email || "",
-            image: userData.picture || "",
-            role: userData.role || "user",
-            bio: userData.bio || "",
-            ...(convertTimestamps(userData) as Partial<User>),
-            id: doc.id
-          };
+          // Fall back to raw user data if the auth lookup fails
         }
+        return serializeUser(rawUser);
       })
     );
 
@@ -431,6 +431,7 @@ export async function updateUser(userId: string, userData: Partial<User>): Promi
       updatedAt: serverTimestamp()
     };
 
+    // Remove keys with undefined values
     Object.keys(updateData).forEach(key => {
       if (updateData[key as keyof typeof updateData] === undefined) {
         delete updateData[key as keyof typeof updateData];

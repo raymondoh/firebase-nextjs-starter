@@ -1,3 +1,4 @@
+//src/actions/client/index.ts
 "use client";
 
 import type { FetchActivityLogsParams, FetchActivityLogsResponse } from "@/types/dashboard/activity";

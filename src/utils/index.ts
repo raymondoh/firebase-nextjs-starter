@@ -8,6 +8,7 @@ export { formatDate as formatDateServer, toDate } from "./date-server";
 
 // Other utilities
 export * from "./dayjs";
+export * from "./date-server";
 export * from "./firebase-error";
 export * from "./get-initials";
 export * from "./getDisplayName";

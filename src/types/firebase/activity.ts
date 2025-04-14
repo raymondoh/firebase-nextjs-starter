@@ -33,22 +33,6 @@ export type ActivityStatus =
   | "pending"
   | "completed";
 
-/**
- * Activity log data as stored in Firestore
- */
-// export interface ActivityLogData {
-//   userId: string;
-//   type: ActivityType | string;
-//   description: string;
-//   status: ActivityStatus;
-//   timestamp: Timestamp;
-//   // Additional fields from firebase/activity.ts
-//   ipAddress?: string;
-//   location?: string;
-//   device?: string;
-//   deviceType?: string;
-//   metadata?: Record<string, any>;
-// }
 export interface ActivityLogData {
   //id: string;
   userId: string;
@@ -70,25 +54,11 @@ export interface ActivityLogData {
  */
 export type ActivityLogWithId = ActivityLogData & { id: string };
 
-/**
- * Serialized activity log for client components
- * This is used when sending activity data to the client
- * where Firestore Timestamp needs to be converted to string
- */
-// export interface SerializedActivity {
-//   id: string;
-//   userId: string;
-//   type: ActivityType | string;
-//   description: string;
-//   status: ActivityStatus;
-//   timestamp: string;
+export type ActivityLogWithExtras = ActivityLogWithId & {
+  name?: string;
+  userEmail?: string;
+};
 
-//   email?: string; // 👈 Add this line
-//   ipAddress?: string;
-//   location?: string;
-//   device?: string;
-//   deviceType?: string;
-//   metadata?: Record<string, any>;
 // }
 export interface SerializedActivity {
   id: string;

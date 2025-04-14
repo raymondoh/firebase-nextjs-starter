@@ -3,15 +3,6 @@ import { DashboardShell, DashboardHeader } from "@/components";
 import { ChangePasswordForm } from "@/components/dashboard/user/settings/ChangePasswordForm";
 import { NotificationForm } from "@/components/dashboard/user/settings/NotificationForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { updatePassword } from "@/actions/auth/password";
-import type { UpdatePasswordState } from "@/types";
-
-const wrappedUpdatePassword: (prevState: unknown, formData: FormData) => Promise<UpdatePasswordState> = async (
-  _prevState,
-  formData
-) => {
-  return updatePassword({ success: false }, formData);
-};
 
 export default function UserSettingsPage() {
   return (
@@ -36,7 +27,7 @@ export default function UserSettingsPage() {
             <div className="profile-form-container">
               <h2 className="text-xl font-semibold mb-4">Security Settings</h2>
               <p className="text-muted-foreground mb-6">Update your password and security preferences.</p>
-              <ChangePasswordForm updatePassword={wrappedUpdatePassword} />
+              <ChangePasswordForm />
             </div>
           </TabsContent>
 
