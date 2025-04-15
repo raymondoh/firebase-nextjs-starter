@@ -9,7 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import type { SerializedUser } from "@/types/user/common";
 import { formatDate } from "@/utils/date";
+//import { getInitials } from "@/utils/get-initials";
 
+//const userInitials = getInitials(session?.user?.name);
 // Helper function to get initials from name or email
 function getInitials(name: string | undefined | null, email: string | undefined | null): string {
   if (name) {

@@ -3,7 +3,6 @@
 import { AccountSummary } from "./AccountSummary";
 import { AccountSummarySkeleton } from "./AccountSummarySkeleton";
 import type { SerializedUser } from "@/types/user";
-import { formatDate } from "@/utils/date";
 
 type Props = {
   serializedUserData: SerializedUser;
@@ -15,12 +14,6 @@ export function UserAccountPreview({ serializedUserData, isLoading = false }: Pr
     return <AccountSummarySkeleton />;
   }
 
-  const user = {
-    ...serializedUserData,
-    createdAt: formatDate(serializedUserData.createdAt, { relative: true }),
-    updatedAt: formatDate(serializedUserData.updatedAt, { relative: true }),
-    lastLoginAt: formatDate(serializedUserData.lastLoginAt, { relative: true })
-  };
-
-  return <AccountSummary user={user} profileUrl="/user/profile" />;
+  // Simply pass the already-serialized user data to AccountSummary.
+  return <AccountSummary user={serializedUserData} profileUrl="/user/profile" />;
 }
