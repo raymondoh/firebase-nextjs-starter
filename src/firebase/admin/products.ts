@@ -1,6 +1,6 @@
 // src/firebase/admin/products/products.ts
 import { Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "./firebase-admin-init";
+import { adminDb, adminStorage } from "./firebase-admin-init";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type {
   GetProductByIdFromFirestoreResult,
@@ -26,7 +26,7 @@ export async function getAllProducts(): Promise<
         id: doc.id,
         name: data.name,
         description: data.description,
-        image: data.image,
+        image: data.image || "/placeholder.svg",
         price: data.price,
         inStock: data.inStock,
         badge: data.badge,
@@ -108,7 +108,7 @@ export async function getProductById(id: string): Promise<GetProductByIdFromFire
       id: doc.id,
       name: data?.name,
       description: data?.description || "",
-      image: data?.image,
+      image: data?.image || "/placeholder.svg",
       price: data?.price,
       inStock: data?.inStock,
       badge: data?.badge || "",
@@ -160,7 +160,7 @@ export async function updateProduct(id: string, updatedData: SafeUpdateProductIn
       id: updatedDoc.id,
       name: data.name,
       description: data.description || "",
-      image: data.image,
+      image: data.image || "/placeholder.svg",
       price: data.price,
       inStock: data.inStock,
       badge: data.badge || "",
@@ -187,7 +187,25 @@ export async function updateProduct(id: string, updatedData: SafeUpdateProductIn
 
 export async function deleteProduct(productId: string): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    await adminDb.collection("products").doc(productId).delete();
+    const docRef = adminDb.collection("products").doc(productId);
+    const docSnap = await docRef.get();
+
+    if (!docSnap.exists) {
+      return { success: false, error: "Product not found" };
+    }
+
+    const data = docSnap.data();
+    const imageUrl = data?.image;
+    console.log("🧼 !!!!!!!Attempting to delete PRODUCT!!!!:", imageUrl);
+
+    // Delete product from Firestore
+    await docRef.delete();
+
+    // Delete image if present
+    if (imageUrl) {
+      await deleteProductImage(imageUrl);
+    }
+
     return { success: true };
   } catch (error: unknown) {
     const message = isFirebaseError(error)
@@ -197,6 +215,37 @@ export async function deleteProduct(productId: string): Promise<{ success: true 
       : "Unknown error deleting product";
 
     console.error("Error deleting product:", message);
+    return { success: false, error: message };
+  }
+}
+
+// Utility function
+export async function deleteProductImage(
+  imageUrl: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const bucket = adminStorage.bucket();
+
+    // 🔥 Use URL parsing to get the correct file path
+    const url = new URL(imageUrl);
+    const fullPath = url.pathname.slice(1); // e.g., "my-bucket-name/products/product.jpg"
+
+    // Remove bucket prefix from path
+    const bucketName = adminStorage.bucket().name; // "my-firebase-playground-5db22"
+    const storagePath = fullPath.replace(`${bucketName}/`, ""); // ✅ just "products/product.jpg"
+    console.log("🧼 *****Attempting to delete image*****:", storagePath);
+    const file = bucket.file(storagePath);
+    await file.delete();
+
+    return { success: true };
+  } catch (error: unknown) {
+    const message = isFirebaseError(error)
+      ? firebaseError(error)
+      : error instanceof Error
+      ? error.message
+      : "Unknown error deleting image";
+
+    console.error("❌ Error deleting image:", message);
     return { success: false, error: message };
   }
 }
@@ -214,7 +263,7 @@ export async function getFeaturedProducts(): Promise<
         id: doc.id,
         name: data.name,
         description: data.description || "",
-        image: data.image,
+        image: data.image || "/placeholder.svg",
         price: data.price,
         inStock: data.inStock,
         badge: data.badge || "",

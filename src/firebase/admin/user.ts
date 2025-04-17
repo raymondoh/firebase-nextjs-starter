@@ -16,6 +16,7 @@ import type {
   SetUserRoleResult
 } from "@/types/firebase/firestore";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+import { getUserImage } from "@/utils/get-user-image";
 
 // ================= User CRUD Operations =================
 
@@ -43,6 +44,7 @@ export async function getUsers(limit = 10, startAfter?: string): Promise<GetUser
       return {
         id: doc.id,
         ...data,
+        image: getUserImage(data),
         createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
         updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt
       } as User;
@@ -202,6 +204,7 @@ export async function getUserProfile(userId: string): Promise<GetUserProfileResu
     const user: User = {
       id: userDoc.id,
       ...userData,
+      image: getUserImage(userData),
       createdAt:
         userData.createdAt instanceof Timestamp ? userData.createdAt.toDate().toISOString() : userData.createdAt,
       updatedAt:
@@ -235,7 +238,7 @@ export async function getCurrentUser(): Promise<{ success: true; data: User } | 
         id: session.user.id,
         name: session.user.name || "",
         email: session.user.email || "",
-        image: session.user.image || "",
+        image: getUserImage(session.user),
         role: role as UserRole
       }
     };

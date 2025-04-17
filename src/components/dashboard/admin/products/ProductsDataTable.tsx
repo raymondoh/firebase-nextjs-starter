@@ -1,181 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
 import {
-  type ColumnDef,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
   useReactTable,
+  type ColumnDef,
   type SortingState
 } from "@tanstack/react-table";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  RefreshCw,
-  Search,
-  Edit,
-  Trash2,
-  Eye,
-  MoreHorizontal,
-  Loader2
-} from "lucide-react";
+import { useState } from "react";
+import { RefreshCw, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog";
 import { ProductDialog } from "./ProductDialog";
-import { getAllProducts, deleteProduct } from "@/actions/products";
-import { toast } from "sonner";
-import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import type { Product } from "@/types/product";
+import { Search } from "lucide-react";
 
 interface ProductsDataTableProps {
-  initialData: Product[];
+  data: Product[];
+  columns: ColumnDef<Product>[];
+  onRefresh?: () => Promise<void>; // optional
 }
 
-export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) {
-  const router = useRouter();
-  const [data, setData] = useState<Product[]>(initialData);
+export function ProductsDataTable({ data, columns, onRefresh }: ProductsDataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
-
-  const columns: ColumnDef<Product>[] = [
-    {
-      accessorKey: "image",
-      header: "Image",
-      cell: ({ row }) => {
-        const image = row.getValue("image") as string;
-        return (
-          <div className="relative h-10 w-10 rounded-md overflow-hidden">
-            <Image
-              src={image || "/placeholder.svg?height=40&width=40"}
-              alt={row.getValue("name")}
-              fill
-              className="object-cover"
-              sizes="40px"
-            />
-          </div>
-        );
-      }
-    },
-    {
-      accessorKey: "name",
-      header: "Name",
-      cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>
-    },
-    {
-      accessorKey: "price",
-      header: "Price",
-      cell: ({ row }) => {
-        const price = Number.parseFloat(row.getValue("price"));
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD"
-        }).format(price);
-        return <div>{formatted}</div>;
-      }
-    },
-    {
-      accessorKey: "inStock",
-      header: "Status",
-      cell: ({ row }) => {
-        const inStock = row.getValue("inStock") as boolean;
-        return <Badge variant={inStock ? "default" : "destructive"}>{inStock ? "In Stock" : "Out of Stock"}</Badge>;
-      }
-    },
-    {
-      accessorKey: "badge",
-      header: "Badge",
-      cell: ({ row }) => {
-        const badge = row.getValue("badge") as string;
-        return badge ? <Badge variant="outline">{badge}</Badge> : null;
-      }
-    },
-    {
-      accessorKey: "isFeatured",
-      header: "Featured",
-      cell: ({ row }) => {
-        const value = row.getValue("isFeatured") as boolean;
-        return <Badge variant={value ? "default" : "outline"}> {value ? "Yes" : "No"}</Badge>;
-      }
-    },
-    {
-      accessorKey: "isHero",
-      header: "Hero",
-      cell: ({ row }) => {
-        const value = row.getValue("isHero") as boolean;
-        return <Badge variant={value ? "default" : "outline"}>{value ? "Yes" : "No"}</Badge>;
-      }
-    },
-
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const product = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => router.push(`/admin/products/${product.id}`)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.open(`/products/${product.id}`, "_blank")}>
-                <Eye className="mr-2 h-4 w-4" />
-                View
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => setProductToDelete(product)}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      }
-    }
-  ];
 
   const table = useReactTable({
     data,
@@ -197,23 +55,6 @@ export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) 
     globalFilterFn: "includesString"
   });
 
-  const refreshProducts = async () => {
-    setIsLoading(true);
-    try {
-      const result = await getAllProducts();
-      if (result.success) {
-        setData(result.data || []);
-      } else {
-        toast.error(result.error || "Failed to fetch products");
-      }
-    } catch (err) {
-      const message = isFirebaseError(err) ? firebaseError(err) : "Failed to fetch products";
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -221,27 +62,6 @@ export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) 
   const handlePageSizeChange = (newPageSize: string) => {
     setPageSize(Number.parseInt(newPageSize, 10));
     setPage(0);
-  };
-
-  const handleDeleteProduct = async () => {
-    if (!productToDelete) return;
-
-    setIsDeletingProduct(true);
-    try {
-      const result = await deleteProduct(productToDelete.id);
-      if (result.success) {
-        toast.success("Product deleted successfully");
-        setData(data.filter(p => p.id !== productToDelete.id));
-      } else {
-        toast.error(result.error || "Failed to delete product");
-      }
-    } catch (err) {
-      const message = isFirebaseError(err) ? firebaseError(err) : "An error occurred while deleting the product";
-      toast.error(message);
-    } finally {
-      setIsDeletingProduct(false);
-      setProductToDelete(null);
-    }
   };
 
   return (
@@ -257,10 +77,12 @@ export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) 
               className="w-full pl-8"
             />
           </div>
-          <Button variant="outline" size="icon" onClick={refreshProducts} disabled={isLoading}>
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            <span className="sr-only">Refresh</span>
-          </Button>
+          {onRefresh && (
+            <Button variant="outline" size="icon" onClick={onRefresh}>
+              <RefreshCw className="h-4 w-4" />
+              <span className="sr-only">Refresh</span>
+            </Button>
+          )}
         </div>
 
         <Button onClick={() => setIsAddProductOpen(true)}>
@@ -269,7 +91,6 @@ export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) 
         </Button>
       </div>
 
-      {/* Added overflow-x-auto to allow horizontal scrolling on mobile */}
       <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
@@ -284,52 +105,7 @@ export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) 
             ))}
           </TableHeader>
           <TableBody>
-            {/* {isLoading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell colSpan={columns.length} className="h-16">
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-10 w-10 rounded-md" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-[250px]" />
-                        <Skeleton className="h-4 w-[200px]" />
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )) */}
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  <>
-                    <TableCell>
-                      <Skeleton className="h-10 w-10 rounded-md" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-32" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-16" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-16" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-8" />
-                    </TableCell>
-                  </>
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map(row => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map(cell => (
@@ -348,7 +124,6 @@ export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) 
         </Table>
       </div>
 
-      {/* Improved pagination controls for mobile */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length > 0 && (
@@ -398,47 +173,14 @@ export function ProductsDataTable({ initialData = [] }: ProductsDataTableProps) 
         </div>
       </div>
 
-      {/* Add Product Dialog */}
       <ProductDialog
         open={isAddProductOpen}
         onOpenChange={setIsAddProductOpen}
         onSuccess={() => {
-          refreshProducts();
           setIsAddProductOpen(false);
+          onRefresh?.(); // ✅ Refetch products after adding
         }}
       />
-
-      {/* Delete Product Confirmation Dialog */}
-      <AlertDialog open={!!productToDelete} onOpenChange={open => !open && setProductToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action will permanently delete the product &quot;{productToDelete?.name}&quot;. This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteProduct}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isDeletingProduct}>
-              {isDeletingProduct ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </>
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

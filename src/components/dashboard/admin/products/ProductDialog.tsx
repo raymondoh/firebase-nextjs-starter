@@ -1,6 +1,6 @@
 "use client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ProductForm } from "@/components/dashboard/admin/products/ProductForm";
+import { AddProductForm } from "@/components/dashboard/admin/products/AddProductForm";
 
 interface ProductDialogProps {
   open: boolean;
@@ -17,7 +17,7 @@ export function ProductDialog({ open, onOpenChange, onSuccess }: ProductDialogPr
           <DialogDescription>Fill in the details to add a new product to your catalog.</DialogDescription>
         </DialogHeader>
         <div className="mt-4">
-          <ProductForm onSuccess={onSuccess} />
+          <AddProductForm onSuccess={onSuccess} />
         </div>
       </DialogContent>
     </Dialog>

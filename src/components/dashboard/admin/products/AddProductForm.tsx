@@ -13,47 +13,69 @@ import { toast } from "sonner";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
 import { uploadFile } from "@/utils/uploadFile";
 import { SubmitButton } from "@/components/shared/SubmitButton";
+import { validateFileSize } from "@/utils/validateFileSize";
 
 interface ProductFormProps {
   onSuccess?: () => void;
 }
 
-export function ProductForm({ onSuccess }: ProductFormProps) {
+export function AddProductForm({ onSuccess }: ProductFormProps) {
   const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = useState(false);
   const [inStock, setInStock] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isHero, setIsHero] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [productName, setProductName] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => setPreviewUrl(e.target?.result as string);
-      reader.readAsDataURL(file);
-    } else {
-      setPreviewUrl(null);
-    }
-  };
+    if (!file) return;
 
-  const handleSubmit = (formData: FormData) => {
+    const validationError = validateFileSize(file, 2);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => setPreviewUrl(e.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
     startTransition(async () => {
       try {
+        if (productName.trim().length < 3) {
+          setNameError("Product name must be at least 3 characters.");
+          toast.error("Please enter a product name with at least 3 characters.");
+          return;
+        }
+
         const file = formData.get("image") as File;
+        console.log("📁 Selected file:", file);
         let imageUrl = "";
 
         if (file && file.size > 0) {
-          if (file.size > 2 * 1024 * 1024) {
-            throw new Error("Image too large. Please upload a file under 2MB.");
-          }
-
+          console.log("📤 Uploading file...");
           setIsUploading(true);
           imageUrl = await uploadFile(file, { prefix: "product" });
+          console.log("✅ Image uploaded:", imageUrl);
+        }
+
+        console.log("📦 Submitting product to backend...");
+
+        const nameValue = formData.get("productName") as string;
+        if (!nameValue || nameValue.trim().length < 3) {
+          toast.error("Product name must be at least 3 characters.");
+          return;
         }
 
         const result = await addProduct({
-          name: formData.get("name") as string,
+          name: nameValue.trim(),
           price: Number.parseFloat(formData.get("price") as string),
           description: formData.get("description") as string,
           inStock,
@@ -76,21 +98,24 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
             setIsHero(false);
           }
         } else {
-          toast.error(result.error || "Failed to add product");
+          if (Array.isArray(result.error)) {
+            // Zod error array
+            const message = result.error[0]?.message || "Invalid input";
+            toast.error(message);
+          } else {
+            toast.error(result.error || "Failed to add product");
+          }
         }
       } catch (err: unknown) {
-        const message =
-          err instanceof Error && err.message.includes("Image too large")
-            ? err.message
-            : isFirebaseError(err)
-            ? firebaseError(err)
-            : err instanceof Error
-            ? err.message
-            : "Unknown error while adding product";
-
+        const message = isFirebaseError(err)
+          ? firebaseError(err)
+          : err instanceof Error
+          ? err.message
+          : "Unknown error while adding product";
         toast.error(message);
         console.error("Error in ProductForm submission:", err);
       } finally {
+        console.log("🧹 Resetting uploading state");
         setIsUploading(false);
       }
     });
@@ -104,11 +129,28 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
           <CardDescription>Fill out the form to add a new product to your store.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form id="product-form" action={handleSubmit} className="space-y-6">
+          <form id="product-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name</Label>
-                <Input name="name" id="name" placeholder="Enter product name" required />
+                <Label htmlFor="name">Product Name</Label>
+                <Input
+                  id="name"
+                  name="productName"
+                  value={productName}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProductName(value);
+
+                    if (value.trim().length < 3) {
+                      setNameError("Product name must be at least 3 characters.");
+                    } else {
+                      setNameError(null);
+                    }
+                  }}
+                  required
+                />
+                {nameError && <p className="text-sm text-red-600 mt-1">{nameError}</p>}
               </div>
 
               <div className="space-y-2">

@@ -13,6 +13,7 @@ import { formatDate } from "@/utils/date";
 
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import { PreviewUser } from "@/types/user";
+import { getInitials } from "@/utils/get-initials";
 
 interface UserManagementPreviewProps {
   limit?: number;
@@ -54,19 +55,6 @@ export function AdminUserPreview({ limit: userLimit = 5 }: UserManagementPreview
     fetchUsers();
   }, [userLimit]);
 
-  function getInitials(name: string | undefined | null, email: string): string {
-    if (name) {
-      return name
-        .split(" ")
-        .map(n => n[0])
-        .join("")
-        .toUpperCase()
-        .substring(0, 2);
-    }
-
-    return email.substring(0, 2).toUpperCase();
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -97,7 +85,8 @@ export function AdminUserPreview({ limit: userLimit = 5 }: UserManagementPreview
               <div key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <Avatar>
-                    <AvatarFallback>{getInitials(user.name, user.email ?? "")}</AvatarFallback>
+                    {/* <AvatarFallback>{getInitials(user.name, user.email ?? "")}</AvatarFallback> */}
+                    <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium leading-none">

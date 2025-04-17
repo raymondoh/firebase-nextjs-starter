@@ -2,10 +2,10 @@
 import type { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import { DashboardShell, DashboardHeader } from "@/components";
-import { ProductsDataTable } from "@/components/dashboard/admin/products/ProductsDataTable";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getAllProducts } from "@/firebase/actions";
+import { getAllProducts } from "@/actions/products/get-all-products";
+import { AdminProductsClient } from "@/components/dashboard/admin/products/AdminProductsClient";
 
 export const metadata: Metadata = {
   title: "Product Management",
@@ -37,7 +37,7 @@ export default async function AdminProductsPage() {
 
       {/* Added a container with overflow handling */}
       <div className="w-full overflow-hidden">
-        <ProductsDataTable initialData={products} />
+        <AdminProductsClient products={products} />
       </div>
     </DashboardShell>
   );

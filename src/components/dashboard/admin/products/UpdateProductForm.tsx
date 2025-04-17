@@ -17,6 +17,7 @@ import { uploadFile } from "@/utils/uploadFile";
 import { SubmitButton } from "@/components/shared/SubmitButton";
 import type { Product } from "@/types/product";
 import { ArrowLeft } from "lucide-react";
+import { validateFileSize } from "@/utils/validateFileSize";
 
 interface UpdateProductFormProps {
   product: Product;
@@ -28,6 +29,9 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
   const [isUploading, setIsUploading] = useState(false);
 
   const [name, setName] = useState(product.name);
+  const [productName, setProductName] = useState(product.name);
+  const [nameError, setNameError] = useState<string | null>(null);
+
   const [price, setPrice] = useState(product.price.toString());
   const [description, setDescription] = useState(product.description || "");
   const [badge, setBadge] = useState(product.badge || "");
@@ -40,26 +44,34 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setNewImageFile(file);
-      const reader = new FileReader();
-      reader.onload = e => setPreviewUrl(e.target?.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const fileError = validateFileSize(file);
+    if (fileError) {
+      toast.error(fileError);
+      return;
     }
+
+    setNewImageFile(file);
+
+    const reader = new FileReader();
+    reader.onload = e => setPreviewUrl(e.target?.result as string);
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     startTransition(async () => {
+      if (productName.trim().length < 2) {
+        setNameError("Product name must be at least 2 characters.");
+        return;
+      }
+
       try {
         let imageUrl = image;
 
         if (newImageFile) {
-          if (newImageFile.size > 2 * 1024 * 1024) {
-            throw new Error("Image too large. Please upload a file under 2MB.");
-          }
-
           setIsUploading(true);
           imageUrl = await uploadFile(newImageFile, { prefix: "product" });
         }
@@ -77,19 +89,16 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
 
         if (result.success) {
           toast.success("Product updated successfully!");
-          router.refresh();
+          router.push("/admin/products"); // ✅ Navigate to product list
         } else {
           toast.error(result.error || "Failed to update product");
         }
       } catch (err: unknown) {
-        const message =
-          err instanceof Error && err.message.includes("Image too large")
-            ? err.message
-            : isFirebaseError(err)
-            ? firebaseError(err)
-            : err instanceof Error
-            ? err.message
-            : "Unknown error while updating product";
+        const message = isFirebaseError(err)
+          ? firebaseError(err)
+          : err instanceof Error
+          ? err.message
+          : "Unknown error while updating product";
 
         toast.error(message);
         console.error("Error in UpdateProductForm submission:", err);
@@ -111,7 +120,17 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name</Label>
-                <Input id="name" value={name} onChange={e => setName(e.target.value)} required />
+                <Input
+                  id="name"
+                  value={productName}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProductName(value);
+                    setNameError(value.length < 2 ? "Name must be at least 2 characters" : null);
+                  }}
+                  required
+                />
+                {nameError && <p className="text-destructive text-sm mt-1">{nameError}</p>}
               </div>
 
               <div className="space-y-2">

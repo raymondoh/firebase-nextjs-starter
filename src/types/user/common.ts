@@ -20,6 +20,7 @@ export interface User {
   email?: string | null;
   image?: string | null;
   picture?: string;
+  photoURL?: string | null;
   username?: string;
   profileImage?: string;
 

@@ -126,6 +126,10 @@ export async function getFeaturedProducts(...args: Parameters<typeof adminProduc
   return adminProducts.getFeaturedProducts(...args);
 }
 
+// export async function deleteProduct(...args: Parameters<typeof adminProducts.deleteProduct>) {
+//   return adminProducts.deleteProduct(...args);
+// }
+
 // ================= Hero Slides =================
 
 export async function getHeroSlidesFromFirestore(...args: Parameters<typeof adminProducts.getHeroSlidesFromFirestore>) {

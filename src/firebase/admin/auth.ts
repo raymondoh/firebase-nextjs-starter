@@ -8,6 +8,7 @@ import { createUserDocument } from "./user";
 import bcryptjs from "bcryptjs";
 import { logActivity } from "@/firebase/admin/activity";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+import { getUserImage } from "@/utils/get-user-image";
 
 // ================= Firebase User Management =================
 
@@ -62,7 +63,8 @@ export async function createUserInFirebase({
         provider: "admin-create",
         status: "active",
         emailVerified: true,
-        passwordHash: hashedPassword // Required for custom login!
+        passwordHash: hashedPassword,
+        image: getUserImage({}) // 👈 fallback-safe (resolves to null)
       });
 
     // 5. Log admin action
@@ -316,7 +318,7 @@ export async function verifyAndCreateUser(token: string): Promise<VerifyAndCreat
       id: decodedToken.uid,
       email: decodedToken.email || "",
       name: decodedToken.name || "",
-      image: decodedToken.picture || "",
+      image: getUserImage(decodedToken),
       role: "user"
     });
 

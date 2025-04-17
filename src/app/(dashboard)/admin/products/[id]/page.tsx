@@ -18,6 +18,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   const session = await auth();
 
+  if (!session?.user || session.user.role !== "admin") {
+    redirect("/not-authorized");
+  }
+
   if (!session?.user) {
     redirect("/login");
   }

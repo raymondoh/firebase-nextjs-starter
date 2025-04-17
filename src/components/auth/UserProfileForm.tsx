@@ -5,25 +5,21 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Upload, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import Image from "next/image";
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { updateUserProfile } from "@/actions/user";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
-import { getInitials } from "@/utils/get-initials";
 import { uploadFile } from "@/utils/uploadFile";
 import { validateFileSize } from "@/utils/validateFileSize";
 import { SubmitButton } from "@/components/shared/SubmitButton";
 import { UserProfileSkeleton } from "./UserProfileSkeleton";
-
 import type { ProfileUpdateState, User } from "@/types/user";
+import { UserAvatar } from "../shared/UserAvatar";
 
 interface UnifiedProfileFormProps {
   id?: string;
@@ -90,6 +86,12 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const error = validateFileSize(file, 2);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = e => setPhotoURL(e.target?.result as string);
     reader.readAsDataURL(file);
@@ -114,12 +116,6 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
       formData.append("bio", bio);
 
       if (photoFile) {
-        const validationError = validateFileSize(photoFile, 2);
-        if (validationError) {
-          toast.error(validationError);
-          return;
-        }
-
         setIsUploading(true);
         const imageUrl = await uploadFile(photoFile, { prefix: "profile" });
         formData.append("imageUrl", imageUrl);
@@ -166,7 +162,7 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
           )}
 
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            <Avatar className="h-24 w-24 relative">
+            {/* <Avatar className="h-24 w-24 relative">
               {photoURL ? (
                 <div className="absolute inset-0 overflow-hidden rounded-full">
                   <Image
@@ -183,7 +179,30 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
                   {getInitials(session?.user?.name || session?.user?.email || "U")}
                 </AvatarFallback>
               )}
-            </Avatar>
+            </Avatar> */}
+            {/* <UserAvatar src={photoURL} name={session?.user?.name} email={session?.user?.email} className="h-24 w-24" /> */}
+            {/* <UserAvatar
+              src={photoURL}
+              name={session?.user?.name}
+              email={session?.user?.email}
+              className="h-20 w-20 rounded-full transition hover:ring-8 hover:ring-gray-800 hover:ring-offset-0"
+            /> */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-20 w-20 p-1 rounded-full 
+             ring-0 ring-offset-0 
+             hover:ring-2 hover:ring-gray-400 
+             focus:ring-2 focus:ring-gray-400 
+             transition duration-200">
+              <UserAvatar
+                src={photoURL}
+                name={session?.user?.name}
+                email={session?.user?.email}
+                className="h-full w-full"
+              />
+            </Button>
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
@@ -208,6 +227,7 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
                   <Upload className="mr-2 h-4 w-4" /> Upload
                 </Button>
               </div>
+              {photoFile && <p className="text-sm text-muted-foreground">{photoFile.name}</p>}
             </div>
           </div>
 

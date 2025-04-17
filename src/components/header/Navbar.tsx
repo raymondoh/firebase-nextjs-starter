@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/header/ModeToggle";
@@ -21,9 +20,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials } from "@/utils/get-initials";
 import { Logo } from "./Logo";
+import { UserAvatar } from "../shared/UserAvatar";
 
 // Track if we've already checked the session
 let hasCheckedSession = false;
@@ -267,7 +265,8 @@ const UserMenu = ({ isMobile }: { isMobile?: boolean }) => {
   };
 
   // Get user initials for the avatar fallback
-  const userInitials = getInitials(session?.user?.name);
+  //const userInitials = getInitials(session?.user?.name);
+  const user = session?.user;
 
   return (
     <DropdownMenu>
@@ -276,21 +275,7 @@ const UserMenu = ({ isMobile }: { isMobile?: boolean }) => {
           variant="ghost"
           size="icon"
           className="h-12 w-12 p-2 rounded-full hover:ring-offset-0 focus:ring-offset-0 hover:outline-offset-1">
-          <Avatar className="h-full w-full">
-            {session?.user?.image ? (
-              <div className="relative aspect-square h-full w-full">
-                <Image
-                  src={session.user.image || "/placeholder.svg"}
-                  alt={session.user.name || "User"}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            ) : (
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">{userInitials}</AvatarFallback>
-            )}
-          </Avatar>
+          <UserAvatar src={user?.image} name={user?.name} email={user?.email} className="h-8 w-8" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
