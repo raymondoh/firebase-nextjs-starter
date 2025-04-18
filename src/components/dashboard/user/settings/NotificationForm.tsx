@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { SubmitButton } from "@/components/shared/SubmitButton";
 
 const FormSchema = z.object({
   marketing_emails: z.boolean().default(false).optional(),
@@ -72,9 +73,9 @@ export function NotificationForm() {
           />
         </div>
 
-        <Button type="submit" className="w-full sm:w-auto">
+        <SubmitButton isLoading={form.formState.isSubmitting} loadingText="Saving..." className="w-full sm:w-auto">
           Save Preferences
-        </Button>
+        </SubmitButton>
       </form>
     </Form>
   );

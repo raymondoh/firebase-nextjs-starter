@@ -2,7 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/providers/ThemeProvider";
-import { UserProvider } from "@/contexts/UserContext";
+//import { UserProvider } from "@/contexts/UserContext";
 import { Toaster } from "@/components/ui/sonner";
 
 interface ProvidersProps {
@@ -12,12 +12,12 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
-      <UserProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster position="bottom-right" />
-        </ThemeProvider>
-      </UserProvider>
+      {/* <UserProvider> */}
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        {children}
+        <Toaster position="bottom-right" />
+      </ThemeProvider>
+      {/* </UserProvider> */}
     </SessionProvider>
   );
 }

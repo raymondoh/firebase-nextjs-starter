@@ -256,7 +256,8 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
           <SubmitButton
             disabled={isPending || isLoggingIn || isLoginPending || isRedirecting.current || isGoogleSigningIn}
             loadingText="Creating account..."
-            className="w-full">
+            className="w-full"
+            variant="default">
             Sign up
           </SubmitButton>
 

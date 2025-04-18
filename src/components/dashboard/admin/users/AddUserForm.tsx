@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { createUser } from "@/actions/user/admin";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { UserRole } from "@/types/user";
+import { SubmitButton } from "@/components/shared/SubmitButton";
 
 interface AddUserFormProps {
   onSuccess?: () => void;
@@ -112,9 +113,9 @@ export function AddUserForm({ onSuccess, onClose }: AddUserFormProps) {
         </Select>
       </div>
       <div className="flex justify-end">
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Creating..." : "Create User"}
-        </Button>
+        <SubmitButton isLoading={isLoading} loadingText="Creating..." className="min-w-[140px]">
+          Create User
+        </SubmitButton>
       </div>
     </form>
   );

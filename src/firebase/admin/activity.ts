@@ -1,5 +1,5 @@
 // src/firebase/admin/activity.ts
-import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
+import { adminDb } from "@/firebase/admin/firebase-admin-init";
 import { Timestamp, Query, DocumentData } from "firebase-admin/firestore";
 import { auth } from "@/auth";
 
@@ -10,6 +10,7 @@ import type {
   ActivityLogData
 } from "@/types/firebase/activity";
 import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
+import { getUserImage } from "@/utils/get-user-image";
 
 export async function getAllActivityLogs(
   limit = 10,
@@ -44,27 +45,43 @@ export async function getAllActivityLogs(
     const logsSnapshot = await query.get();
     const logs = logsSnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as ActivityLogData) }));
 
-    // 🧠 Batch fetch unique user emails
+    // 🧠 Get unique userIds and fetch user metadata
     const uniqueUserIds = [...new Set(logs.map(log => log.userId))];
-    const userEmailsMap: Record<string, string> = {};
+
+    const userDataMap: Record<string, { name?: string; email?: string; image?: string }> = {};
 
     await Promise.all(
       uniqueUserIds.map(async userId => {
         try {
-          const userRecord = await adminAuth.getUser(userId);
-          userEmailsMap[userId] = userRecord.email || "";
+          const userDoc = await adminDb.collection("users").doc(userId).get();
+          const userData = userDoc.exists ? userDoc.data() : null;
+
+          userDataMap[userId] = {
+            name: userData?.name || "",
+            email: userData?.email || "",
+            image: getUserImage(userData || {}) || undefined
+          };
         } catch {
-          userEmailsMap[userId] = "";
+          userDataMap[userId] = {
+            name: "",
+            email: "",
+            image: ""
+          };
         }
       })
     );
 
-    const activities: ActivityLogWithId[] = logs.map(log => ({
-      ...(log as ActivityLogWithId),
-      userEmail: userEmailsMap[log.userId] ?? ""
-    }));
-    console.log("[getAllActivityLogs] Logs fetched:", logs.length);
+    const activities: ActivityLogWithId[] = logs.map(log => {
+      const user = userDataMap[log.userId] ?? {};
+      return {
+        ...log,
+        name: user.name,
+        userEmail: user.email,
+        image: user.image
+      };
+    });
 
+    console.log("[getAllActivityLogs] Logs fetched:", logs.length);
     return { success: true, activities };
   } catch (error) {
     const message = isFirebaseError(error)
@@ -77,6 +94,7 @@ export async function getAllActivityLogs(
     return { success: false, error: message };
   }
 }
+
 export async function getUserActivityLogs(
   limit = 100,
   startAfter?: string,
@@ -115,18 +133,33 @@ export async function getUserActivityLogs(
     const logsSnapshot = await query.get();
     const logs = logsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // ✅ Single user = single fetch
+    // 🧠 Fetch the current user’s Firestore doc
     let userEmail = "";
+    let userName = "";
+    let image: string | null = null;
+
     try {
-      const userRecord = await adminAuth.getUser(session.user.id);
-      userEmail = userRecord.email || "";
+      const userDoc = await adminDb.collection("users").doc(session.user.id).get();
+      const userData = userDoc.exists ? userDoc.data() : null;
+
+      userEmail = userData?.email || "";
+      userName = userData?.name || "";
+      image = getUserImage(userData || {});
     } catch (error) {
-      console.warn(`Could not fetch user email for ${session.user.id}`);
+      const message = isFirebaseError(error)
+        ? firebaseError(error)
+        : error instanceof Error
+        ? error.message
+        : "Unknown error";
+
+      console.warn(`Could not fetch user metadata for ${session.user.id}: ${message}`);
     }
 
     const activities: ActivityLogWithId[] = logs.map(log => ({
       ...(log as ActivityLogWithId),
-      userEmail
+      name: userName,
+      userEmail,
+      image
     }));
 
     return { success: true, activities };
@@ -141,6 +174,7 @@ export async function getUserActivityLogs(
     return { success: false, error: message };
   }
 }
+
 //**Purpose**: Creates a new activity log entry in the database.
 export async function logActivity(data: Omit<ActivityLogData, "timestamp">): Promise<LogActivityResult> {
   try {

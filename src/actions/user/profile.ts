@@ -2,7 +2,6 @@
 
 import { auth } from "@/auth";
 import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
-// Update the serverTimestamp import to use the new date helper
 import { serverTimestamp } from "@/utils/date-server";
 import { profileUpdateSchema } from "@/schemas/user";
 import { logActivity } from "@/firebase/actions";

@@ -177,7 +177,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           <SubmitButton
             isLoading={isPending || isRedirecting.current || isGoogleSigningIn}
             loadingText={isRedirecting.current ? "Redirecting..." : "Logging in..."}
-            className="w-full">
+            className="w-full"
+            variant="default">
             Login
           </SubmitButton>
 

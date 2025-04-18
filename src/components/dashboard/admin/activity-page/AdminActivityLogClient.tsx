@@ -11,7 +11,7 @@ import { formatDate } from "@/utils/date";
 
 import type { ActivityLogClientProps } from "@/types/dashboard/activity";
 import { getDisplayName } from "@/utils/getDisplayName";
-
+import { UserAvatar } from "@/components/shared/UserAvatar"; // if not already imported
 export function AdminActivityLogClient({
   activities,
   showFilters = true,
@@ -100,14 +100,22 @@ export function AdminActivityLogClient({
                 <TableRow key={activity.id}>
                   {/* <TableCell className="whitespace-nowrap">
                     <div className="flex flex-col">
-                      <span className="font-medium">sss{getDisplayName(activity.name)}</span>
+                      <span className="font-medium">{getDisplayName(activity.name, activity.userEmail, "User")}</span>
                       <span className="text-xs text-muted-foreground">{activity.userEmail ?? "Unknown"}</span>
                     </div>
                   </TableCell> */}
                   <TableCell className="whitespace-nowrap">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{getDisplayName(activity.name, activity.userEmail, "User")}</span>
-                      <span className="text-xs text-muted-foreground">{activity.userEmail ?? "Unknown"}</span>
+                    <div className="flex items-center gap-3">
+                      <UserAvatar
+                        src={activity.image}
+                        name={activity.name}
+                        email={activity.userEmail}
+                        className="h-8 w-8"
+                      />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{getDisplayName(activity.name, activity.userEmail, "User")}</span>
+                        <span className="text-xs text-muted-foreground">{activity.userEmail ?? "Unknown"}</span>
+                      </div>
                     </div>
                   </TableCell>
 

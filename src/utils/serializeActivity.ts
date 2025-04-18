@@ -37,7 +37,8 @@ export function serializeActivityLogs(
       ...log,
       timestamp,
       name: log.name ?? "",
-      userEmail: log.userEmail ?? ""
+      userEmail: log.userEmail ?? "",
+      image: log.image ?? null
     };
   });
 }

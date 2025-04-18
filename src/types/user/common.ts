@@ -56,7 +56,8 @@ export interface PreviewUser {
   id: string;
   name?: string | null;
   email?: string | null;
+  image?: string;
   role?: string;
   createdAt?: Date | string;
-  lastLoginAt?: Date | string; // ✅ Add this
+  lastLoginAt?: Date | string;
 }

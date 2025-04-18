@@ -10,6 +10,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/firebase/client/firebase-client-init";
 import type { AdminActivityLogWrapperProps } from "@/types/dashboard";
 import { getDisplayName } from "@/utils/getDisplayName";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 export function AdminActivityPreview({
   activities,
@@ -20,7 +21,6 @@ export function AdminActivityPreview({
 }: AdminActivityLogWrapperProps) {
   const [usersMap, setUsersMap] = useState<Map<string, { name?: string; email?: string }>>(new Map());
 
-  // Enrich activity logs with user names/emails from Firestore
   const enrichedActivities = activities.slice(0, limit).map(activity => {
     const user = usersMap.get(activity.userId);
     return {
@@ -75,20 +75,23 @@ export function AdminActivityPreview({
           enrichedActivities.map(activity => (
             <div key={activity.id} className="flex flex-col space-y-1">
               <div className="flex items-center justify-between">
-                <span className="font-medium">
-                  {activity.displayName}
-                  {activity.userEmail && (
-                    <span className="block text-xs text-muted-foreground">{activity.userEmail}</span>
-                  )}
-                </span>
+                <div className="flex items-center gap-2">
+                  <UserAvatar
+                    src={activity.image}
+                    name={activity.name}
+                    email={activity.userEmail}
+                    className="h-8 w-8"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{activity.name}</span>
+                    {activity.userEmail && <span className="text-xs text-muted-foreground">{activity.userEmail}</span>}
+                  </div>
+                </div>
                 <span className="text-xs text-muted-foreground">
                   {formatDate(activity.timestamp, { relative: true })}
                 </span>
               </div>
               <p className="text-xs">{activity.description}</p>
-              {/* {activity.metadata?.details && (
-                <p className="text-xs text-muted-foreground">{activity.metadata.details}</p>
-              )} */}
             </div>
           ))
         )}

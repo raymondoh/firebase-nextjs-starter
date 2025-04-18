@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import type { UserRole } from "@/types/user";
 import type { SerializedUser } from "@/types/user";
+import { SubmitButton } from "@/components/shared/SubmitButton"; // make sure this is imported
 
 interface AdminUserEditDialogProps {
   user: SerializedUser;
@@ -97,9 +98,9 @@ export function AdminUserEditDialog({ user, open, onOpenChange, onSuccess }: Adm
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Changes"}
-            </Button>
+            <SubmitButton isLoading={isLoading} loadingText="Saving...">
+              Save Changes
+            </SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

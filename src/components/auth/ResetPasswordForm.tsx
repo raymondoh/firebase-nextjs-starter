@@ -161,7 +161,11 @@ export function ResetPasswordForm() {
               show={showConfirmPassword}
               toggleShow={() => setShowConfirmPassword(prev => !prev)}
             />
-            <SubmitButton isLoading={status === "submitting"} loadingText="Resetting..." className="w-full">
+            <SubmitButton
+              isLoading={status === "submitting"}
+              loadingText="Resetting..."
+              className="w-full"
+              variant="default">
               Reset Password
             </SubmitButton>
           </form>

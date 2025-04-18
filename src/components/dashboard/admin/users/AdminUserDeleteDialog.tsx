@@ -8,6 +8,7 @@ import { deleteUserAsAdmin } from "@/actions/auth/delete";
 import { toast } from "sonner";
 import type { SerializedUser } from "@/types/user";
 import { useSession } from "next-auth/react";
+import { SubmitButton } from "@/components/shared/SubmitButton";
 
 interface AdminUserDeleteDialogProps {
   user: SerializedUser;
@@ -64,9 +65,9 @@ export function AdminUserDeleteDialog({ user, open, onOpenChange, onSuccess }: A
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={loading}>
-            {loading ? "Deleting..." : "Delete"}
-          </Button>
+          <SubmitButton onClick={handleDelete} isLoading={loading} loadingText="Deleting..." variant="destructive">
+            Delete
+          </SubmitButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -111,7 +111,7 @@ export function ResendVerificationForm() {
               />
             </div>
 
-            <SubmitButton isLoading={isLoading} loadingText="Sending..." className="w-full">
+            <SubmitButton isLoading={isLoading} loadingText="Sending..." className="w-full" variant="default">
               Resend Verification Email
             </SubmitButton>
           </form>

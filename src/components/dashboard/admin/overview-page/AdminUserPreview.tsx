@@ -8,12 +8,10 @@ import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import { db } from "@/firebase/client/firebase-client-init";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { formatDate } from "@/utils/date";
-
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import { PreviewUser } from "@/types/user";
-import { getInitials } from "@/utils/get-initials";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 interface UserManagementPreviewProps {
   limit?: number;
@@ -35,8 +33,10 @@ export function AdminUserPreview({ limit: userLimit = 5 }: UserManagementPreview
             id: doc.id,
             name: data.name,
             email: data.email,
+            image: data.image || data.picture || data.photoURL || null,
             role: data.role || "user",
-            createdAt: data.createdAt?.toDate?.() || data.createdAt
+            createdAt: data.createdAt?.toDate?.() || data.createdAt,
+            lastLoginAt: data.lastLoginAt?.toDate?.() || data.lastLoginAt
           };
         });
 
@@ -84,10 +84,8 @@ export function AdminUserPreview({ limit: userLimit = 5 }: UserManagementPreview
             {users.map(user => (
               <div key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <Avatar>
-                    {/* <AvatarFallback>{getInitials(user.name, user.email ?? "")}</AvatarFallback> */}
-                    <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar src={user.image} name={user.name} email={user.email} className="h-10 w-10" />
+
                   <div>
                     <p className="text-sm font-medium leading-none">
                       {user.name || user.email?.split("@")[0] || "Unknown"}

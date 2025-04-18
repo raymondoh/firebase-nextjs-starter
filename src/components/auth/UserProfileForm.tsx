@@ -162,31 +162,6 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
           )}
 
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            {/* <Avatar className="h-24 w-24 relative">
-              {photoURL ? (
-                <div className="absolute inset-0 overflow-hidden rounded-full">
-                  <Image
-                    src={photoURL}
-                    alt={session?.user?.name || "User"}
-                    fill
-                    sizes="(max-width: 768px) 96px"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              ) : (
-                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  {getInitials(session?.user?.name || session?.user?.email || "U")}
-                </AvatarFallback>
-              )}
-            </Avatar> */}
-            {/* <UserAvatar src={photoURL} name={session?.user?.name} email={session?.user?.email} className="h-24 w-24" /> */}
-            {/* <UserAvatar
-              src={photoURL}
-              name={session?.user?.name}
-              email={session?.user?.email}
-              className="h-20 w-20 rounded-full transition hover:ring-8 hover:ring-gray-800 hover:ring-offset-0"
-            /> */}
             <Button
               type="button"
               variant="ghost"
@@ -253,7 +228,10 @@ export function UserProfileForm({ id, onCancel, redirectAfterSuccess, isAdmin = 
           </div>
         </CardContent>
         <CardFooter className="flex flex-wrap items-center justify-start gap-4">
-          <SubmitButton isLoading={isPending || isUploading} loadingText={isUploading ? "Uploading..." : "Saving..."}>
+          <SubmitButton
+            isLoading={isPending || isUploading}
+            variant="default"
+            loadingText={isUploading ? "Uploading..." : "Saving..."}>
             Save changes
           </SubmitButton>
 

@@ -126,7 +126,7 @@ export function ForgotPasswordForm() {
                 required
               />
             </div>
-            <SubmitButton isLoading={isLoading} loadingText="Sending..." className="w-full">
+            <SubmitButton isLoading={isLoading} loadingText="Sending..." className="w-full" variant="default">
               Send Reset Link
             </SubmitButton>
           </form>

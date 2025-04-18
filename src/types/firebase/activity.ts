@@ -1,4 +1,3 @@
-// src/types/firebase/activity.ts
 import type { Timestamp } from "firebase-admin/firestore";
 
 /**
@@ -34,10 +33,8 @@ export type ActivityStatus =
   | "completed";
 
 export interface ActivityLogData {
-  //id: string;
   userId: string;
   userEmail?: string;
-  //type: string;
   type: ActivityType | string;
   description: string;
   status: string;
@@ -52,19 +49,22 @@ export interface ActivityLogData {
 /**
  * Activity log data with ID
  */
-export type ActivityLogWithId = ActivityLogData & { id: string };
+export type ActivityLogWithId = ActivityLogData & {
+  id: string;
+  name?: string;
+  image?: string | null;
+};
 
 export type ActivityLogWithExtras = ActivityLogWithId & {
-  name?: string;
   userEmail?: string;
 };
 
-// }
 export interface SerializedActivity {
   id: string;
   userId: string;
   userEmail?: string;
   name: string;
+  image?: string | null;
   type: string;
   description: string;
   status: string;

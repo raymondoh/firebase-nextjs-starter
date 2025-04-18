@@ -6,7 +6,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils"; // if you're using shadcn
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/utils/get-initials";
-
+import { User } from "lucide-react";
 interface UserAvatarProps {
   src?: string | null;
   name?: string | null;
@@ -29,7 +29,7 @@ export function UserAvatar({ src, name, email, className }: UserAvatarProps) {
         </div>
       ) : (
         <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-          {getInitials(name, email)}
+          {name || email ? getInitials(name, email) : <User className="h-4 w-4 text-muted-foreground" />}
         </AvatarFallback>
       )}
     </Avatar>
