@@ -1,5 +1,5 @@
 // types/firebase/firestore.ts (update)
-import type { User, UserRole } from "../user/common";
+import type { User } from "../user/common";
 import type { Timestamp } from "firebase-admin/firestore";
 
 /**

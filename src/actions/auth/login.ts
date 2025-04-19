@@ -5,6 +5,7 @@ import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import { loginSchema } from "@/schemas/auth";
 import type { LoginResponse } from "@/types/auth/login";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+import { logServerEvent } from "@/utils/logger";
 
 export async function loginUser(_prevState: LoginResponse | null, formData: FormData): Promise<LoginResponse> {
   const email = formData.get("email") as string;
@@ -50,6 +51,17 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
     const customToken = await adminAuth.createCustomToken(userRecord.uid);
     //console.log("[loginUser] Returning customToken:", customToken);
 
+    // Inside try block after successful login
+    await logServerEvent({
+      type: "auth:login",
+      message: `User logged in: ${userRecord.email}`,
+      metadata: {
+        uid: userRecord.uid,
+        email: userRecord.email,
+        time: new Date().toISOString()
+      }
+    });
+
     return {
       success: true,
       message: "Login successful!",
@@ -69,6 +81,13 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
 
       return { success: false, message: firebaseError(error) };
     }
+    await logServerEvent({
+      type: "auth:login_error",
+      message: `Failed login attempt for ${email}`,
+      metadata: {
+        error: isFirebaseError(error) ? error.code : String(error)
+      }
+    });
 
     return {
       success: false,

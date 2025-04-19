@@ -8,17 +8,16 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  getFilteredRowModel,
   useReactTable
 } from "@tanstack/react-table";
+
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { RefreshCw, Plus, Search } from "lucide-react";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-//import { DataTablePagination } from "@/components/shared/DataTablePagination";
 import type { SerializedUser } from "@/types/user/common";
-
 import { UserDialog } from "./UserDialog";
 
 interface UsersDataTableProps {
@@ -41,8 +40,10 @@ export function UsersDataTable({ data, columns, onRefresh }: UsersDataTableProps
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: "includesString",
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel()
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel()
   });
 
   return (
@@ -53,14 +54,19 @@ export function UsersDataTable({ data, columns, onRefresh }: UsersDataTableProps
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search users..."
-              value={globalFilter ?? ""}
+              value={globalFilter}
               onChange={e => setGlobalFilter(e.target.value)}
               className="w-full pl-8"
             />
           </div>
-
           {onRefresh && (
-            <Button variant="outline" size="icon" onClick={onRefresh}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                console.log("[UsersDataTable] Refresh button clicked");
+                onRefresh();
+              }}>
               <RefreshCw className="h-4 w-4" />
               <span className="sr-only">Refresh</span>
             </Button>
@@ -72,16 +78,17 @@ export function UsersDataTable({ data, columns, onRefresh }: UsersDataTableProps
           Add User
         </Button>
       </div>
+
       <UserDialog
         open={isAddUserOpen}
         onOpenChange={setIsAddUserOpen}
         onSuccess={() => {
           setIsAddUserOpen(false);
-          onRefresh?.(); // ✅ Refetch users after adding
+          onRefresh?.();
         }}
       />
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -94,11 +101,10 @@ export function UsersDataTable({ data, columns, onRefresh }: UsersDataTableProps
               </TableRow>
             ))}
           </TableHeader>
-
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
@@ -107,15 +113,13 @@ export function UsersDataTable({ data, columns, onRefresh }: UsersDataTableProps
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  No users found.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-
-      {/* <DataTablePagination table={table} /> */}
     </div>
   );
 }

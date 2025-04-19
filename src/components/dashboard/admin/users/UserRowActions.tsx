@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
+import { Pencil, Trash2, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { SerializedUser } from "@/types/user";
 import { AdminUserEditDialog } from "./AdminUserEditDialog";

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useTransition, startTransition, useActionState } from "react";
+import React, { useState, useEffect, useRef, startTransition, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
@@ -30,7 +30,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formKey, setFormKey] = useState("0");
-  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
+  //const [isGoogleSigningIn] = useState(false);
 
   const [state, action, isPending] = useActionState<LoginState, FormData>(loginUser, null, formKey);
 
@@ -175,10 +175,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           </div>
 
           <SubmitButton
-            isLoading={isPending || isRedirecting.current || isGoogleSigningIn}
+            isLoading={isPending || isRedirecting.current}
             loadingText={isRedirecting.current ? "Redirecting..." : "Logging in..."}
-            className="w-full"
-            variant="default">
+            variant="default"
+            className="w-full">
             Login
           </SubmitButton>
 

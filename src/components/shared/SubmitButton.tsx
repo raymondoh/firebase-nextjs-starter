@@ -18,10 +18,16 @@ export function SubmitButton({
   children = "Submit",
   className,
   variant,
+  disabled,
   ...props
 }: SubmitButtonProps) {
   return (
-    <Button type="submit" disabled={isLoading} className={cn("min-w-[120px]", className)} variant={variant} {...props}>
+    <Button
+      type="submit"
+      disabled={isLoading || disabled}
+      className={cn("min-w-[120px]", className)}
+      variant={variant}
+      {...props}>
       {isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

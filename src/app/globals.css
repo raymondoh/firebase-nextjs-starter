@@ -218,9 +218,9 @@ body {
 }
 
 /* Make the sidebar group label larger on mobile */
-[data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="group-label"],
+/* [data-sidebar="sidebar"][data-mobile="true"] [data-sidebar="group-label"],
 .sheet-content [data-sidebar="group-label"] {
   font-size: 1rem !important;
   font-weight: 600 !important;
   padding: 0.75rem 1.25rem !important;
-}
+} */

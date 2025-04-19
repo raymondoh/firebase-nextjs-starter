@@ -28,17 +28,16 @@ export function UpdateProductForm({ product }: UpdateProductFormProps) {
   const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = useState(false);
 
-  const [name, setName] = useState(product.name);
+  const [name] = useState(product.name);
   const [productName, setProductName] = useState(product.name);
   const [nameError, setNameError] = useState<string | null>(null);
-
   const [price, setPrice] = useState(product.price.toString());
   const [description, setDescription] = useState(product.description || "");
   const [badge, setBadge] = useState(product.badge || "");
   const [inStock, setInStock] = useState(product.inStock !== false);
   const [isFeatured, setIsFeatured] = useState(product.isFeatured === true);
   const [isHero, setIsHero] = useState(false);
-  const [image, setImage] = useState(product.image || "");
+  const [image] = useState(product.image || "");
   const [previewUrl, setPreviewUrl] = useState<string | null>(product.image || null);
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
 

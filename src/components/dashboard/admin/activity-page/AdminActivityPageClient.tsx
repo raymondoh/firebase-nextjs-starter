@@ -21,8 +21,10 @@ export function AdminActivityPageClient({ initialLogs }: AdminActivityPageClient
   const [lastActivityId, setLastActivityId] = useState<string | undefined>(
     initialLogs.length > 0 ? initialLogs[initialLogs.length - 1].id : undefined
   );
-  const [activeType, setActiveType] = useState<string | undefined>();
-  const lastActivity = activities[activities.length - 1];
+
+  const [activeType] = useState<string | undefined>();
+
+  //const lastActivity = activities[activities.length - 1];
 
   const loadMore = async () => {
     if (isLoading || !hasMore) return;

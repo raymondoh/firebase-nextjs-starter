@@ -83,7 +83,7 @@ export const Navbar = () => {
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 {/*removed margin-right on the hamburger menu - mr-0 */}
-                <Button variant="ghost" size="icon" className="h-12 w-12 p-2 mr-0" aria-label="Open menu">
+                <Button variant="ghost" size="icon" className="h-12 w-12 p-0 mr-0" aria-label="Open menu">
                   <Menu className="h-full w-full" />
                 </Button>
               </SheetTrigger>

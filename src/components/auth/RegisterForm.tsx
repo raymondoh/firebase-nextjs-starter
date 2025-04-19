@@ -35,16 +35,15 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
+  //const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
 
   const registrationToastShown = useRef(false);
   const errorToastShown = useRef(false);
   const signInAttempted = useRef(false);
   const isRedirecting = useRef(false);
   const verificationEmailSent = useRef(false);
-
   const [state, action, isPending] = useActionState<RegisterState, FormData>(registerUser, null);
-  const [loginState, loginAction, isLoginPending] = useActionState(loginUser, null);
+  const [loginState, isLoginPending] = useActionState(loginUser, null);
 
   useEffect(() => {
     return () => {
@@ -254,10 +253,10 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
           </div>
 
           <SubmitButton
-            disabled={isPending || isLoggingIn || isLoginPending || isRedirecting.current || isGoogleSigningIn}
+            isLoading={isPending}
+            disabled={isRedirecting.current}
             loadingText="Creating account..."
-            className="w-full"
-            variant="default">
+            className="w-full">
             Sign up
           </SubmitButton>
 

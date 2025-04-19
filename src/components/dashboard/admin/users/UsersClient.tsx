@@ -5,7 +5,6 @@ import { UsersDataTable } from "./UsersDataTable";
 import { getUserColumns } from "./users-columns";
 import type { SerializedUser } from "@/types/user";
 import { UserDialog } from "./UserDialog";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 interface AdminUsersClientProps {
