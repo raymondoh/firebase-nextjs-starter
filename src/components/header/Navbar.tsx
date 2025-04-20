@@ -83,8 +83,19 @@ export const Navbar = () => {
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 {/*removed margin-right on the hamburger menu - mr-0 */}
-                <Button variant="ghost" size="icon" className="h-12 w-12 p-0 mr-0" aria-label="Open menu">
-                  <Menu className="h-full w-full" />
+                {/* <Button
+                  variant="ghost"
+                  className="h-12 w-12 p-0 rounded-full bg-muted hover:bg-muted/80 mr-0"
+                  aria-label="Open menu">
+                  <Menu className="h-6 w-6 text-foreground" />
+                </Button> */}
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 p-0 rounded-full hover:bg-muted bg-muted"
+                  aria-label="Open menu">
+                  <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left">
@@ -97,20 +108,19 @@ export const Navbar = () => {
                 </div>
               </SheetContent>
             </Sheet>
-            <Link href="/" className="flex items-center">
-              <Logo className="h-8 w-8 mr-10" />
-              {/* <span className="text-xl font-bold">mobileAppName</span> */}
-              {!isMobile && <span className="text-xl font-bold">AppName</span>}
+            <Link href="/" className="flex items-center ml-2 mr-0">
+              <Logo className="h-10 w-10" />
+
+              {/* <span className="ml-3 text-xl font-bold">Firestarter</span> */}
             </Link>
           </div>
         ) : (
           <div className="flex items-center">
             <Link href="/" className="flex items-center mr-6">
-              <div className="flex items-center justify-center h-12 w-12">
-                <Logo className="h-8 w-8" />
-              </div>
-              <span className="text-xl font-bold">Firestarter</span>
+              <Logo className="h-9 w-9" />
+              <span className="ml-3 text-xl font-bold">Firestarter</span>
             </Link>
+
             <NavLinks isMobile={false} />
           </div>
         )}

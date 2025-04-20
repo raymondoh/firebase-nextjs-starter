@@ -63,7 +63,7 @@ export function Header() {
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
         <div className="container px-4 py-4 mx-auto flex items-center justify-center">
           <Link href="/">
-            <Image src="/fire.svg" alt="Logo" width={100} height={32} priority />
+            <Image src="/fire.svg" alt="Logo" width={50} height={32} priority />
           </Link>
         </div>
       </header>

@@ -1,39 +1,37 @@
-// UsersClient.tsx (renamed from AdminUsersClient if needed)
 "use client";
 
-import { UsersDataTable } from "./UsersDataTable";
-import { getUserColumns } from "./users-columns";
-import type { SerializedUser } from "@/types/user";
-import { UserDialog } from "./UserDialog";
-import { useState } from "react";
+import * as React from "react";
+import { useState, useTransition, useEffect } from "react";
 
-interface AdminUsersClientProps {
+import type { SerializedUser } from "@/types/user/common";
+import { getUserColumns } from "./users-columns";
+import { fetchAllUsersClient } from "@/actions/client/users";
+import { UsersDataTable } from "./UsersDataTable";
+
+interface UsersClientProps {
   users: SerializedUser[];
-  onRefresh?: () => void;
 }
 
-export function UsersClient({ users, onRefresh }: AdminUsersClientProps) {
-  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+export function UsersClient({ users: initialUsers }: UsersClientProps) {
+  const [users, setUsers] = useState<SerializedUser[]>(initialUsers);
+  const [isPending, startTransition] = useTransition();
+
+  const handleRefresh = () => {
+    startTransition(async () => {
+      const freshUsers = await fetchAllUsersClient();
+      setUsers(freshUsers);
+    });
+  };
 
   return (
-    <>
-      <UsersDataTable
-        data={users}
-        columns={getUserColumns({
-          onView: id => {
-            window.location.href = `/admin/users/${id}`;
-          }
-        })}
-        onRefresh={onRefresh}
-      />
-      <UserDialog
-        open={isAddUserOpen}
-        onOpenChange={setIsAddUserOpen}
-        onSuccess={() => {
-          onRefresh?.();
-          setIsAddUserOpen(false);
-        }}
-      />
-    </>
+    <UsersDataTable
+      data={users}
+      columns={getUserColumns({
+        onView: id => {
+          window.location.href = `/admin/users/${id}`;
+        }
+      })}
+      onRefresh={handleRefresh}
+    />
   );
 }

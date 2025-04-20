@@ -43,13 +43,17 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     return () => console.log(`[${componentId}] LoginForm unmounted`);
   }, [componentId]);
 
+  // const handleInputChange =
+  //   (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     setter(e.target.value);
+  //     setErrorMessage(null);
+  //     hasToastShown.current = false;
+  //     isRedirecting.current = false;
+  //     setFormKey(prev => `${parseInt(prev) + 1}`);
+  //   };
   const handleInputChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setter(e.target.value);
-      setErrorMessage(null);
-      hasToastShown.current = false;
-      isRedirecting.current = false;
-      setFormKey(prev => `${parseInt(prev) + 1}`);
     };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

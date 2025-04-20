@@ -4,7 +4,8 @@ import { DashboardShell, DashboardHeader } from "@/components";
 import { AdminActivityPageClient } from "@/components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { fetchActivityLogs } from "@/actions/dashboard/activity-logs"; // ✅ move it here
+import { fetchActivityLogs } from "@/actions/dashboard/activity-logs";
+
 import type { SerializedActivity } from "@/types/firebase/activity";
 
 export const metadata: Metadata = {

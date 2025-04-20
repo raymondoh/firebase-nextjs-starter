@@ -1,5 +1,5 @@
 export { AuthModal } from "./AuthModal";
-export { CloseButton } from "./CloseButton";
+export { CloseButton } from "../shared/CloseButton";
 export { ForgotPasswordForm } from "./ForgotPasswordForm";
 export { GoogleAuthButton } from "./GoogleAuthButton";
 export { LoginForm } from "./LoginForm";

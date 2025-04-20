@@ -7,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function VerifyEmailPage() {
-  return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
-      <VerifyEmailForm />
-    </div>
-  );
+  return <VerifyEmailForm />;
 }

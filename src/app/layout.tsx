@@ -1,4 +1,4 @@
-// import type React from "react";
+//src/app/layout.tsx
 import { Metadata } from "next";
 
 import { Geist, Geist_Mono } from "next/font/google";
@@ -30,7 +30,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Providers>
           <Header />
           <div className="flex flex-col min-h-screen">
-            <main className="flex-1">{children}</main>
+            <div className="flex-1">{children}</div>
+
             <Footer />
           </div>
         </Providers>
