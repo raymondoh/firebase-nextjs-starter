@@ -16,10 +16,18 @@ export function UsersClient({ users: initialUsers }: UsersClientProps) {
   const [users, setUsers] = useState<SerializedUser[]>(initialUsers);
   const [isPending, startTransition] = useTransition();
 
+  // const handleRefresh = () => {
+  //   startTransition(async () => {
+  //     const freshUsers = await fetchAllUsersClient();
+  //     setUsers(freshUsers);
+  //   });
+  // };
   const handleRefresh = () => {
     startTransition(async () => {
       const freshUsers = await fetchAllUsersClient();
       setUsers(freshUsers);
+      //setGlobalFilter("");
+      //setSorting([]);
     });
   };
 

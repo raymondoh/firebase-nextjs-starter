@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { deleteUserAsAdmin } from "@/actions/auth/delete";
+//import { deleteUserProfileImageByUrl } from "@/actions/";
 import { toast } from "sonner";
 import type { SerializedUser } from "@/types/user";
 import { useSession } from "next-auth/react";
@@ -31,6 +32,9 @@ export function AdminUserDeleteDialog({ user, open, onOpenChange, onSuccess }: A
 
     setLoading(true);
     try {
+      console.log("🧪 Attempting to delete user with UID:", user.id);
+      //const result = await deleteUserAsAdmin(user.id);
+
       const result = await deleteUserAsAdmin({
         userId: user.id,
         adminId: session.user.id

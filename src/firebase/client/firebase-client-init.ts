@@ -26,10 +26,10 @@ export const googleProvider = new GoogleAuthProvider();
 export const githubProvider = new GithubAuthProvider();
 
 // Client-side Firestore utilities
-export function dateToTimestamp(date: Date): Timestamp {
-  return Timestamp.fromDate(date);
-}
+// export function dateToTimestamp(date: Date): Timestamp {
+//   return Timestamp.fromDate(date);
+// }
 
-export function timestampToDate(timestamp: Timestamp): Date {
-  return timestamp.toDate();
-}
+// export function timestampToDate(timestamp: Timestamp): Date {
+//   return timestamp.toDate();
+// }

@@ -3,6 +3,8 @@
 
 import { db } from "./firebase-client-init";
 import {
+  DocumentData,
+  WithFieldValue as FirestoreWithFieldValue,
   collection,
   doc,
   getDoc,
@@ -17,13 +19,15 @@ import {
   startAfter,
   Timestamp,
   serverTimestamp,
+  UpdateData,
   onSnapshot,
-  type QueryConstraint
+  type QueryConstraint,
+  type DocumentReference
+  //type WithFieldValue
 } from "firebase/firestore";
 
 /**
  * Convert a JavaScript Date to a Firestore Timestamp
- * @param date - The date to convert
  */
 export function dateToTimestamp(date: Date): Timestamp {
   return Timestamp.fromDate(date);
@@ -31,7 +35,6 @@ export function dateToTimestamp(date: Date): Timestamp {
 
 /**
  * Convert a Firestore Timestamp to a JavaScript Date
- * @param timestamp - The timestamp to convert
  */
 export function timestampToDate(timestamp: Timestamp): Date {
   return timestamp.toDate();
@@ -46,70 +49,73 @@ export function getServerTimestamp() {
 
 /**
  * Get a document by ID
- * @param collectionName - The collection name
- * @param docId - The document ID
  */
-export async function getDocument(collectionName: string, docId: string) {
+export async function getDocument<T extends DocumentData>(
+  collectionName: string,
+  docId: string
+): Promise<(T & { id: string }) | null> {
   const docRef = doc(db, collectionName, docId);
   const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+  return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as T & { id: string }) : null;
 }
 
 /**
  * Get documents from a collection with optional query constraints
- * @param collectionName - The collection name
- * @param constraints - Optional query constraints
  */
-export async function getDocuments(collectionName: string, constraints: QueryConstraint[] = []) {
+export async function getDocuments<T extends DocumentData>(
+  collectionName: string,
+  constraints: QueryConstraint[] = []
+): Promise<(T & { id: string })[]> {
   const collectionRef = collection(db, collectionName);
   const q = query(collectionRef, ...constraints);
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T & { id: string }));
 }
 
 /**
  * Create or update a document
- * @param collectionName - The collection name
- * @param docId - The document ID
- * @param data - The document data
  */
-export async function setDocument(collectionName: string, docId: string, data: any) {
-  const docRef = doc(db, collectionName, docId);
-  return setDoc(docRef, data);
+export async function setDocument<T extends DocumentData>(
+  collectionName: string,
+  docId: string,
+  data: FirestoreWithFieldValue<T>
+): Promise<void> {
+  const docRef = doc(db, collectionName, docId) as DocumentReference<T, T>;
+  await setDoc(docRef, data);
 }
 
 /**
- * Update a document
- * @param collectionName - The collection name
- * @param docId - The document ID
- * @param data - The data to update
+ * Update fields of a document in Firestore
  */
-export async function updateDocument(collectionName: string, docId: string, data: any) {
-  const docRef = doc(db, collectionName, docId);
-  return updateDoc(docRef, data);
+export async function updateDocument<T extends DocumentData>(
+  collectionName: string,
+  docId: string,
+  data: UpdateData<T> // 🔥 Use Firestore's actual expected type
+): Promise<void> {
+  const docRef = doc(db, collectionName, docId) as DocumentReference<T, T>;
+  await updateDoc(docRef, data);
 }
 
 /**
  * Delete a document
- * @param collectionName - The collection name
- * @param docId - The document ID
  */
-export async function deleteDocument(collectionName: string, docId: string) {
+export async function deleteDocument(collectionName: string, docId: string): Promise<void> {
   const docRef = doc(db, collectionName, docId);
-  return deleteDoc(docRef);
+  await deleteDoc(docRef);
 }
 
 /**
  * Subscribe to a document
- * @param collectionName - The collection name
- * @param docId - The document ID
- * @param callback - The callback to call when the document changes
  */
-export function subscribeToDocument(collectionName: string, docId: string, callback: (data: any) => void) {
+export function subscribeToDocument<T extends DocumentData>(
+  collectionName: string,
+  docId: string,
+  callback: (data: (T & { id: string }) | null) => void
+) {
   const docRef = doc(db, collectionName, docId);
-  return onSnapshot(docRef, doc => {
-    if (doc.exists()) {
-      callback({ id: doc.id, ...doc.data() });
+  return onSnapshot(docRef, docSnap => {
+    if (docSnap.exists()) {
+      callback({ id: docSnap.id, ...docSnap.data() } as T & { id: string });
     } else {
       callback(null);
     }
@@ -118,19 +124,16 @@ export function subscribeToDocument(collectionName: string, docId: string, callb
 
 /**
  * Subscribe to a query
- * @param collectionName - The collection name
- * @param constraints - Query constraints
- * @param callback - The callback to call when the query results change
  */
-export function subscribeToQuery(
+export function subscribeToQuery<T extends DocumentData>(
   collectionName: string,
   constraints: QueryConstraint[],
-  callback: (data: any[]) => void
+  callback: (data: (T & { id: string })[]) => void
 ) {
   const collectionRef = collection(db, collectionName);
   const q = query(collectionRef, ...constraints);
   return onSnapshot(q, querySnapshot => {
-    const documents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const documents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T & { id: string }));
     callback(documents);
   });
 }

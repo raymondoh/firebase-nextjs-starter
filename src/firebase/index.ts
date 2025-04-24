@@ -13,7 +13,7 @@ export {
   getUser,
   getUserByEmail,
   createUser,
-  deleteUser,
+  //deleteUser,
   updateUser,
   createUserDocument,
   getUsers,
@@ -22,7 +22,6 @@ export {
   getUserProfile,
   updateUserProfile,
   deleteUserAsAdmin,
-
   // Activity
   logActivity,
   getUserActivityLogs,

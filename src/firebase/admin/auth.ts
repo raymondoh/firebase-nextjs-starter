@@ -91,7 +91,6 @@ export async function createUserInFirebase({
 /**
  * Delete a user As Amin from Admin Dashboard
  */
-// src/firebase/admin/auth.ts
 export async function deleteUserAsAdmin(
   userId: string
 ): Promise<{ success: true } | { success: false; error: string }> {
@@ -134,6 +133,30 @@ export async function deleteUserAsAdmin(
       : "Unknown error deleting user";
 
     console.error("Error in deleteUserAsAdmin:", message);
+    return { success: false, error: message };
+  }
+}
+// Delete a user image using its URL (similar to deleteProductImage)
+export async function deleteUserImage(
+  imageUrl: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const bucket = adminStorage.bucket();
+
+    const url = new URL(imageUrl);
+    const fullPath = url.pathname.slice(1); // remove leading slash
+
+    const bucketName = bucket.name;
+    const storagePath = fullPath.replace(`${bucketName}/`, ""); // get clean path
+    console.log("🧼 Deleting user image:", storagePath);
+
+    const file = bucket.file(storagePath);
+    await file.delete();
+
+    return { success: true };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error deleting image";
+    console.error("❌ Error deleting user image:", message);
     return { success: false, error: message };
   }
 }
@@ -198,6 +221,14 @@ export async function updateUser(
 ) {
   try {
     const user = await adminAuth.updateUser(uid, properties);
+    await logActivity({
+      userId: uid,
+      type: "user_updated_profile",
+      description: "User profile updated via admin",
+      status: "success",
+      metadata: properties
+    });
+
     return { success: true, data: user };
   } catch (error) {
     const message = isFirebaseError(error)
@@ -241,6 +272,12 @@ export async function sendResetPasswordEmail(email: string): Promise<SendResetPa
     };
 
     await adminAuth.generatePasswordResetLink(email, actionCodeSettings);
+    await logActivity({
+      userId: email,
+      type: "password_reset_requested",
+      description: "Password reset email sent",
+      status: "success"
+    });
 
     return { success: true };
   } catch (error: unknown) {
@@ -300,6 +337,14 @@ export async function verifyIdToken(token: string) {
 export async function setCustomClaims(uid: string, claims: CustomClaims): Promise<SetCustomClaimsResult> {
   try {
     await adminAuth.setCustomUserClaims(uid, claims);
+    await logActivity({
+      userId: uid,
+      type: "admin_updated_permissions",
+      description: "Admin updated user roles/claims",
+      status: "success",
+      metadata: claims
+    });
+
     return { success: true };
   } catch (error: unknown) {
     const message = isFirebaseError(error)
@@ -320,6 +365,12 @@ export async function verifyAndCreateUser(token: string): Promise<VerifyAndCreat
       name: decodedToken.name || "",
       image: getUserImage(decodedToken),
       role: "user"
+    });
+    await logActivity({
+      userId: decodedToken.uid,
+      type: "user_registered",
+      description: "User account auto-created from token",
+      status: "success"
     });
 
     return { success: true, uid: decodedToken.uid };

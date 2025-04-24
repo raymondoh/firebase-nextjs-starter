@@ -1,4 +1,3 @@
-// firebase/admin/storage.ts
 "use server";
 
 import { adminStorage } from "./firebase-admin-init";
@@ -7,7 +6,7 @@ import { adminStorage } from "./firebase-admin-init";
  * Get a reference to a file in storage
  * @param filePath - The path to the file
  */
-export function getFileRef(filePath: string) {
+export async function getFileRef(filePath: string) {
   const bucket = adminStorage.bucket();
   return bucket.file(filePath);
 }
@@ -18,7 +17,7 @@ export function getFileRef(filePath: string) {
  * @param expiresIn - Time in milliseconds until the URL expires
  */
 export async function generateSignedUrl(filePath: string, expiresIn = 60 * 60 * 1000): Promise<string> {
-  const file = getFileRef(filePath);
+  const file = await getFileRef(filePath); // 🛠️ add await
   const [url] = await file.getSignedUrl({
     action: "read",
     expires: Date.now() + expiresIn
@@ -31,7 +30,7 @@ export async function generateSignedUrl(filePath: string, expiresIn = 60 * 60 * 
  * @param filePath - The path to the file
  */
 export async function deleteFile(filePath: string): Promise<void> {
-  const file = getFileRef(filePath);
+  const file = await getFileRef(filePath); // 🛠️ add await
   await file.delete();
 }
 

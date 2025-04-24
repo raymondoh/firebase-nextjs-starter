@@ -281,10 +281,16 @@ const UserMenu = ({ isMobile }: { isMobile?: boolean }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           className="h-12 w-12 p-2 rounded-full hover:ring-offset-0 focus:ring-offset-0 hover:outline-offset-1">
+          <UserAvatar src={user?.image} name={user?.name} email={user?.email} className="h-8 w-8" />
+        </Button> */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 p-2 rounded-full bg-muted text-foreground hover:bg-muted-foreground/20 hover:ring-offset-0 focus:ring-offset-0 hover:outline-offset-1">
           <UserAvatar src={user?.image} name={user?.name} email={user?.email} className="h-8 w-8" />
         </Button>
       </DropdownMenuTrigger>

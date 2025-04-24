@@ -4,6 +4,7 @@ import * as adminActivity from "./admin/activity";
 import * as adminProducts from "./admin/products";
 import * as adminUsers from "./admin/user";
 import * as adminAuthFunctions from "./admin/auth";
+//import * as adminStorage from "./admin/storage";
 
 // ================= User CRUD =================
 
@@ -15,9 +16,9 @@ export async function getUsers(...args: Parameters<typeof adminUsers.getUsers>) 
   return await adminUsers.getUsers(...args);
 }
 
-export async function deleteUser(...args: Parameters<typeof adminAuthFunctions.deleteUser>) {
-  return await adminAuthFunctions.deleteUser(...args);
-}
+// export async function deleteUser(...args: Parameters<typeof adminAuthFunctions.deleteUser>) {
+//   return await adminAuthFunctions.deleteUser(...args);
+// }
 // Move this up under User CRUD
 export async function deleteUserAsAdmin(...args: Parameters<typeof adminAuthFunctions.deleteUserAsAdmin>) {
   return await adminAuthFunctions.deleteUserAsAdmin(...args);
@@ -137,3 +138,6 @@ export async function getHeroSlidesFromFirestore(...args: Parameters<typeof admi
 }
 
 // ================= Admin Auth Utilities =================
+
+// export async function getUserByEmail(...args: Parameters<typeof adminAuthFunctions.getUserByEmail>) {
+//   return await adminAuthFunctions.getUserByEmail(...args);
