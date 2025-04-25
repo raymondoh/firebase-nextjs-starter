@@ -1,4 +1,5 @@
 :3000/\_next/static/c…ks/app/layout.js:29 Uncaught SyntaxError: Invalid or unexpected token
+Uncaught SyntaxError: Invalid or unexpected token
 
 FirebaseError: "auth/invalid-action-code" "Firebase: Error (auth/invalid-action-code)."
 

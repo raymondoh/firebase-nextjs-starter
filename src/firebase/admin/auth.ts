@@ -91,48 +91,103 @@ export async function createUserInFirebase({
 /**
  * Delete a user As Amin from Admin Dashboard
  */
+// export async function deleteUserAsAdmin(
+//   userId: string
+// ): Promise<{ success: true } | { success: false; error: string }> {
+//   try {
+//     const userRef = adminDb.collection("users").doc(userId);
+//      // 1. Clear image field before deleting the doc
+//      await userRef.update({ image: null });
+//       // 2. Delete Firestore document
+//     await userRef.delete();
+//     // 3. Delete Firebase Auth user
+//     await adminAuth.deleteUser(userId);
+
+//     // 3. Attempt to delete profile image
+//     const fileRef = adminStorage.bucket().file(`users/${userId}/profile.jpg`);
+//     try {
+//       await fileRef.delete();
+//     } catch (error: unknown) {
+//       if (typeof error === "object" && error !== null && "code" in error && (error as { code?: number }).code === 404) {
+//         console.log("Profile image not found, skipping delete.");
+//       } else {
+//         console.error("Error deleting profile image:", error);
+//       }
+//     }
+
+//     // 4. Log activity
+//     await logActivity({
+//       userId,
+//       type: "admin_deleted_user",
+//       description: "User deleted by admin",
+//       status: "success",
+//       metadata: {
+//         deletedUserId: userId
+//       }
+//     });
+
+//     return { success: true };
+//   } catch (error) {
+//     const message = isFirebaseError(error)
+//       ? firebaseError(error)
+//       : error instanceof Error
+//       ? error.message
+//       : "Unknown error deleting user";
+
+//     console.error("Error in deleteUserAsAdmin:", message);
+//     return { success: false, error: message };
+//   }
+// }
 export async function deleteUserAsAdmin(
-  userId: string
+  userId: string,
+  adminId?: string
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    // 1. Delete Firestore document
-    await adminDb.collection("users").doc(userId).delete();
+    const userRef = adminDb.collection("users").doc(userId);
 
-    // 2. Delete Firebase Auth user
-    await adminAuth.deleteUser(userId);
+    // 1. Clear image field before deleting the document
+    await userRef.update({ image: null });
 
-    // 3. Attempt to delete profile image
+    // 2. Attempt to delete profile image from Firebase Storage
     const fileRef = adminStorage.bucket().file(`users/${userId}/profile.jpg`);
     try {
       await fileRef.delete();
-    } catch (error: unknown) {
-      if (typeof error === "object" && error !== null && "code" in error && (error as { code?: number }).code === 404) {
-        console.log("Profile image not found, skipping delete.");
+      console.log(`✅ Deleted profile image for user ${userId}`);
+    } catch (error) {
+      if (typeof error === "object" && error !== null && "code" in error && (error as any).code === 404) {
+        console.log("ℹ️ Profile image not found, skipping delete.");
       } else {
-        console.error("Error deleting profile image:", error);
+        console.error("⚠️ Error deleting profile image:", error);
       }
     }
 
-    // 4. Log activity
-    await logActivity({
-      userId,
-      type: "admin_deleted_user",
-      description: "User deleted by admin",
-      status: "success",
-      metadata: {
-        deletedUserId: userId
-      }
-    });
+    // 3. Delete Firestore user document
+    await userRef.delete();
 
+    // 4. Delete Firebase Auth user
+    await adminAuth.deleteUser(userId);
+
+    // 5. Log activity (if adminId is provided)
+    if (adminId) {
+      await logActivity({
+        userId: adminId,
+        type: "admin_deleted_user",
+        description: `Admin deleted user (${userId})`,
+        status: "success",
+        metadata: { deletedUserId: userId }
+      });
+    }
+
+    console.log(`✅ Fully deleted user: ${userId}`);
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     const message = isFirebaseError(error)
       ? firebaseError(error)
       : error instanceof Error
       ? error.message
-      : "Unknown error deleting user";
+      : "Unknown error during user deletion";
 
-    console.error("Error in deleteUserAsAdmin:", message);
+    console.error("❌ Error in deleteUserAsAdmin:", message);
     return { success: false, error: message };
   }
 }
@@ -148,6 +203,7 @@ export async function deleteUserImage(
 
     const bucketName = bucket.name;
     const storagePath = fullPath.replace(`${bucketName}/`, ""); // get clean path
+
     console.log("🧼 Deleting user image:", storagePath);
 
     const file = bucket.file(storagePath);

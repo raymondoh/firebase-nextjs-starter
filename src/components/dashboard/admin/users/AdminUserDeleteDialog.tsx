@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { deleteUserAsAdmin } from "@/actions/auth/delete";
-//import { deleteUserProfileImageByUrl } from "@/actions/";
 import { toast } from "sonner";
 import type { SerializedUser } from "@/types/user";
 import { useSession } from "next-auth/react";
@@ -19,10 +17,8 @@ interface AdminUserDeleteDialogProps {
 }
 
 export function AdminUserDeleteDialog({ user, open, onOpenChange, onSuccess }: AdminUserDeleteDialogProps) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { data: session } = useSession();
-  console.log("!!!SESSION", session);
 
   const handleDelete = async () => {
     if (!session?.user) {
@@ -33,7 +29,6 @@ export function AdminUserDeleteDialog({ user, open, onOpenChange, onSuccess }: A
     setLoading(true);
     try {
       console.log("🧪 Attempting to delete user with UID:", user.id);
-      //const result = await deleteUserAsAdmin(user.id);
 
       const result = await deleteUserAsAdmin({
         userId: user.id,
@@ -43,8 +38,7 @@ export function AdminUserDeleteDialog({ user, open, onOpenChange, onSuccess }: A
       if (result.success) {
         toast.success(`User ${user.name || user.email} deleted successfully.`);
         onOpenChange(false);
-        onSuccess?.();
-        router.refresh();
+        onSuccess?.(); // <-- Call the passed-in function here
       } else {
         toast.error(result.error || "Failed to delete user.");
       }

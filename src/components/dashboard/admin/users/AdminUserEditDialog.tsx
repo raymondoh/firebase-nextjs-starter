@@ -42,8 +42,8 @@ export function AdminUserEditDialog({ user, open, onOpenChange, onSuccess }: Adm
       const result = await updateUser(user.id, formData);
       if (result.success) {
         toast.success("User updated successfully");
-        onSuccess?.();
         onOpenChange(false);
+        onSuccess?.();
       } else {
         toast.error(result.error || "Failed to update user.");
       }

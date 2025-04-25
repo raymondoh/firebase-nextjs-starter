@@ -21,8 +21,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"]
 });
 
-// other imports remain the same
-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -31,7 +29,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header />
           <div className="flex flex-col min-h-screen">
             <div className="flex-1">{children}</div>
-
             <Footer />
           </div>
         </Providers>
