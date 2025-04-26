@@ -11,10 +11,10 @@ export function CloseButton() {
     <Button
       variant="ghost"
       size="icon"
-      className="h-12 w-12 p-0 rounded-full hover:bg-muted"
+      className="h-10 w-10 p-0 rounded-full hover:bg-muted"
       onClick={() => router.push("/")}
       aria-label="Close">
-      <X className="h-12 w-12" />
+      <X className="h-10 w-10" />
     </Button>
   );
 }

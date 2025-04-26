@@ -1,16 +1,39 @@
 // src/utils/logger.ts
-//import { adminDb } from "@/firebase/admin/firebase-admin-init";
+
 import { Timestamp } from "firebase-admin/firestore";
 import { adminDb } from "@/firebase/admin/firebase-admin-init";
 
-interface LogEntry {
-  type: "info" | "error" | "warn" | "debug" | `auth:${string}`;
+export type LogLevel =
+  | "info"
+  | "warn"
+  | "error"
+  | "debug"
+  | `auth:${string}`
+  | `admin:${string}`
+  | `deletion:${string}`
+  | `data-privacy:${string}`;
+
+export interface LogEntry<T extends Record<string, unknown> = Record<string, unknown>> {
+  type: LogLevel;
   message: string;
   userId?: string;
-  metadata?: Record<string, any>;
-  context?: string; // Optional label like "auth", "products", etc.
+  metadata?: T;
+  context?: string; // e.g., "auth", "products"
 }
 
+// Base logger: always logs to console
+export function logger({ type, message, metadata, context = "general" }: Omit<LogEntry, "userId">) {
+  const timestamp = new Date().toISOString();
+  const formatted = `[${timestamp}] [${type.toUpperCase()}] [${context}] ${message}`;
+
+  if (metadata && Object.keys(metadata).length > 0) {
+    console[type === "error" ? "error" : type === "warn" ? "warn" : "log"](formatted, metadata);
+  } else {
+    console[type === "error" ? "error" : type === "warn" ? "warn" : "log"](formatted);
+  }
+}
+
+// Firestore logger: logs to Firestore + console
 export async function logServerEvent({
   type,
   message,
@@ -31,11 +54,14 @@ export async function logServerEvent({
     await adminDb.collection("serverLogs").add(log);
 
     if (process.env.NODE_ENV === "development") {
-      console.log(`[${type.toUpperCase()}] ${context}:`, message, metadata);
+      logger({ type, message, metadata, context });
     }
   } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("[LOGGER_ERROR] Failed to write log:", error);
-    }
+    logger({
+      type: "error",
+      message: "[LOGGER_ERROR] Failed to write log",
+      metadata: { error },
+      context: "logger"
+    });
   }
 }

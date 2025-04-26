@@ -35,8 +35,9 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  //const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
 
+  //const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const registrationToastShown = useRef(false);
   const errorToastShown = useRef(false);
   const signInAttempted = useRef(false);
@@ -55,10 +56,30 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
     };
   }, []);
 
+  function resetForm() {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+
+    registrationToastShown.current = false;
+    errorToastShown.current = false;
+    signInAttempted.current = false;
+    isRedirecting.current = false;
+    verificationEmailSent.current = false;
+
+    // ✨ Focus back on email field
+    emailInputRef.current?.focus();
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
+      return;
+    }
+    if (!state?.success) {
+      toast.error(state?.error || "Registration failed");
+      window.location.reload();
       return;
     }
 
@@ -192,7 +213,14 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
         <form id="register-form" onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} />
+            <Input
+              id="email"
+              type="email"
+              required
+              ref={emailInputRef}
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">

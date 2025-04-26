@@ -1,11 +1,17 @@
 // src/app/(dashboard)/layout.tsx
 import type { ReactNode } from "react";
+import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { auth } from "@/auth";
 import { headers } from "next/headers";
+
+export const metadata: Metadata = {
+  title: "Dashboard Layout",
+  description: "Dashboard Layout"
+};
 
 // This layout uses auth() or headers(), so force dynamic rendering
 export const dynamic = "force-dynamic";

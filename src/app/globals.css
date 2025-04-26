@@ -47,9 +47,11 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    --app-header-height: 64px; /* Adjust to your actual header height */
-    --app-footer-height: 64px; /* Adjust to your actual footer height */
-    --sidebar-width: 16rem; /* Add this to match your sidebar width */
+    --toaster-font-size: 1.25rem !important;
+    --toaster-padding: 24px !important;
+    --toaster-width: 420px !important;
+    --toaster-border-radius: 12px !important;
+    --toaster-icon-size: 28px !important;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -84,6 +86,11 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --toaster-font-size: 1.25rem;
+    --toaster-padding: 24px;
+    --toaster-width: 420px;
+    --toaster-border-radius: 12px;
+    --toaster-icon-size: 28px;
   }
 }
 
@@ -224,3 +231,48 @@ body {
   font-weight: 600 !important;
   padding: 0.75rem 1.25rem !important;
 } */
+
+/* Responsive toast styling */
+[data-sonner-toast] {
+  font-size: 1.125rem !important;
+  padding: 16px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Mobile styling */
+@media (max-width: 640px) {
+  [data-sonner-toast] {
+    width: calc(100vw - 32px) !important; /* Full width minus 16px padding on each side */
+    right: 16px !important; /* Ensure it stays on the right side */
+    left: auto !important; /* Prevent left positioning */
+  }
+}
+
+/* Desktop styling */
+@media (min-width: 641px) {
+  [data-sonner-toast] {
+    width: 380px !important;
+  }
+}
+
+[data-sonner-toast] [data-icon] {
+  transform: scale(1.2) !important;
+  margin-right: 16px !important;
+}
+
+[data-sonner-toast] [data-title] {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+[data-sonner-toast] [data-description] {
+  font-size: 0.95rem !important;
+  margin-top: 6px !important;
+}
+
+[data-sonner-toast] button {
+  font-size: 0.95rem !important;
+  padding: 8px 12px !important;
+}
