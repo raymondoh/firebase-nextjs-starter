@@ -480,7 +480,7 @@ export const Navbar = () => {
       <div className="flex items-center space-x-2 md:space-x-6">
         <ModeToggle />
         {!isMobile && status !== "loading" && !session?.user ? (
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <Link href="/login">
               <Button variant="secondary" size="lg">
                 Log in

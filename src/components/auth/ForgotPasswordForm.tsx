@@ -58,6 +58,11 @@ export function ForgotPasswordForm() {
     }
   };
 
+  function resetForm() {
+    setEmail("");
+    setError(null);
+  }
+
   if (isSubmitted) {
     return (
       <div className="container flex items-center justify-center min-h-screen py-12">
@@ -89,7 +94,13 @@ export function ForgotPasswordForm() {
             </Button>
             <p className="text-xs text-center text-muted-foreground">
               Didn&apos;t receive an email? Check your spam folder or{" "}
-              <Button variant="link" className="p-0 h-auto" onClick={() => setIsSubmitted(false)}>
+              <Button
+                variant="link"
+                className="p-0 h-auto"
+                onClick={() => {
+                  resetForm();
+                  setIsSubmitted(false);
+                }}>
                 try again
               </Button>
             </p>
