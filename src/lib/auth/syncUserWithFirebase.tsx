@@ -1,7 +1,7 @@
 // src/lib/auth/syncUserWithFirebase.ts
 import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import { serverTimestamp } from "@/firebase/admin/firestore";
-import { logActivity } from "@/firebase/log/logActivity";
+import { logActivity } from "@/firebase/admin/activity";
 
 /**
  * Synchronizes a user between NextAuth.js and Firebase

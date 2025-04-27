@@ -1,4 +1,3 @@
-// // // //src/actions/user/admin.ts
 // "use server";
 
 // import { auth } from "@/auth";
@@ -6,7 +5,10 @@
 // import { serverTimestamp } from "@/utils/date-server";
 // import { createUser as createUserInFirebase, logActivity } from "@/firebase/actions";
 // import { isFirebaseError, firebaseError } from "@/utils/firebase-error";
-// import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
+// import { revalidatePath } from "next/cache";
+// import { serializeUser } from "@/utils/serializeUser";
+// import { getUserImage } from "@/utils/get-user-image";
+// import { logger } from "@/utils/logger";
 // import type {
 //   CreateUserInput,
 //   CreateUserResponse,
@@ -16,23 +18,14 @@
 //   UpdateUserRoleResponse
 // } from "@/types/user";
 // import type { User, SerializedUser, UserRole } from "@/types/user/common";
-// import { revalidatePath } from "next/cache";
-// import { serializeUser } from "@/utils/serializeUser";
-// import { getUserImage } from "@/utils/get-user-image";
+// import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
 
 // export async function createUser({ email, password, name, role }: CreateUserInput): Promise<CreateUserResponse> {
 //   const session = await auth();
 //   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
 //   try {
-//     const result = await createUserInFirebase({
-//       email,
-//       password,
-//       displayName: name,
-//       createdBy: session.user.id,
-//       role
-//     });
-
+//     const result = await createUserInFirebase({ email, password, displayName: name, createdBy: session.user.id, role });
 //     if (!result.success) return { success: false, error: result.error || "Failed to create user" };
 
 //     const uid = result.uid;
@@ -46,7 +39,6 @@
 //     });
 
 //     revalidatePath("/admin/users");
-
 //     return { success: true, userId: uid };
 //   } catch (error) {
 //     const message = isFirebaseError(error)
@@ -54,31 +46,26 @@
 //       : error instanceof Error
 //       ? error.message
 //       : "Unknown error";
+//     logger({ type: "error", message: "Error in createUser", metadata: { error: message }, context: "admin-users" });
 //     return { success: false, error: message };
 //   }
 // }
 
 // export async function fetchUsers(limit = 10, offset = 0): Promise<FetchUsersResponse> {
 //   const session = await auth();
-//   if (!session?.user?.id) {
-//     return { success: false, error: "Not authenticated" };
-//   }
+//   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
 //   try {
-//     // Check for admin privileges
 //     const userDoc = await adminDb.collection("users").doc(session.user.id).get();
 //     const userData = userDoc.data();
-
-//     if (!userData || userData.role !== "admin") {
+//     if (!userData || userData.role !== "admin")
 //       return { success: false, error: "Unauthorized. Admin access required." };
-//     }
 
 //     const usersQuery = adminDb.collection("users").limit(limit).offset(offset);
 //     const usersSnapshot = await usersQuery.get();
 //     const totalSnapshot = await adminDb.collection("users").count().get();
 //     const total = totalSnapshot.data().count;
 
-//     // Build raw user data and serialize it
 //     const users: SerializedUser[] = usersSnapshot.docs.map(doc => {
 //       const data = doc.data() as Partial<User>;
 //       const rawUser: User = {
@@ -86,7 +73,6 @@
 //         name: data.name ?? null,
 //         email: data.email ?? null,
 //         image: getUserImage(data),
-//         //photoURL: data.photoURL ?? null,
 //         role: data.role ?? "user",
 //         emailVerified: data.emailVerified ?? false,
 //         status: data.status ?? "active",
@@ -94,15 +80,13 @@
 //         lastLoginAt: data.lastLoginAt ?? undefined,
 //         updatedAt: data.updatedAt ?? undefined
 //       };
-//       console.log("rawUser:", rawUser);
-
 //       return serializeUser(rawUser);
 //     });
 
 //     return { success: true, users, total };
 //   } catch (error) {
 //     const message = isFirebaseError(error) ? firebaseError(error) : "Failed to fetch users";
-//     console.error("Error fetching users:", message);
+//     logger({ type: "error", message: "Error in fetchUsers", metadata: { error: message }, context: "admin-users" });
 //     return { success: false, error: message };
 //   }
 // }
@@ -144,8 +128,6 @@
 //           name: data.name || "",
 //           email: data.email || "",
 //           role: data.role || "user",
-//           //image: data.picture || "",
-//           //image: getUserImage(data),
 //           bio: data.bio || "",
 //           emailVerified: data.emailVerified ?? false,
 //           status: data.status ?? "active",
@@ -159,10 +141,10 @@
 //             ...rawUser,
 //             name: authUser.displayName || rawUser.name,
 //             email: authUser.email || rawUser.email,
-//             image: getUserImage({ ...data, photoURL: authUser.photoURL }) // ✅ correct this line
+//             image: getUserImage({ ...data, photoURL: authUser.photoURL })
 //           };
 //         } catch {
-//           // Fall back to raw user data if the auth lookup fails
+//           // fallback silently
 //         }
 //         return serializeUser(rawUser);
 //       })
@@ -171,7 +153,7 @@
 //     return { success: true, users, total };
 //   } catch (error) {
 //     const message = isFirebaseError(error) ? firebaseError(error) : "Failed to search users";
-//     console.error("Error searching users:", message);
+//     logger({ type: "error", message: "Error in searchUsers", metadata: { error: message }, context: "admin-users" });
 //     return { success: false, error: message };
 //   }
 // }
@@ -193,9 +175,17 @@
 //     if (userId === session.user.id) return { success: false, error: "You cannot change your own role" };
 
 //     await adminDb.collection("users").doc(userId).update({ role, updatedAt: serverTimestamp() });
+
+//     logger({
+//       type: "info",
+//       message: `Updated role for userId ${userId} to ${role}`,
+//       context: "admin-users"
+//     });
+
 //     return { success: true, message: `User role updated to ${role}` };
 //   } catch (error) {
 //     const message = isFirebaseError(error) ? firebaseError(error) : "Failed to update user role";
+//     logger({ type: "error", message: "Error in updateUserRole", metadata: { error: message }, context: "admin-users" });
 //     return { success: false, error: message };
 //   }
 // }
@@ -209,12 +199,7 @@
 //     if (!adminData || adminData.role !== "admin")
 //       return { success: false, error: "Unauthorized. Admin access required." };
 
-//     const updateData = {
-//       ...userData,
-//       updatedAt: serverTimestamp()
-//     };
-
-//     // Remove keys with undefined values
+//     const updateData = { ...userData, updatedAt: serverTimestamp() };
 //     Object.keys(updateData).forEach(key => {
 //       if (updateData[key as keyof typeof updateData] === undefined) {
 //         delete updateData[key as keyof typeof updateData];
@@ -224,14 +209,18 @@
 //     await adminDb.collection("users").doc(userId).update(updateData);
 //     revalidatePath("/admin/users");
 
+//     logger({ type: "info", message: `Updated user ${userId}`, context: "admin-users" });
+
 //     return { success: true };
 //   } catch (error) {
 //     const message = isFirebaseError(error) ? firebaseError(error) : "Failed to update user";
+//     logger({ type: "error", message: "Error in updateUser", metadata: { error: message }, context: "admin-users" });
 //     return { success: false, error: message };
 //   }
 // }
 "use server";
 
+// ================= Imports =================
 import { auth } from "@/auth";
 import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import { serverTimestamp } from "@/utils/date-server";
@@ -241,6 +230,7 @@ import { revalidatePath } from "next/cache";
 import { serializeUser } from "@/utils/serializeUser";
 import { getUserImage } from "@/utils/get-user-image";
 import { logger } from "@/utils/logger";
+
 import type {
   CreateUserInput,
   CreateUserResponse,
@@ -252,13 +242,21 @@ import type {
 import type { User, SerializedUser, UserRole } from "@/types/user/common";
 import type { CollectionReference, Query, DocumentData } from "firebase-admin/firestore";
 
+// ================= Actions =================
+
+/**
+ * Create a new user (Admin Only)
+ */
 export async function createUser({ email, password, name, role }: CreateUserInput): Promise<CreateUserResponse> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
   try {
     const result = await createUserInFirebase({ email, password, displayName: name, createdBy: session.user.id, role });
-    if (!result.success) return { success: false, error: result.error || "Failed to create user" };
+
+    if (!result.success) {
+      return { success: false, error: result.error || "Failed to create user" };
+    }
 
     const uid = result.uid;
 
@@ -271,6 +269,7 @@ export async function createUser({ email, password, name, role }: CreateUserInpu
     });
 
     revalidatePath("/admin/users");
+
     return { success: true, userId: uid };
   } catch (error) {
     const message = isFirebaseError(error)
@@ -278,11 +277,16 @@ export async function createUser({ email, password, name, role }: CreateUserInpu
       : error instanceof Error
       ? error.message
       : "Unknown error";
+
     logger({ type: "error", message: "Error in createUser", metadata: { error: message }, context: "admin-users" });
+
     return { success: false, error: message };
   }
 }
 
+/**
+ * Fetch all users (Admin Only)
+ */
 export async function fetchUsers(limit = 10, offset = 0): Promise<FetchUsersResponse> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
@@ -290,8 +294,10 @@ export async function fetchUsers(limit = 10, offset = 0): Promise<FetchUsersResp
   try {
     const userDoc = await adminDb.collection("users").doc(session.user.id).get();
     const userData = userDoc.data();
-    if (!userData || userData.role !== "admin")
+
+    if (!userData || userData.role !== "admin") {
       return { success: false, error: "Unauthorized. Admin access required." };
+    }
 
     const usersQuery = adminDb.collection("users").limit(limit).offset(offset);
     const usersSnapshot = await usersQuery.get();
@@ -308,9 +314,9 @@ export async function fetchUsers(limit = 10, offset = 0): Promise<FetchUsersResp
         role: data.role ?? "user",
         emailVerified: data.emailVerified ?? false,
         status: data.status ?? "active",
-        createdAt: data.createdAt ?? undefined,
-        lastLoginAt: data.lastLoginAt ?? undefined,
-        updatedAt: data.updatedAt ?? undefined
+        createdAt: data.createdAt,
+        lastLoginAt: data.lastLoginAt,
+        updatedAt: data.updatedAt
       };
       return serializeUser(rawUser);
     });
@@ -323,14 +329,18 @@ export async function fetchUsers(limit = 10, offset = 0): Promise<FetchUsersResp
   }
 }
 
+/**
+ * Search users by name (Admin Only)
+ */
 export async function searchUsers(_: SearchUsersResponse, formData: FormData): Promise<SearchUsersResponse> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
   try {
     const adminData = (await adminDb.collection("users").doc(session.user.id).get()).data();
-    if (!adminData || adminData.role !== "admin")
+    if (!adminData || adminData.role !== "admin") {
       return { success: false, error: "Unauthorized. Admin access required." };
+    }
 
     const query = formData.get("query") as string;
     const limit = parseInt(formData.get("limit") as string) || 10;
@@ -363,9 +373,9 @@ export async function searchUsers(_: SearchUsersResponse, formData: FormData): P
           bio: data.bio || "",
           emailVerified: data.emailVerified ?? false,
           status: data.status ?? "active",
-          createdAt: data.createdAt ?? undefined,
-          lastLoginAt: data.lastLoginAt ?? undefined,
-          updatedAt: data.updatedAt ?? undefined
+          createdAt: data.createdAt,
+          lastLoginAt: data.lastLoginAt,
+          updatedAt: data.updatedAt
         };
         try {
           const authUser = await adminAuth.getUser(doc.id);
@@ -390,14 +400,18 @@ export async function searchUsers(_: SearchUsersResponse, formData: FormData): P
   }
 }
 
+/**
+ * Update a user's role (Admin Only)
+ */
 export async function updateUserRole(_: UpdateUserRoleResponse, formData: FormData): Promise<UpdateUserRoleResponse> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
   try {
     const adminData = (await adminDb.collection("users").doc(session.user.id).get()).data();
-    if (!adminData || adminData.role !== "admin")
+    if (!adminData || adminData.role !== "admin") {
       return { success: false, error: "Unauthorized. Admin access required." };
+    }
 
     const userId = formData.get("userId") as string;
     const role = formData.get("role") as UserRole;
@@ -422,14 +436,18 @@ export async function updateUserRole(_: UpdateUserRoleResponse, formData: FormDa
   }
 }
 
+/**
+ * Update user fields (Admin Only)
+ */
 export async function updateUser(userId: string, userData: Partial<User>): Promise<UpdateUserResponse> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
   try {
     const adminData = (await adminDb.collection("users").doc(session.user.id).get()).data();
-    if (!adminData || adminData.role !== "admin")
+    if (!adminData || adminData.role !== "admin") {
       return { success: false, error: "Unauthorized. Admin access required." };
+    }
 
     const updateData = { ...userData, updatedAt: serverTimestamp() };
     Object.keys(updateData).forEach(key => {
@@ -439,9 +457,14 @@ export async function updateUser(userId: string, userData: Partial<User>): Promi
     });
 
     await adminDb.collection("users").doc(userId).update(updateData);
+
     revalidatePath("/admin/users");
 
-    logger({ type: "info", message: `Updated user ${userId}`, context: "admin-users" });
+    logger({
+      type: "info",
+      message: `Updated user ${userId}`,
+      context: "admin-users"
+    });
 
     return { success: true };
   } catch (error) {

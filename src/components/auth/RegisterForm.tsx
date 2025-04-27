@@ -77,11 +77,6 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
       toast.error("Passwords do not match");
       return;
     }
-    if (!state?.success) {
-      toast.error(state?.error || "Registration failed");
-      window.location.reload();
-      return;
-    }
 
     const formData = new FormData();
     formData.append("name", email.split("@")[0]);
@@ -90,7 +85,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
     formData.append("confirmPassword", confirmPassword);
 
     startTransition(() => {
-      action(formData);
+      action(formData); // ✅ Just call action(formData)
     });
   };
 
@@ -151,9 +146,10 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
       };
 
       handleSignInForVerification();
-    } else if (state?.error) {
+    } else if (state.error && !errorToastShown.current) {
       errorToastShown.current = true;
-      toast.error(state.error);
+      toast.error(state.error || "Registration failed");
+      window.location.reload();
     }
   }, [state, email, password, router]);
 

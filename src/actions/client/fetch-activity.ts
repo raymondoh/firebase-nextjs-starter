@@ -1,8 +1,13 @@
-//src/actions/client/index.ts
-"use client";
+// "use client";
 
+// ================= Imports =================
 import type { FetchActivityLogsParams, FetchActivityLogsResponse } from "@/types/dashboard/activity";
 
+// ================= Client Actions =================
+
+/**
+ * Fetch activity logs from the API (client-side)
+ */
 export async function clientFetchActivityLogs({
   limit = 10,
   startAfter,
@@ -14,15 +19,16 @@ export async function clientFetchActivityLogs({
     if (startAfter) params.set("startAfter", startAfter);
     if (type) params.set("type", type);
 
-    const res = await fetch(`/api/activity-logs?${params.toString()}`);
-    if (!res.ok) {
-      return { success: false, error: "Failed to fetch logs" };
+    const response = await fetch(`/api/activity-logs?${params.toString()}`);
+
+    if (!response.ok) {
+      return { success: false, error: "Failed to fetch activity logs" };
     }
 
-    const data = await res.json();
+    const data = await response.json();
     return data;
   } catch (error) {
-    console.error("clientFetchActivityLogs error:", error);
+    console.error("[clientFetchActivityLogs] Error:", error);
     return { success: false, error: "Unexpected client error occurred." };
   }
 }

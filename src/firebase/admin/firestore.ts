@@ -1,12 +1,80 @@
-// firebase/admin/firestore.ts
-import "server-only"; // Add this to prevent client imports
+// // firebase/admin/firestore.ts
+// import "server-only"; // Add this to prevent client imports
+
+// import { adminDb } from "./firebase-admin-init";
+// import { Timestamp, FieldValue } from "firebase-admin/firestore";
+
+// //
+// export const serverTimestamp = () => FieldValue.serverTimestamp();
+// export const increment = (value: number) => FieldValue.increment(value);
+
+// /**
+//  * Convert a JavaScript Date to a Firestore Timestamp
+//  * @param date - The date to convert
+//  */
+// export function dateToTimestamp(date: Date): Timestamp {
+//   return Timestamp.fromDate(date);
+// }
+
+// /**
+//  * Convert a Firestore Timestamp to a JavaScript Date
+//  * @param timestamp - The timestamp to convert
+//  */
+// export function timestampToDate(timestamp: Timestamp): Date {
+//   return timestamp.toDate();
+// }
+
+// /**
+//  * Convert a Firestore Timestamp to an ISO string
+//  * @param timestamp - The timestamp to convert
+//  */
+// export function timestampToISOString(timestamp: Timestamp): string {
+//   return timestamp.toDate().toISOString();
+// }
+
+// /**
+//  * Create a batch for multiple operations
+//  */
+// export function createBatch() {
+//   return adminDb.batch();
+// }
+
+// /**
+//  * Get a document reference
+//  * @param collection - The collection name
+//  * @param docId - The document ID
+//  */
+// export function getDocRef(collection: string, docId: string) {
+//   return adminDb.collection(collection).doc(docId);
+// }
+
+// /**
+//  * Get a collection reference
+//  * @param collection - The collection name
+//  */
+// export function getCollectionRef(collection: string) {
+//   return adminDb.collection(collection);
+// }
+// src/firebase/admin/firestore.ts
+
+import "server-only"; // 🚫 Prevent client imports
 
 import { adminDb } from "./firebase-admin-init";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 
-//
+// ====== Firestore Field Operations ======
+
+/**
+ * Get the Firestore server timestamp
+ */
 export const serverTimestamp = () => FieldValue.serverTimestamp();
+
+/**
+ * Increment a numeric field value
+ */
 export const increment = (value: number) => FieldValue.increment(value);
+
+// ====== Firestore Timestamp Helpers ======
 
 /**
  * Convert a JavaScript Date to a Firestore Timestamp
@@ -32,8 +100,10 @@ export function timestampToISOString(timestamp: Timestamp): string {
   return timestamp.toDate().toISOString();
 }
 
+// ====== Firestore References ======
+
 /**
- * Create a batch for multiple operations
+ * Create a batch for multiple Firestore operations
  */
 export function createBatch() {
   return adminDb.batch();

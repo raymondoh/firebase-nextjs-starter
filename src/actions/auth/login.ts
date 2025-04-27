@@ -1,3 +1,4 @@
+// //src/actions/auth/login.ts
 // "use server";
 
 // import bcryptjs from "bcryptjs";
@@ -5,7 +6,7 @@
 // import { loginSchema } from "@/schemas/auth";
 // import type { LoginResponse } from "@/types/auth/login";
 // import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
-// import { logServerEvent } from "@/utils/logger";
+// import { logServerEvent, logger } from "@/utils/logger";
 
 // export async function loginUser(_prevState: LoginResponse | null, formData: FormData): Promise<LoginResponse> {
 //   const email = formData.get("email") as string;
@@ -16,45 +17,46 @@
 //   // Step 1: Validate input
 //   const validation = loginSchema.safeParse({ email, password });
 //   if (!validation.success) {
-//     return {
-//       success: false,
-//       message: validation.error.issues[0]?.message || "Invalid form data"
-//     };
+//     const message = validation.error.issues[0]?.message || "Invalid form data";
+//     logger({ type: "warn", message: `Login validation failed: ${message}`, context: "auth" });
+//     return { success: false, message };
 //   }
 
 //   try {
-//     // Step 2: Get user record from Firebase Auth
+//     // Step 2: Get user record
 //     const userRecord = await adminAuth.getUserByEmail(email);
 //     const isEmailVerified = userRecord.emailVerified;
 
 //     if (!isEmailVerified && !isRegistration && !skipSession) {
-//       return {
-//         success: false,
-//         message: "Please verify your email before logging in. Check your inbox for a verification link."
-//       };
+//       const message = "Please verify your email before logging in. Check your inbox for a verification link.";
+//       logger({ type: "info", message: `Blocked unverified login: ${email}`, context: "auth" });
+//       return { success: false, message };
 //     }
 
-//     // Step 3: Validate Firestore password hash
+//     // Step 3: Validate password hash
 //     const userDoc = await adminDb.collection("users").doc(userRecord.uid).get();
 //     const userData = userDoc.data();
 
 //     if (!userData?.passwordHash) {
+//       logger({ type: "warn", message: `No passwordHash for ${email}`, context: "auth" });
 //       return { success: false, message: "Invalid email or password" };
 //     }
 
 //     const isPasswordValid = await bcryptjs.compare(password, userData.passwordHash);
 //     if (!isPasswordValid) {
+//       logger({ type: "warn", message: `Invalid password for ${email}`, context: "auth" });
 //       return { success: false, message: "Invalid email or password" };
 //     }
 
-//     // Step 4: Return custom token for client-side Firebase sign in
+//     // Step 4: Return token
 //     const customToken = await adminAuth.createCustomToken(userRecord.uid);
-//     //console.log("[loginUser] Returning customToken:", customToken);
 
-//     // Inside try block after successful login
+//     // Log successful login
+//     logger({ type: "info", message: `Login success for ${email}`, context: "auth" });
 //     await logServerEvent({
 //       type: "auth:login",
 //       message: `User logged in: ${userRecord.email}`,
+//       userId: userRecord.uid,
 //       metadata: {
 //         uid: userRecord.uid,
 //         email: userRecord.email,
@@ -74,13 +76,20 @@
 //       }
 //     };
 //   } catch (error) {
+//     logger({
+//       type: "error",
+//       message: `Login error for ${email}`,
+//       context: "auth",
+//       metadata: { error }
+//     });
+
 //     if (isFirebaseError(error)) {
 //       if (error.code === "auth/user-not-found") {
 //         return { success: false, message: "Invalid email or password" };
 //       }
-
 //       return { success: false, message: firebaseError(error) };
 //     }
+
 //     await logServerEvent({
 //       type: "auth:login_error",
 //       message: `Failed login attempt for ${email}`,
@@ -97,6 +106,7 @@
 // }
 "use server";
 
+// ================= Imports =================
 import bcryptjs from "bcryptjs";
 import { adminAuth, adminDb } from "@/firebase/admin/firebase-admin-init";
 import { loginSchema } from "@/schemas/auth";
@@ -104,6 +114,11 @@ import type { LoginResponse } from "@/types/auth/login";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import { logServerEvent, logger } from "@/utils/logger";
 
+// ================= Login User =================
+
+/**
+ * Handles user login by validating credentials and returning a Firebase custom token.
+ */
 export async function loginUser(_prevState: LoginResponse | null, formData: FormData): Promise<LoginResponse> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -119,17 +134,18 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
   }
 
   try {
-    // Step 2: Get user record
+    // Step 2: Get Firebase Auth user record
     const userRecord = await adminAuth.getUserByEmail(email);
     const isEmailVerified = userRecord.emailVerified;
 
+    // Step 3: Block unverified users (unless registering or special case)
     if (!isEmailVerified && !isRegistration && !skipSession) {
       const message = "Please verify your email before logging in. Check your inbox for a verification link.";
       logger({ type: "info", message: `Blocked unverified login: ${email}`, context: "auth" });
       return { success: false, message };
     }
 
-    // Step 3: Validate password hash
+    // Step 4: Fetch Firestore user doc and validate password hash
     const userDoc = await adminDb.collection("users").doc(userRecord.uid).get();
     const userData = userDoc.data();
 
@@ -144,20 +160,16 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
       return { success: false, message: "Invalid email or password" };
     }
 
-    // Step 4: Return token
+    // Step 5: Create custom token
     const customToken = await adminAuth.createCustomToken(userRecord.uid);
 
-    // Log successful login
     logger({ type: "info", message: `Login success for ${email}`, context: "auth" });
+
     await logServerEvent({
       type: "auth:login",
       message: `User logged in: ${userRecord.email}`,
       userId: userRecord.uid,
-      metadata: {
-        uid: userRecord.uid,
-        email: userRecord.email,
-        time: new Date().toISOString()
-      }
+      metadata: { uid: userRecord.uid, email: userRecord.email, time: new Date().toISOString() }
     });
 
     return {
@@ -172,6 +184,7 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
       }
     };
   } catch (error) {
+    // Step 6: Handle errors
     logger({
       type: "error",
       message: `Login error for ${email}`,
@@ -189,9 +202,7 @@ export async function loginUser(_prevState: LoginResponse | null, formData: Form
     await logServerEvent({
       type: "auth:login_error",
       message: `Failed login attempt for ${email}`,
-      metadata: {
-        error: isFirebaseError(error) ? error.code : String(error)
-      }
+      metadata: { error: error instanceof Error ? error.message : String(error) }
     });
 
     return {

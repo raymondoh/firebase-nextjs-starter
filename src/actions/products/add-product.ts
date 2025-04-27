@@ -1,29 +1,50 @@
 // //src/actions/products/add-product.ts
+
 // "use server";
 
 // import { revalidatePath } from "next/cache";
-// import { type CreateProductInput, createProductSchema } from "@/schemas/products/product";
+// import { type CreateProductInput, createProductSchema } from "@/schemas/product/product";
 // import { addProduct as addProductToDb } from "@/firebase/actions";
 // import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
+// import { logger } from "@/utils/logger";
 // import type { AddProductResult } from "@/types/product/result";
 
 // export async function addProduct(data: CreateProductInput): Promise<AddProductResult> {
 //   try {
-//     // ✅ Step 1: Validate incoming data with the dedicated creation schema
+//     // Step 1: Validate incoming data
 //     const validated = createProductSchema.safeParse(data);
 
 //     if (!validated.success) {
+//       logger({
+//         type: "warn",
+//         message: "Invalid product data during addProduct",
+//         metadata: { error: validated.error.message },
+//         context: "products"
+//       });
 //       return {
 //         success: false,
 //         error: "Invalid product data: " + validated.error.message
 //       };
 //     }
 
-//     // ✅ Step 2: Call Firebase function with validated data
+//     // Step 2: Call Firebase function
 //     const result = await addProductToDb(validated.data);
 
 //     if (result.success) {
 //       revalidatePath("/dev/products");
+//       logger({
+//         type: "info",
+//         message: `Product added successfully`,
+//         metadata: { productName: validated.data.name },
+//         context: "products"
+//       });
+//     } else {
+//       logger({
+//         type: "error",
+//         message: "Failed to add product",
+//         metadata: { error: result.error },
+//         context: "products"
+//       });
 //     }
 
 //     return result;
@@ -34,42 +55,56 @@
 //       ? error.message
 //       : "Unknown error occurred while adding product";
 
-//     console.error("Unhandled error in addProduct action:", message);
+//     logger({
+//       type: "error",
+//       message: "Unhandled exception in addProduct action",
+//       metadata: { error: message },
+//       context: "products"
+//     });
+
 //     return { success: false, error: message };
 //   }
 // }
 "use server";
 
+// ================= Imports =================
 import { revalidatePath } from "next/cache";
-import { type CreateProductInput, createProductSchema } from "@/schemas/products/product";
 import { addProduct as addProductToDb } from "@/firebase/actions";
+import { createProductSchema, type CreateProductInput } from "@/schemas/product/product";
 import { firebaseError, isFirebaseError } from "@/utils/firebase-error";
 import { logger } from "@/utils/logger";
 import type { AddProductResult } from "@/types/product/result";
 
+// ================= Add Product =================
+
+/**
+ * Add a new product
+ */
 export async function addProduct(data: CreateProductInput): Promise<AddProductResult> {
   try {
     // Step 1: Validate incoming data
     const validated = createProductSchema.safeParse(data);
 
     if (!validated.success) {
+      const validationError = validated.error.message;
       logger({
         type: "warn",
         message: "Invalid product data during addProduct",
-        metadata: { error: validated.error.message },
+        metadata: { error: validationError },
         context: "products"
       });
       return {
         success: false,
-        error: "Invalid product data: " + validated.error.message
+        error: "Invalid product data: " + validationError
       };
     }
 
-    // Step 2: Call Firebase function
+    // Step 2: Save to database
     const result = await addProductToDb(validated.data);
 
     if (result.success) {
       revalidatePath("/dev/products");
+
       logger({
         type: "info",
         message: `Product added successfully`,
