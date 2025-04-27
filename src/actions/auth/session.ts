@@ -31,7 +31,6 @@ export async function validateSession() {
     expires: session?.expires || null
   };
 }
-("use server");
 
 // ================= Imports =================
 // import { auth } from "@/auth";
