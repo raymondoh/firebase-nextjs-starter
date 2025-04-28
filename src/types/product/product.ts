@@ -1,10 +1,17 @@
 // types/product.ts
 import { Timestamp } from "firebase-admin/firestore";
+
 export interface Product {
   id: string;
   name: string;
   description?: string;
+  details?: string;
+  dimensions?: string;
+  material?: string;
+  color?: string;
+  stickySide?: "Front" | "Back"; // ✨ NEW
   image: string;
+  category?: string;
   price: number;
   inStock: boolean;
   badge?: string;
@@ -17,16 +24,21 @@ export interface Product {
 export interface SerializedProduct {
   id: string;
   name: string;
-  title?: string;
   description?: string;
+  details?: string;
+  dimensions?: string;
+  material?: string;
+  color?: string;
+  stickySide?: "Front" | "Back"; // ✨ NEW
   image: string;
+  category?: string;
   price: number;
   inStock: boolean;
   badge?: string;
   isFeatured?: boolean;
   isHero?: boolean;
-  createdAt: Timestamp | string;
-  updatedAt?: Timestamp | string;
+  createdAt: string; // Always a string after serialization
+  updatedAt?: string;
 }
 
 // get product by ID

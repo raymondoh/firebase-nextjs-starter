@@ -19,7 +19,7 @@ export function UserDialog({ open, onOpenChange, onSuccess }: UserDialogProps) {
         </DialogHeader>
 
         <div className="mt-4">
-          <AddUserForm onSuccess={onSuccess} isAdmin />
+          <AddUserForm onSuccess={onSuccess} />
         </div>
       </DialogContent>
     </Dialog>
