@@ -19,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserDialog } from "./UserDialog";
 import type { SerializedUser } from "@/types/user/common";
+import { getUserRowClass } from "./users-columns";
 
 interface UsersDataTableProps {
   data: SerializedUser[];
@@ -102,10 +103,31 @@ export function UsersDataTable({ data, columns, onRefresh }: UsersDataTableProps
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          {/* <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map(row => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  No users found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody> */}
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map(row => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className={getUserRowClass(row.original)} // ✨ Add this!
+                >
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}

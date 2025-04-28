@@ -89,7 +89,7 @@ export function AdminProductsClient({ products: initialProducts }: AdminProducts
   };
 
   return (
-    <>
+    <div className="overflow-x-auto">
       <ProductsDataTable
         data={products}
         columns={getProductColumns({
@@ -126,6 +126,6 @@ export function AdminProductsClient({ products: initialProducts }: AdminProducts
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
